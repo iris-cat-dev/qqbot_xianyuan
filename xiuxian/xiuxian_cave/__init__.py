@@ -9,7 +9,6 @@ from ..lay_out import Cooldown
 from ..read_buff import save_player_info, get_player_info, UserBuffDate
 from ..utils import check_user
 from ..xiuxian2_handle import XiuxianDateManage
-from ..xiuxian_cultivation import BLESSEDSPOTCOST
 
 blessed_spot_creat = on_fullmatch("洞天福地购买", priority=10, permission=GROUP, block=True)
 blessed_spot_info = on_fullmatch("洞天福地查看", priority=11, permission=GROUP, block=True)
@@ -18,7 +17,8 @@ ling_tian_up = on_fullmatch("灵田开垦", priority=5, permission=GROUP, block=
 
 sql_message = XiuxianDateManage()
 
-LINGTIANCONFIG = {
+BLESSEDSPOT_COST = 500000
+LING_TIAN_CONFIG = {
     "1": {
         "level_up_cost": 3500000
     },
@@ -36,11 +36,20 @@ LINGTIANCONFIG = {
     }
 }
 
+__buff_help__ = f"""
+洞天福地帮助信息:
+指令：
+1、洞天福地购买:购买洞天福地
+2、洞天福地查看:查看自己的洞天福地
+3、洞天福地改名+名字：修改自己洞天福地的名字
+4、灵田开垦:提升灵田的等级,提高灵田结算的药材数量
+""".strip()
+
 
 @blessed_spot_creat.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def blessed_spot_creat_(bot: Bot, event: GroupMessageEvent):
     """
-    洞天福地开启
+    洞天福地购买
     """
     _, user_info, _ = check_user(event)
     user_id = user_info.user_id
@@ -49,12 +58,12 @@ async def blessed_spot_creat_(bot: Bot, event: GroupMessageEvent):
         msg = f"道友已经拥有洞天福地了，请发送洞天福地查看吧~"
         await xiuxian_send_message(blessed_spot_creat, message=msg)
 
-    if user_info.stone < BLESSEDSPOTCOST:
-        msg = f"道友的灵石不足{BLESSEDSPOTCOST}枚，无法购买洞天福地"
+    if user_info.stone < BLESSEDSPOT_COST:
+        msg = f"道友的灵石不足{BLESSEDSPOT_COST}枚，无法购买洞天福地"
         await xiuxian_send_message(blessed_spot_creat, message=msg)
 
     else:
-        sql_message.update_ls(user_id, BLESSEDSPOTCOST, 2)
+        sql_message.update_ls(user_id, BLESSEDSPOT_COST, 2)
         sql_message.update_user_blessed_spot_flag(user_id)
         mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
         mix_elixir_info['收取时间'] = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
@@ -65,7 +74,9 @@ async def blessed_spot_creat_(bot: Bot, event: GroupMessageEvent):
 
 @blessed_spot_info.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def blessed_spot_info_(_: Bot, event: GroupMessageEvent):
-    """洞天福地信息"""
+    """
+    洞天福地信息
+    """
     _, user_info, _ = check_user(event)
 
     user_id = user_info.user_id
@@ -84,35 +95,6 @@ async def blessed_spot_info_(_: Bot, event: GroupMessageEvent):
     msg += f"修炼速度：增加{int(user_buff_data.blessed_spot) * 100}%\n"
     msg += f"灵田数量：{mix_elixir_info['灵田数量']}"
     await xiuxian_send_message(blessed_spot_info, message=msg)
-
-
-@ling_tian_up.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def ling_tian_up_(bot: Bot, event: GroupMessageEvent):
-    """
-    洞天福地灵田升级
-    """
-    _, user_info, _ = check_user(event)
-
-    user_id = user_info.user_id
-    if int(user_info.blessed_spot_flag) == 0:
-        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        await xiuxian_send_message(ling_tian_up, message=msg)
-
-    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
-    now_num = mix_elixir_info['灵田数量']
-    if now_num == len(LINGTIANCONFIG) + 1:
-        msg = f"道友的灵田已全部开垦完毕，无法继续开垦了！"
-    else:
-        cost = LINGTIANCONFIG[str(now_num)]['level_up_cost']
-        if int(user_info.stone) < cost:
-            msg = f"本次开垦需要灵石：{cost}，道友的灵石不足！"
-        else:
-            msg = f"道友成功消耗灵石：{cost}，灵田数量+1,目前数量:{now_num + 1}"
-            mix_elixir_info['灵田数量'] = now_num + 1
-            save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
-            sql_message.update_ls(user_id, cost, 2)
-
-    await xiuxian_send_message(ling_tian_up, message=msg)
 
 
 @blessed_spot_rename.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -140,3 +122,32 @@ async def blessed_spot_rename_(_: Bot, event: GroupMessageEvent):
         sql_message.update_user_blessed_spot_name(user_id, arg)
 
     await xiuxian_send_message(blessed_spot_rename, message=msg)
+
+
+@ling_tian_up.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def ling_tian_up_(bot: Bot, event: GroupMessageEvent):
+    """
+    洞天福地灵田升级
+    """
+    _, user_info, _ = check_user(event)
+
+    user_id = user_info.user_id
+    if int(user_info.blessed_spot_flag) == 0:
+        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
+        await xiuxian_send_message(ling_tian_up, message=msg)
+
+    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+    now_num = mix_elixir_info['灵田数量']
+    if now_num == len(LING_TIAN_CONFIG) + 1:
+        msg = f"道友的灵田已全部开垦完毕，无法继续开垦了！"
+    else:
+        cost = LING_TIAN_CONFIG[str(now_num)]['level_up_cost']
+        if int(user_info.stone) < cost:
+            msg = f"本次开垦需要灵石：{cost}，道友的灵石不足！"
+        else:
+            msg = f"道友成功消耗灵石：{cost}，灵田数量+1,目前数量:{now_num + 1}"
+            mix_elixir_info['灵田数量'] = now_num + 1
+            save_player_info(user_id, mix_elixir_info, 'mix_elixir_info')
+            sql_message.update_ls(user_id, cost, 2)
+
+    await xiuxian_send_message(ling_tian_up, message=msg)

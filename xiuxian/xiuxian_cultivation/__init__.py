@@ -1,41 +1,30 @@
 import random
 import re
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    Message,
-    GroupMessageEvent,
-    MessageSegment
-)
-from nonebot.log import logger
 from datetime import datetime
-from nonebot import on_fullmatch, require, on_startswith
 
+from nonebot import on_fullmatch, require, on_startswith
+from nonebot.adapters.onebot.v11 import Bot, GROUP, Message, GroupMessageEvent, MessageSegment
+from nonebot.log import logger
+from nonebot.params import CommandArg
+
+from .two_exp_cd import two_exp_cd
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
+from ..data_source import jsondata
+from ..lay_out import assign_bot, Cooldown
+from ..read_buff import UserBuffDate
+from ..utils import check_user
+from ..utils import check_user_type, get_msg_pic
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
-from ..utils import check_user
-from ..data_source import jsondata
-from ..read_buff import UserBuffDate, get_main_info_msg, get_user_buff, get_sec_msg
-from nonebot.params import CommandArg
-from ..player_fight import Player_fight
-from ..utils import (
-    send_forward_msg_list, number_to,
-    check_user_type, get_msg_pic, CommandObjectID
-)
-from ..read_buff import get_player_info, save_player_info
-from ..lay_out import assign_bot, Cooldown
-from .two_exp_cd import two_exp_cd
 from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
 
 cache_help = {}
 sql_message = XiuxianDateManage()
 xiuxian_impart = XIUXIAN_IMPART_BUFF()
-BLESSEDSPOTCOST = 3500000
+
 
 two_exp_cd_up = require("nonebot_plugin_apscheduler").scheduler
-
 
 out_closing = on_fullmatch("出关", priority=5, permission=GROUP, block=True)
 in_closing = on_fullmatch("闭关", priority=5, permission=GROUP, block=True)
@@ -65,14 +54,14 @@ async def two_exp_cd_up_():
     logger.info('双修次数已更新！')
 
 
-
-
 two_exp_limit = 3
 
 
 @two_exp.handle(parameterless=[Cooldown(at_sender=True)])
 async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """双修"""
+    """
+    双修
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     global two_exp_limit
     isUser, user_1, msg = check_user(event)
@@ -472,8 +461,6 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
                     await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
                 else:
                     await out_closing.finish(message=msg, reply_message=True)
-
-
 
 
 @del_exp_decimal.handle(parameterless=[Cooldown(at_sender=True)])

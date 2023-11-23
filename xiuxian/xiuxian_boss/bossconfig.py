@@ -1,11 +1,8 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
+import json
 import os
 from pathlib import Path
 
-configkey = ["Boss灵石", "Boss名字", "Boss倍率", "Boss个数上限", "Boss生成时间参数", 'open', "世界积分商品"]
+config_key = ["Boss灵石", "Boss名字", "Boss倍率", "Boss个数上限", "Boss生成时间参数", 'open', "世界积分商品"]
 CONFIG = {
     "open": {},
     "Boss灵石": {
@@ -104,7 +101,7 @@ CONFIG = {
 def get_config():
     try:
         config = readf()
-        for key in configkey:
+        for key in config_key:
             if key not in list(config.keys()):
                 config[key] = CONFIG[key]
         savef(config)
