@@ -148,8 +148,9 @@ def readf(FILEPATH):
 def get_sec_msg(secbuffdata):
     msg = None
     if secbuffdata is None:
-        msg = "无"
+        msg = ""
         return msg
+
     hpmsg = f"，消耗当前血量{int(secbuffdata['hpcost'] * 100)}%" if secbuffdata['hpcost'] != 0 else ''
     mpmsg = f"，消耗真元{int(secbuffdata['mpcost'] * 100)}%" if secbuffdata['mpcost'] != 0 else ''
 
@@ -180,7 +181,8 @@ PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 def get_player_info(user_id, info_name):
     player_info = None
     if info_name == "mix_elixir_info":  # 灵田信息
-        mix_elixir_infoconfigkey = ["收取时间", "收取等级", "灵田数量", '药材速度', "丹药控火", "丹药耐药性", "炼丹记录", "炼丹经验"]
+        mix_elixir_infoconfigkey = ["收取时间", "收取等级", "灵田数量", '药材速度', "丹药控火", "丹药耐药性",
+                                    "炼丹记录", "炼丹经验"]
         nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # str
         MIXELIXIRINFOCONFIG = {
             "收取时间": nowtime,

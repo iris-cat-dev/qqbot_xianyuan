@@ -1,8 +1,91 @@
+
 # give_stone = on_command("送灵石", priority=5, permission=GROUP, block=True)
 # steal_stone = on_command("偷灵石", aliases={"飞龙探云手"}, priority=4, permission=GROUP, block=True)
 # gm_command = on_command("神秘力量", permission=SUPERUSER, priority=10, block=True)
 # rob_stone = on_command("抢劫", aliases={"抢灵石"}, priority=5, permission=GROUP, block=True)
+# qc = on_fullmatch("切磋", priority=6, permission=GROUP, block=True)
 #
+# @qc.handle(parameterless=[Cooldown(cd_time=300, at_sender=True)])
+# async def qc_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+#     """
+#     切磋，不会掉血
+#     """
+#     bot, send_group_id = await assign_bot(bot=bot, event=event)
+#     isUser, user_info, msg = check_user(event)
+#     if not isUser:
+#         if XiuConfig().img:
+#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
+#         else:
+#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
+#         await qc.finish()
+#     user_id = user_info.user_id
+#
+#     give_qq = None  # 艾特的时候存到这里
+#     for arg in args:
+#         if arg.type == "at":
+#             give_qq = arg.data.get("qq", "")
+#     if give_qq:
+#         if give_qq == str(user_id):
+#             msg = "道友不会左右互搏之术！"
+#             if XiuConfig().img:
+#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
+#             else:
+#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
+#             await qc.finish()
+#
+#         player1 = {"user_id": None, "道号": None, "气血": None,
+#                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+#         player2 = {"user_id": None, "道号": None, "气血": None,
+#                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+#         user1 = sql_message.get_user_real_info(user_id)
+#
+#         user1_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
+#         if user1_weapon_data is not None:
+#             player1['会心'] = int(user1_weapon_data['crit_buff'] * 100)
+#         else:
+#             player1['会心'] = 1
+#
+#         user2 = sql_message.get_user_real_info(give_qq)
+#         user2_weapon_data = UserBuffDate(user2.user_id).get_user_weapon_data()
+#         if user2_weapon_data is not None:
+#             player2['会心'] = int(user2_weapon_data['crit_buff'] * 100)
+#         else:
+#             player2['会心'] = 1
+#         player1['user_id'] = user1.user_id
+#         player1['道号'] = user1.user_name
+#         player1['气血'] = user1.hp
+#         player1['攻击'] = user1.atk
+#         player1['真元'] = user1.mp
+#         player1['exp'] = user1.exp
+#
+#         player2['user_id'] = user2.user_id
+#         player2['道号'] = user2.user_name
+#         player2['气血'] = user2.hp
+#         player2['攻击'] = user2.atk
+#         player2['真元'] = user2.mp
+#         player2['exp'] = user2.exp
+#
+#         result, victor = Player_fight(player1, player2, 1, bot.self_id)
+#         await send_forward_msg_list(bot, event, result)
+#         msg = f"获胜的是{victor}"
+#         if XiuConfig().img:
+#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
+#         else:
+#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
+#         await qc.finish()
+#     else:
+#         msg = "没有对方的信息！"
+#         if XiuConfig().img:
+#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
+#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
+#         else:
+#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
+#         await qc.finish()
+
+
 # @give_stone.handle(parameterless=[Cooldown(at_sender=True)])
 # async def give_stone_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 #     """送灵石"""

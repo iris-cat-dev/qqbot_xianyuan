@@ -1,37 +1,28 @@
 from datetime import datetime
-from nonebot import on_command, on_fullmatch
+
+from nonebot import on_command, on_fullmatch, on_startswith
 from nonebot import require
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    Message,
-    GroupMessageEvent
-)
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
-from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
 
-from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player
-from ..lay_out import assign_bot, Cooldown
-from ..utils import check_user
-from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate
-from ..xiuxian_config import JsonConfig
-from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
 from .level_up import level_up, level_up_zj, level_up_dr
 from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
-
-# 定时任务
-scheduler = require("nonebot_plugin_apscheduler").scheduler
-sql_message = XiuxianDateManage()
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import check_player
+from ..lay_out import Cooldown
+from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate
+from ..xiuxian_config import JsonConfig
 
 run_xiuxian = on_fullmatch("我要修仙", priority=8, block=True)
 open_xiuxian = on_command("启用修仙功能", aliases={'禁用修仙功能'}, permission=SUPERUSER, priority=5, block=True)
 check_in = on_fullmatch("修仙签到", priority=13, permission=GROUP, block=True)
 replay = on_fullmatch("重入仙途", permission=GROUP, priority=7, block=True)
-rename = on_command("改名", priority=5, permission=GROUP, block=True)
-reset = on_command("重置状态", permission=SUPERUSER, priority=12, block=True)
+rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
+reset = on_startswith("重置状态", permission=SUPERUSER, priority=12, block=True)
+
+scheduler = require("nonebot_plugin_apscheduler").scheduler
+sql_message = XiuxianDateManage()
 
 
 @scheduler.scheduled_job("cron", hour=0, minute=0)
@@ -44,9 +35,8 @@ async def xiuxian_check_in_reset():
 
 
 @run_xiuxian.handle(parameterless=[Cooldown(at_sender=True)])
-async def run_xiuxian_(bot: Bot, event: GroupMessageEvent):
+async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
     """加入修仙"""
-    bot, _ = await assign_bot(bot=bot, event=event)
     user_id = event.get_user_id()
     # 获取为用户名
     user_name = (
@@ -72,12 +62,11 @@ async def sign_in_(_: Bot, event: GroupMessageEvent):
 
 
 @replay.handle(parameterless=[Cooldown(90, at_sender=True), check_player()])
-async def restart_(bot: Bot, event: GroupMessageEvent):
+async def restart_(_: Bot, event: GroupMessageEvent):
     """
     重开游戏
     """
-    isUser, user_info, msg = check_user(event)
-    user_id = user_info.user_id
+    user_id = event.get_user_id()
     name, root_type = XiuxianJsonDate().linggen_get()
     msg = sql_message.ramaker(name, root_type, user_id)
     sql_message.update_power2(user_id)  # 更新战力
@@ -85,14 +74,15 @@ async def restart_(bot: Bot, event: GroupMessageEvent):
 
 
 @rename.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def rename_(_: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+async def rename_(_: Bot, event: GroupMessageEvent):
     """
     修改道号
     """
     user_id = event.get_user_id()
-    user_name = args.extract_plain_text().strip()
-    len_username = len(user_name.encode('gbk'))
-    if len_username > 20:
+    message = str(event.message)
+    user_name = message[2:]
+    length = len(user_name.encode('gbk'))
+    if length > 20:
         msg = "道号长度过长，请修改后重试！"
         await xiuxian_send_message(rename, message=msg)
 
@@ -101,16 +91,20 @@ async def rename_(_: Bot, event: GroupMessageEvent, args: Message = CommandArg()
 
 
 @reset.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def reset_(_: Bot, __: GroupMessageEvent, args: Message = CommandArg()):
+async def reset_(_: Bot, __: GroupMessageEvent):
     """
     重置用户状态。
     单用户：重置状态 @xxx
     多用户：重置状态
     """
     give_qq = None  # 艾特的时候存到这里
+
+    #TODO:
+    args = []
     for arg in args:
         if arg.type == "at":
             give_qq = arg.data.get("qq", "")
+
     if give_qq:
         sql_message.restate(give_qq)
         msg = '{}用户信息重置成功！'.format(give_qq)

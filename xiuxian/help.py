@@ -71,13 +71,17 @@ sql_message = XiuxianDateManage()  # sql类
 
 @help_in.handle(parameterless=[Cooldown(at_sender=True)])
 async def help_in_(bot: Bot, event: GroupMessageEvent, session_id: int = CommandObjectID()):
-    """修仙帮助"""
+    """
+    修仙帮助
+    """
     await xiuxian_send_message(help_in, __xiuxian_notes__)
 
 
 @warring_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def warring_help_(bot: Bot, _: GroupMessageEvent):
-    """风控帮助"""
+    """
+    风控帮助
+    """
     await xiuxian_send_message(help_in, __warring_help__)
 
 

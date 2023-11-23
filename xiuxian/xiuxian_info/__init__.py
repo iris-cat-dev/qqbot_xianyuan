@@ -1,35 +1,28 @@
-from nonebot import on_command, on_fullmatch
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    GroupMessageEvent,
-    MessageSegment,
-)
-from ..lay_out import assign_bot, Cooldown
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
-from ..data_source import jsondata
+from nonebot import on_fullmatch
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
+
 from .draw_user_info import draw_user_info_img
-from ..utils import check_user, get_msg_pic, number_to
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import check_player
+from ..data_source import jsondata
+from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate
+from ..utils import check_user, number_to
+from ..xiuxian2_handle import XiuxianDateManage, OtherSet, xiuxian_impart
 from ..xiuxian_config import XiuConfig
 
 xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GROUP, block=True)
-sql_message = XiuxianDateManage()  # sql类
+mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=True)
+
+sql_message = XiuxianDateManage()
 
 
-@xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True)])
+@xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True), check_player()])
 async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
-    """我的修仙信息"""
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await xiuxian_message.finish(message=msg, reply_message=True)
-
-    user_id = user_info.user_id
+    """
+    我的修仙信息
+    """
+    user_id = event.get_user_id()
     user_info = sql_message.get_user_real_info(user_id)
     user_name = user_info.user_name
     user_num = user_info.id
@@ -106,8 +99,8 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     }
     if XiuConfig().user_info_image:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(img_res))
-        await xiuxian_message.finish()
+        await xiuxian_send_message(xiuxian_message, message=MessageSegment.image(img_res))
+
     else:
         try:
             msg = f"""{user_name}道友的信息
@@ -122,7 +115,8 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
                     你是踏入修仙世界的第{int(user_num)}人
                     你的修为排在第{int(user_rank)}位
                     你的灵石排在第{int(user_stone)}位"""
-            await xiuxian_message.finish(message=msg, reply_message=True)
+            await xiuxian_send_message(xiuxian_message, message=msg)
+
         except TypeError:
             msg = f"""{user_name}道友的信息
                     灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
@@ -134,4 +128,56 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
                     你是踏入修仙世界的第{int(user_num)}人
                     你的修为排在第{int(user_rank)}位
                     你的灵石排在第{int(user_stone)}位"""
-            await xiuxian_message.finish(message=msg, reply_message=True)
+            await xiuxian_send_message(xiuxian_message, message=msg)
+
+
+@mind_state.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def mind_state_(bot: Bot, event: GroupMessageEvent):
+    """
+    我的状态信息
+    """
+    isUser, user_msg, msg = check_user(event)
+    user_id = user_msg.user_id
+
+    if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
+        sql_message.update_user_hp(user_id)
+    user_msg = sql_message.get_user_real_info(user_id)
+
+    level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
+    user_buff_data = UserBuffDate(user_id)
+    main_buff_data = user_buff_data.get_user_main_buff_data()
+    user_weapon_data = user_buff_data.get_user_weapon_data()
+    if user_weapon_data is not None:
+        crit_buff = int(user_weapon_data['crit_buff'] * 100)
+    else:
+        crit_buff = 1
+
+    user_armor_data = user_buff_data.get_user_armor_buff_data()
+    if user_armor_data is not None:
+        def_buff = int(user_armor_data['def_buff'] * 100)
+    else:
+        def_buff = 0
+
+    main_buff_rate_buff = main_buff_data['ratebuff'] if main_buff_data is not None else 0
+    main_hp_buff = main_buff_data['hpbuff'] if main_buff_data is not None else 0
+    main_mp_buff = main_buff_data['mpbuff'] if main_buff_data is not None else 0
+    impart_data = xiuxian_impart.get_user_message(user_id)
+    impart_hp_per = impart_data.impart_hp_per if impart_data is not None else 0
+    impart_mp_per = impart_data.impart_mp_per if impart_data is not None else 0
+    impart_know_per = impart_data.impart_know_per if impart_data is not None else 0
+    impart_burst_per = impart_data.impart_burst_per if impart_data is not None else 0
+    boss_atk = impart_data.boss_atk if impart_data is not None else 0
+
+    msg = f"""道号：{user_msg.user_name}
+            气血:{number_to(user_msg.hp)}/{number_to(int((user_msg.exp / 2) * (1 + main_hp_buff + impart_hp_per)))}
+            真元:{int((user_msg.mp / user_msg.exp) * 100)}%
+            攻击:{number_to(user_msg.atk)}
+            攻击修炼:{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 4}%)
+            修炼效率:{int(((level_rate * realm_rate) * (1 + main_buff_rate_buff)) * 100)}%
+            会心:{crit_buff + int(impart_know_per * 100)}%
+            减伤率:{def_buff}%
+            boss战增益:{int(boss_atk * 100)}%
+            会心伤害增益:{int((1.5 + impart_burst_per) * 100)}%
+            """
+    await xiuxian_send_message(mind_state, message=msg)
