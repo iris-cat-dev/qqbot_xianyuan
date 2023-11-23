@@ -1,7 +1,4 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
+import json
 from pathlib import Path
 
 DATABASE = Path() / "data" / "xiuxian"
