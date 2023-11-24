@@ -71,7 +71,7 @@ async def bank_put_(_: Bot, event: GroupMessageEvent):
     stone_num = re.findall("\d+", msg)  # 灵石数
 
     bankinfo = get_blank_info(user_id)
-    num = int(stone_num)
+    num = int(stone_num[0])
     if num <= 0:
         msg = f'请输入正确的金额！'
         await xiuxian_send_message(bank_put, msg)
@@ -113,7 +113,7 @@ async def bank_get_(_: Bot, event: GroupMessageEvent):
     stone_num = re.findall("\d+", msg)  # 灵石数
 
     bankinfo = get_blank_info(user_id)
-    num = int(stone_num)
+    num = int(stone_num[0])
     if num <= 0:
         msg = f'请输入正确的金额！'
         await xiuxian_send_message(bank_put, msg)

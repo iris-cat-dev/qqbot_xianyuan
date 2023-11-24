@@ -1,15 +1,12 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
-import asyncio    
+import json
+import asyncio
 from nonebot.log import logger
-from io import BytesIO    
+from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from aiohttp import ClientSession
 from pathlib import Path
-from .download import get_avatar_by_user_id_and_save
-from .send_image_tool import convert_img
+from ..common.download import get_avatar_by_user_id_and_save
+from ..common.send_image_tool import convert_img
 
 TEXT_PATH = Path() / "data" / "xiuxian" / "info_img"
 
@@ -121,7 +118,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     for key, value in DETAIL_sectinfo.items():
         tasks3.append(_draw_sect_info_line(img, key, value, DETAIL_sectinfo))
     await asyncio.gather(*tasks3)
-    
+
     paihang = Image.open(
         TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
     paihangword = '【排行信息】'
@@ -175,7 +172,6 @@ async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
 
 
 async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
-
     line = Image.open(TEXT_PATH / 'line4.png').resize((900, 100))
     line_draw = ImageDraw.Draw(line)
     word = f"{key}：{value}"
@@ -183,6 +179,7 @@ async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
 
     line_draw.text((100, h), word, first_color, font_36, 'lm')
     img.paste(line, (100, 1878 + list(DETAIL_MAP.keys()).index(key) * 103), line)
+
 
 async def img_author(img, bg):
     w, h = img.size
@@ -200,10 +197,12 @@ async def linewh(line, word):
     w, h = gs_font_36.getsize(word)
     return (lw - w) / 2, lh / 2
 
+
 async def async_request(url, *args, is_text=False, **kwargs):
     async with ClientSession() as c:
         async with c.get(url, *args, **kwargs) as r:
             return (await r.text()) if is_text else (await r.read())
+
 
 async def get_anime_pic():
     r: str = await async_request(

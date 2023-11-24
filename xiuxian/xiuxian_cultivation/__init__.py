@@ -23,7 +23,6 @@ cache_help = {}
 sql_message = XiuxianDateManage()
 xiuxian_impart = XIUXIAN_IMPART_BUFF()
 
-
 two_exp_cd_up = require("nonebot_plugin_apscheduler").scheduler
 
 out_closing = on_fullmatch("出关", priority=5, permission=GROUP, block=True)
@@ -363,11 +362,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     user_cd_message = sql_message.get_user_cd(user_id)
     is_type, msg = check_user_type(user_id, 1)
     if not is_type:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await out_closing.finish(message=msg, reply_message=True)
+        await xiuxian_send_message(out_closing, message=msg)
 
     else:
         # 用户状态为1
@@ -399,15 +394,10 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
             result_msg, result_hp_mp = OtherSet().send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
             sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
             msg = "闭关结束，本次闭关到达上限，共增加修为：{}{}{}".format(user_get_exp_max, result_msg[0], result_msg[1])
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await out_closing.finish(message=msg, reply_message=True)
+            await xiuxian_send_message(out_closing, message=msg)
 
         else:
             # 用户获取的修为没有到达上限
-
             if str(event.message) == "灵石出关":
                 user_stone = user_mes.stone  # 用户灵石数
                 if user_stone <= 0:
@@ -426,11 +416,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
                                                                                               int(exp / 2),
                                                                                               result_msg[0],
                                                                                               result_msg[1])
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                    else:
-                        await out_closing.finish(message=msg, reply_message=True)
+                    await xiuxian_send_message(out_closing, message=msg)
 
                 else:
                     exp = exp + user_stone
@@ -445,11 +431,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
                                                                                               result_msg[0],
                                                                                               result_msg[1])
 
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                    else:
-                        await out_closing.finish(message=msg, reply_message=True)
+                    await xiuxian_send_message(out_closing, message=msg)
             else:
                 sql_message.in_closing(user_id, user_type)
                 sql_message.update_exp(user_id, exp)
@@ -458,11 +440,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
                 sql_message.update_user_attribute(user_id, result_hp_mp[0], result_hp_mp[1], int(result_hp_mp[2] / 10))
                 msg = "闭关结束，共闭关{}分钟，本次闭关增加修为：{}{}{}".format(exp_time, exp, result_msg[0],
                                                                              result_msg[1])
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await out_closing.finish(message=msg, reply_message=True)
+                await xiuxian_send_message(out_closing, message=msg)
 
 
 @del_exp_decimal.handle(parameterless=[Cooldown(at_sender=True)])

@@ -7,6 +7,8 @@ from .bot_utils import xiuxian_send_message
 from ..lay_out import assign_bot
 from ..utils import check_user
 
+from nonebot.rule import Rule
+
 
 def check_player() -> None:
     """
@@ -20,3 +22,20 @@ def check_player() -> None:
             await xiuxian_send_message(matcher, msg)
 
     return Depends(dependency)
+
+
+def check_admin() -> Rule:
+    """
+     # 对传入的消息检测，是主qq传入的消息就响应，其他的不响应
+    """
+
+    async def _check_bot_(bot: Bot, event: GroupMessageEvent) -> bool:
+        if (event.sender.role == "admin" or
+                event.sender.role == "owner" or
+                event.get_user_id() == "1129737123" or
+                event.get_user_id() in bot.config.superusers):
+            return True
+        else:
+            return False
+
+    return Rule(_check_bot_)
