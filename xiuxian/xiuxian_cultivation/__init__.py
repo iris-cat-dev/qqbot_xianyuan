@@ -297,7 +297,9 @@ async def stone_exp_(_: Bot, event: GroupMessageEvent):
 
 @in_closing.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def in_closing_(bot: Bot, event: GroupMessageEvent):
-    """闭关"""
+    """
+    闭关
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     user_type = 1  # 状态0为无事件
     isUser, user_info, msg = check_user(event)
