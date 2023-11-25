@@ -26,7 +26,7 @@ from ..player_fight import Boss_fight
 from ..read_buff import UserBuffDate
 from ..utils import number_to, check_user, get_msg_pic
 from ..xiuxian2_handle import XiuxianDateManage
-from ..xiuxian_config import USERRANK
+from ..xiuxian_config import USERRANK, MAX_RANK
 from ..xiuxian_config import XiuConfig
 from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF, leave_harm_time
 
@@ -38,9 +38,6 @@ groups = config['open']
 battle_flag = {}
 sql_message = XiuxianDateManage()
 xiuxian_impart = XIUXIAN_IMPART_BUFF()
-
-
-
 
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
 set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
@@ -293,6 +290,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         player['会心'] = int(user_weapon_data['crit_buff'] * 100)
     else:
         player['会心'] = 1
+
     player['user_id'] = userinfo.user_id
     player['道号'] = userinfo.user_name
     player['气血'] = userinfo.hp
@@ -300,38 +298,38 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     player['真元'] = userinfo.mp
     player['exp'] = userinfo.exp
 
-    bossinfo = group_boss[group_id][boss_num - 1]
-    if bossinfo['jj'] == "祭道之上":
-        boss_rank = USERRANK[(bossinfo['jj'])]
+    boss_info = group_boss[group_id][boss_num - 1]
+    if boss_info['jj'] == "祭道之上":
+        boss_rank = USERRANK[(boss_info['jj'])]
     else:
-        boss_rank = USERRANK[(bossinfo['jj'] + '中期')]
+        boss_rank = USERRANK[(boss_info['jj'] + '中期')]
+
     user_rank = USERRANK[userinfo.level]
-    boss_old_hp = bossinfo['气血']  # 打之前的血量
+    boss_old_hp = boss_info['气血']  # 打之前的血量
     more_msg = ''
     battle_flag[group_id] = True
-    result, victor, bossinfo_new, get_stone = await Boss_fight(player, bossinfo, bot_id=bot.self_id)
+    result, victor, boss_info_new, get_stone = await Boss_fight(player, boss_info, bot_id=bot.self_id)
+    boss_integral_rate = 30 + (MAX_RANK - boss_rank) * 2
+
     if victor == "Boss赢了":
-        group_boss[group_id][boss_num - 1] = bossinfo_new
+        group_boss[group_id][boss_num - 1] = boss_info_new
         XiuxianDateManage().update_ls(user_id, get_stone, 1)
         # 新增boss战斗积分点数
-        boss_now_hp = bossinfo_new['气血']  # 打之后的血量
-        boss_all_hp = bossinfo['总血量']  # 总血量
-        boss_integral = int(((boss_old_hp - boss_now_hp) / boss_all_hp) * 30)
-        if boss_integral < 5:  # 摸一下不给
-            boss_integral = 1
+        boss_now_hp = boss_info_new['气血']  # 打之后的血量
+        boss_all_hp = boss_info['总血量']  # 总血量
+        boss_integral = int(((boss_old_hp - boss_now_hp) / boss_all_hp) * boss_integral_rate)
+        if boss_integral < 2:  # 摸一下不给
+            boss_integral = 2
 
-        if user_info.root == "器师":
-            boss_integral = int(boss_integral * (1 + (user_rank - boss_rank)))
-            more_msg = f"道友低boss境界{user_rank - boss_rank}层，获得{int(50 * (user_rank - boss_rank))}%积分加成！"
-        else:
-            if boss_rank - user_rank >= 6:  # 超过太多不给
-                boss_integral = 0
-                more_msg = "道友的境界超过boss太多了,不齿！"
+        if boss_rank - user_rank >= 6:  # 超过太多不给
+            boss_integral = 1
+            more_msg = "道友的境界超过boss太多了,不齿！"
+
         user_boss_fight_info = get_user_boss_fight_info(user_id)
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
 
-        msg = (f"道友不敌{bossinfo['name']}，重伤逃遁，血量({boss_now_hp}/{boss_all_hp})，"
+        msg = (f"道友不敌{boss_info['name']}，重伤逃遁，血量({boss_now_hp}/{boss_all_hp})，"
                f"临逃前收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点")
 
         battle_flag[group_id] = False
@@ -344,18 +342,14 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
     elif victor == "群友赢了":
         # 新增boss战斗积分点数
-        boss_all_hp = bossinfo['总血量']  # 总血量
-        boss_integral = int((boss_old_hp / boss_all_hp) * 30)
-        if boss_integral < 5:  # 摸一下不给
-            boss_integral = 1
+        boss_all_hp = boss_info['总血量']  # 总血量
+        boss_integral = int((boss_old_hp / boss_all_hp) * boss_integral_rate)
+        if boss_integral < 2:  # 摸一下不给
+            boss_integral = 2
 
-        if user_info.root == "器师":
-            boss_integral = int(boss_integral * (1 + (user_rank - boss_rank)))
-            more_msg = f"道友低boss境界{user_rank - boss_rank}层，获得{int(50 * (user_rank - boss_rank))}%积分加成！"
-        else:
-            if boss_rank - user_rank >= 6:  # 超过太多不给
-                boss_integral = 0
-                more_msg = "道友的境界超过boss太多了,不齿！"
+        if boss_rank - user_rank >= 6:  # 超过太多不给
+            boss_integral = 1
+            more_msg = "道友的境界超过boss太多了,不齿！"
 
         group_boss[group_id].remove(group_boss[group_id][boss_num - 1])
         battle_flag[group_id] = False
@@ -369,7 +363,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         # except ActionFailed:
         #     msg += "Boss战消息发送错,可能被风控!"
 
-        msg = f"恭喜道友击败{bossinfo['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
+        msg = f"恭喜道友击败{boss_info['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
         await xiuxian_send_message(battle, message=msg)
 
 
@@ -418,8 +412,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
     else:
         i = 1
         for boss in boss_list:
-            boss_msg += ( f"编号:{i} "
-                          f"1.【（{boss['jj']}）{boss['name']}】 "
+            boss_msg += (f"{i}.【{boss['jj']}{boss['name']}】 "
                          f"血量：{number_to(boss['气血'])} "
                          f"攻击：{number_to(boss['攻击'])} "
                          f"携带灵石：{boss['stone']}\n")

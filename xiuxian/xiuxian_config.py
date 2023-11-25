@@ -6,6 +6,8 @@ from pathlib import Path
 
 DATABASE = Path() / "data" / "xiuxian"
 
+MAX_RANK = 56
+
 USERRANK = {
     '江湖好手': 56,
     '搬血境初期': 55,  # '练气境初期': 54,

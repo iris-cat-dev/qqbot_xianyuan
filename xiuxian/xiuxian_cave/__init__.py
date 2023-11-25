@@ -20,19 +20,19 @@ sql_message = XiuxianDateManage()
 BLESSEDSPOT_COST = 500000
 LING_TIAN_CONFIG = {
     "1": {
-        "level_up_cost": 3500000
+        "level_up_cost": 1000000
     },
     "2": {
-        "level_up_cost": 5000000
+        "level_up_cost": 2000000
     },
     "3": {
-        "level_up_cost": 7000000
+        "level_up_cost": 4000000
     },
     "4": {
-        "level_up_cost": 10000000
+        "level_up_cost": 80000000
     },
     "5": {
-        "level_up_cost": 15000000
+        "level_up_cost": 160000000
     }
 }
 

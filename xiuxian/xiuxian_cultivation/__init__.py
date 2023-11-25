@@ -2,10 +2,9 @@ import random
 import re
 from datetime import datetime
 
-from nonebot import on_fullmatch, require, on_startswith
-from nonebot.adapters.onebot.v11 import Bot, GROUP, Message, GroupMessageEvent, MessageSegment
+from nonebot import on_fullmatch, require, on_startswith, on_endswith
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
 from nonebot.log import logger
-from nonebot.params import CommandArg
 
 from .two_exp_cd import two_exp_cd
 from ..common.bot_utils import xiuxian_send_message
@@ -25,24 +24,24 @@ xiuxian_impart = XIUXIAN_IMPART_BUFF()
 
 two_exp_cd_up = require("nonebot_plugin_apscheduler").scheduler
 
-out_closing = on_fullmatch("出关", priority=5, permission=GROUP, block=True)
+cul_help = on_fullmatch("修炼帮助", priority=5, permission=GROUP, block=True)
+out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
 in_closing = on_fullmatch("闭关", priority=5, permission=GROUP, block=True)
 stone_exp = on_startswith("灵石修炼", priority=5, permission=GROUP, block=True)
-two_exp = on_fullmatch("双修", priority=5, permission=GROUP, block=True)
-del_exp_decimal = on_fullmatch("抑制黑暗动乱", priority=9, permission=GROUP, block=True)
+two_exp = on_startswith("双修", priority=5, permission=GROUP, block=True)
 my_exp_num = on_fullmatch("我的双修次数", priority=9, permission=GROUP, block=True)
+del_exp_decimal = on_fullmatch("抑制黑暗动乱", priority=9, permission=GROUP, block=True)
 
-__buff_help__ = f"""
-功法帮助信息:
+__cul_help__ = f"""
+修炼帮助信息:
 指令：
-1、我的功法:查看自身功法信息
-2、切磋:at对应人员,不会消耗气血
-3、洞天福地购买:购买洞天福地
-4、洞天福地查看:查看自己的洞天福地
-5、洞天福地改名+名字：修改自己洞天福地的名字
-6、灵田开垦:提升灵田的等级,提高灵田结算的药材数量
+1、闭关:开始闭关修炼提升修为
+2、出关:结束闭关
+3、灵石出关:使用灵石进行闭关，自动计算消耗灵石
+4、灵石修炼:通过灵石增加修为
+5、双修: 与道侣一起修炼
+6、我的双修次数:每日的双修剩余次数
 7、抑制黑暗动乱:清除修为浮点数
-8、我的双修次数:查看剩余双修次数
 """.strip()
 
 
@@ -55,56 +54,37 @@ async def two_exp_cd_up_():
 
 two_exp_limit = 3
 
+@cul_help.handle(parameterless=[Cooldown(at_sender=True)])
+async def work_help_(_: Bot, __: GroupMessageEvent):
+    await xiuxian_send_message(cul_help, message=__cul_help__)
 
-@two_exp.handle(parameterless=[Cooldown(at_sender=True)])
-async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+
+@two_exp.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def two_exp_(bot: Bot, event: GroupMessageEvent):
     """
     双修
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
     global two_exp_limit
-    isUser, user_1, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await two_exp.finish()
+    _, user_1, msg = check_user(event)
 
     two_qq = None  # 艾特的时候存到这里
-    for arg in args:
-        if arg.type == "at":
-            two_qq = arg.data.get("qq", "")
+
     if two_qq is None:
         msg = "请at你的道侣,与其一起双修！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await two_exp.finish()
+        await xiuxian_send_message(two_exp, message=msg)
 
     user_2 = sql_message.get_user_message(two_qq)
     if int(user_1.user_id) == int(two_qq):
         msg = "道友无法与自己双修！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await two_exp.finish()
+        await xiuxian_send_message(two_exp, message=msg)
+
     if user_2:
         exp_1 = user_1.exp
         exp_2 = user_2.exp
         if exp_2 > exp_1:
             msg = "修仙大能看了看你，不屑一顾，扬长而去！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await two_exp.finish()
+            await xiuxian_send_message(two_exp, message=msg)
+
         else:
             limt_1 = two_exp_cd.find_user(user_1.user_id)
             limt_2 = two_exp_cd.find_user(user_2.user_id)
@@ -115,20 +95,12 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
             impart_two_exp_2 = impart_data_2.impart_two_exp if impart_data_2 is not None else 0
             if limt_1 >= two_exp_limit + impart_two_exp_1:
                 msg = "道友今天双修次数已经到达上限！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await two_exp.finish()
+                await xiuxian_send_message(two_exp, message=msg)
+
             if limt_2 >= two_exp_limit + impart_two_exp_2:
                 msg = "对方今天双修次数已经到达上限！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await two_exp.finish()
+                await xiuxian_send_message(two_exp, message=msg)
+
             max_exp_1 = (
                     int(OtherSet().set_closing_type(user_1.level)) * XiuConfig().closing_exp_upper_limit
             )  # 获取下个境界需要的修为 * 1.5为闭关上限
@@ -142,6 +114,7 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
                 user_get_exp_max_1 = 0
             if user_get_exp_max_2 < 0:
                 user_get_exp_max_2 = 0
+
             msg = ""
             msg += f"{user_1.user_name}与{user_2.user_name}情投意合，于某地一起修炼了一晚。"
             if random.randint(1, 100) in [13, 14, 52, 10, 66]:
@@ -187,12 +160,8 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
                 two_exp_cd.add_user(user_1.user_id)
                 two_exp_cd.add_user(user_2.user_id)
                 msg += f"离开时双方互相留法宝为对方护道,双方各增加突破概率2%。"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await two_exp.finish()
+                await xiuxian_send_message(two_exp, message=msg)
+
             else:
                 exp = int((exp_1 + exp_2) * 0.0055)
 
@@ -231,20 +200,11 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent, args: Message = CommandAr
                 sql_message.update_power2(user_2.user_id)
                 two_exp_cd.add_user(user_1.user_id)
                 two_exp_cd.add_user(user_2.user_id)
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await two_exp.finish()
+                await xiuxian_send_message(two_exp, message=msg)
+
     else:
         msg = "修仙者应一心向道，务要留恋凡人！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await two_exp.finish()
+        await xiuxian_send_message(two_exp, message=msg)
 
 
 @stone_exp.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -327,31 +287,22 @@ async def in_closing_(bot: Bot, event: GroupMessageEvent):
             await in_closing.finish(message=msg, reply_message=True)
 
 
-@out_closing.handle(parameterless=[Cooldown(at_sender=True)])
+@out_closing.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def out_closing_(bot: Bot, event: GroupMessageEvent):
     """
     出关
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    user_type = 0  # 状态0为无事件
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await out_closing.finish(message=msg, reply_message=True)
 
+    _, user_info, msg = check_user(event)
+
+    user_type = 0  # 状态0为无事件
     user_id = user_info.user_id
-    user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
-    level = user_mes.level
-    use_exp = user_mes.exp
+    level = user_info.level
+    use_exp = user_info.exp
     hp_speed = 25
     mp_speed = 50
 
-    max_exp = (
-            int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit
-    )  # 获取下个境界需要的修为 * 1.5为闭关上限
+    max_exp = int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit  # 获取下个境界需要的修为 * 1.5为闭关上限
     user_get_exp_max = int(max_exp) - use_exp
 
     if user_get_exp_max < 0:
@@ -372,7 +323,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
         exp_time = (
                 OtherSet().date_diff(now_time, in_closing_time) // 60
         )  # 闭关时长计算(分钟) = second // 60
-        level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
+        level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
         realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
         user_buff_data = UserBuffDate(user_id)
         mainbuffdata = user_buff_data.get_user_main_buff_data()
@@ -399,7 +350,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
         else:
             # 用户获取的修为没有到达上限
             if str(event.message) == "灵石出关":
-                user_stone = user_mes.stone  # 用户灵石数
+                user_stone = user_info.stone  # 用户灵石数
                 if user_stone <= 0:
                     user_stone = 0
                 if exp <= user_stone:
@@ -469,32 +420,20 @@ async def del_exp_decimal_(bot: Bot, event: GroupMessageEvent):
     await del_exp_decimal.finish()
 
 
-@my_exp_num.handle(parameterless=[Cooldown(at_sender=True)])
+@my_exp_num.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def my_exp_num_(bot: Bot, event: GroupMessageEvent):
     """
     我的双修次数
     """
     global two_exp_limit
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await my_exp_num.finish()
+    _, user_info, msg = check_user(event)
+
     user_id = user_info.user_id
-    limt = two_exp_cd.find_user(user_id)
+    limit = two_exp_cd.find_user(user_id)
     impart_data = xiuxian_impart.get_user_message(user_id)
     impart_two_exp = impart_data.impart_two_exp if impart_data is not None else 0
-    num = (two_exp_limit + impart_two_exp) - limt
+    num = (two_exp_limit + impart_two_exp) - limit
     if num <= 0:
         num = 0
     msg = f"道友剩余双修次数{num}次！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-    else:
-        await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-    await my_exp_num.finish()
+    await xiuxian_send_message(out_closing, message=msg)

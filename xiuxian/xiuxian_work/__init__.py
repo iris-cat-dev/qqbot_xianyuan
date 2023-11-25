@@ -47,8 +47,8 @@ async def resetrefreshnum_():
     logger.info("用户悬赏令刷新次数重置成功")
 
 
+work_lookup = on_fullmatch("悬赏令", priority=15, block=True)
 work_help = on_fullmatch("悬赏令帮助", priority=15, block=True)
-work_lookup = on_fullmatch("悬赏令查询", priority=15, block=True)
 work_flash = on_fullmatch("悬赏令刷新", priority=15, block=True)
 work_accept = on_startswith("悬赏令接取", priority=15, block=True)
 work_complete = on_fullmatch("悬赏令结算", priority=15, block=True)
@@ -58,7 +58,7 @@ last_work = on_command("最后的悬赏令", priority=15, block=True)
 __work_help__ = f"""
 悬赏令帮助信息:
 指令：
-1、悬赏令查询:获取对应实力的悬赏令
+1、悬赏令:获取对应实力的悬赏令
 2、悬赏令刷新:刷新当前悬赏令,每日免费{count}次
 3、悬赏令终止:终止当前悬赏令任务
 4、悬赏令结算:结算悬赏奖励
@@ -148,29 +148,16 @@ async def last_work_(_: Bot, event: GroupMessageEvent):
 async def work_flash_(_: Bot, event: GroupMessageEvent):
     user_id = event.get_user_id()
     _, user_info, msg = check_user(event)
-    user_cd_message = sql_message.get_user_cd(user_id)
 
     stone_use = 0  # 悬赏令刷新提示是否扣灵石
-    if user_cd_message.type == 2:
-        work_time = datetime.strptime(
-            user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
-        )
-        exp_time = (datetime.now() - work_time).seconds // 60
-        time2 = workhandle().do_work(key=1, name=user_cd_message.scheduled_time, user_id=user_info.user_id)
-        if exp_time < time2:
-            msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
-        else:
-            msg = f"进行中的悬赏令【{user_cd_message.scheduled_time}】，已结束，请输入【悬赏令结算】结算任务信息！"
-        await xiuxian_send_message(work_flash, message=msg)
-
     try:
         usernums = refreshnum[user_id]
     except KeyError:
         usernums = 0
 
-    freenum = count - usernums - 1
-    if freenum < 0:
-        freenum = 0
+    free_num = count - usernums - 1
+    if free_num < 0:
+        free_num = 0
         if int(user_info.stone) < lscost:
             msg = f"道友的灵石不足以刷新，下次刷新消耗灵石：{lscost}枚"
             await xiuxian_send_message(work_flash, message=msg)
@@ -188,7 +175,7 @@ async def work_flash_(_: Bot, event: GroupMessageEvent):
         work_msg_f += f"{n}、{get_work_msg(i)}"
         n += 1
 
-    work_msg_f += f"(悬赏令每日免费刷新次数：{count}，超过{count}次后，下次刷新消耗灵石{lscost},今日可免费刷新次数：{freenum}次)"
+    work_msg_f += f"(悬赏令每日免费刷新次数：{count}，超过{count}次后，下次刷新消耗灵石{lscost},今日可免费刷新次数：{free_num}次)"
     if int(stone_use) == 1:
         work_msg_f += f"\n道友消耗灵石{lscost}枚，成功刷新悬赏令"
 
@@ -254,7 +241,7 @@ async def work_complete_(_: Bot, event: GroupMessageEvent):
 
     is_flash, msg = check_flash(user_id)
     if is_flash:
-        await xiuxian_send_message(work_lookup, message=msg)
+        await xiuxian_send_message(work_complete, message=msg)
 
 
     user_level = user_info.level
@@ -319,7 +306,7 @@ async def work_stop_(_: Bot, event: GroupMessageEvent):
 
     is_flash, msg = check_flash(user_id)
     if is_flash:
-        await xiuxian_send_message(work_lookup, message=msg)
+        await xiuxian_send_message(work_stop, message=msg)
 
     is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
     if is_type:
@@ -347,7 +334,7 @@ async def work_lookup_(_: Bot, event: GroupMessageEvent):
         try:
             msg = work[user_id].msg
         except KeyError:
-            msg = "没有查到你的悬赏令信息呢，请刷新！"
+            msg = "你的悬赏令已过期，请刷新！"
 
     elif user_cd_message.type == 2:
         work_time = datetime.strptime(

@@ -8,6 +8,9 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment
 )
+
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import check_player
 from ..lay_out import assign_bot, Cooldown
 from ..xiuxian2_handle import XiuxianDateManage
 from ..utils import (
@@ -32,7 +35,7 @@ mix_elixir = on_fullmatch("炼丹", priority=17, permission=GROUP, block=True)
 mix_make = on_command("配方", priority=5, permission=GROUP, block=True)
 elixir_help = on_fullmatch("炼丹帮助", priority=7, permission=GROUP, block=True)
 mix_elixir_help = on_fullmatch("炼丹配方帮助", priority=7, permission=GROUP, block=True)
-yaocai_get = on_command("灵田收取", aliases={"灵田结算"}, priority=8, permission=GROUP, block=True)
+yaocai_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)
 my_mix_elixir_info = on_fullmatch("我的炼丹信息", priority=6, permission=GROUP, block=True)
 mix_elixir_sqdj_up = on_fullmatch("升级收取等级", priority=6, permission=GROUP, block=True)
 mix_elixir_dykh_up = on_fullmatch("升级丹药控火", priority=6, permission=GROUP, block=True)
@@ -158,28 +161,17 @@ async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
     await mix_elixir_dykh_up.finish()
 
 
-@yaocai_get.handle(parameterless=[Cooldown(at_sender=True)])
+@yaocai_get.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def yaocai_get_(bot: Bot, event: GroupMessageEvent):
     """灵田收取"""
     bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await yaocai_get.finish()
+    _, user_info, _ = check_user(event)
 
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await yaocai_get.finish()
+        await xiuxian_send_message(yaocai_get, message=msg)
+
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     GETCONFIG = {
         "time_cost": 48,  # 单位小时
@@ -216,22 +208,14 @@ async def yaocai_get_(bot: Bot, event: GroupMessageEvent):
                     goods_info = items.get_data_by_item_id(k)
                     msg += f"道友成功收获药材：{goods_info['name']} {v} 个！\n"
                     sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
+
             mix_elixir_info['收取时间'] = nowtime
             save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await yaocai_get.finish()
+            await xiuxian_send_message(yaocai_get, message=msg)
+
         else:
             msg = f"道友的灵田还不能收取，下次收取时间为：{round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) - timedeff}小时之后"
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await yaocai_get.finish()
+            await xiuxian_send_message(yaocai_get, message=msg)
 
 
 @my_mix_elixir_info.handle(parameterless=[Cooldown(at_sender=True)])
