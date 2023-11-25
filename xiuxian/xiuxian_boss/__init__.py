@@ -12,7 +12,6 @@ from nonebot.adapters.onebot.v11 import (
     MessageSegment
 )
 from nonebot.log import logger
-from nonebot.rule import Rule
 from nonebot_plugin_apscheduler import scheduler
 
 from .bossconfig import get_config, savef
@@ -20,13 +19,12 @@ from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
 from .. import DRIVER
 from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player
+from ..common.param_checker import check_player, check_admin
 from ..item_json import Items
 from ..lay_out import put_bot, layout_bot_dict, Cooldown
 from ..player_fight import Boss_fight
 from ..read_buff import UserBuffDate
 from ..utils import number_to, check_user, get_msg_pic
-
 from ..xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import USERRANK
 from ..xiuxian_config import XiuConfig
@@ -42,26 +40,14 @@ sql_message = XiuxianDateManage()
 xiuxian_impart = XIUXIAN_IMPART_BUFF()
 
 
-def check_rule_bot_boss() -> Rule:  # 对传入的消息检测，是主qq传入的消息就响应，其他的不响应
-    async def _check_bot_(bot: Bot, event: GroupMessageEvent) -> bool:
-        if (event.sender.role == "admin" or
-                event.sender.role == "owner" or
-                event.get_user_id() == "1129737123" or
-                event.get_user_id() in bot.config.superusers or
-                event.get_user_id() in del_boss_id):
-            return True
-        else:
-            return False
-
-    return Rule(_check_bot_)
 
 
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
-set_group_boss = on_startswith("世界boss", priority=13, rule=check_rule_bot_boss(), block=True)
-create = on_fullmatch("生成世界boss", priority=5, rule=check_rule_bot_boss(), block=True)
+set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
+create = on_fullmatch("生成世界boss", priority=5, rule=check_admin(), block=True)
 boss_info = on_fullmatch("查询世界boss", priority=6, permission=GROUP, block=True)
 battle = on_startswith("讨伐世界boss", priority=6, permission=GROUP, block=True)
-boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_rule_bot_boss(), block=True)
+boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_admin(), block=True)
 boss_integral_info = on_fullmatch("世界积分查看", priority=10, permission=GROUP, block=True)
 boss_integral_use = on_startswith("世界积分兑换", priority=6, permission=GROUP, block=True)
 
