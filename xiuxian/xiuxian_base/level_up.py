@@ -63,9 +63,13 @@ async def level_up_(bot: Bot, event: GroupMessageEvent):
                 break
 
     if pause_flag:
-        msg = f"由于检测到背包有丹药：{elixir_name}，效果：{elixir_desc}，突破已经准备就绪，请发送 ，【渡厄突破】 或 【直接突破】来选择是否使用丹药突破！本次突破概率为：{level_rate + user_leveluprate}% "
+        msg = (f"由于检测到背包有丹药：{elixir_name}，效果：{elixir_desc}，突破已经准备就绪"
+               f"请发送 ，【渡厄突破】 或 【直接突破】来选择是否使用丹药突破！"
+               f"本次突破概率为：{level_rate + user_leveluprate}% ")
     else:
-        msg = f"由于检测到背包没有【渡厄丹】，突破已经准备就绪，请发送，【直接突破】来突破！请注意，本次突破失败将会损失部分修为，本次突破概率为：{level_rate + user_leveluprate}% "
+        msg = (f"由于检测到背包没有【渡厄丹】，突破已经准备就绪，"
+               f"请发送，【直接突破】来突破！请注意，本次突破失败将会损失部分修为，"
+               f"本次突破概率为：{level_rate + user_leveluprate}% ")
 
     await xiuxian_send_message(level_up, msg)
 

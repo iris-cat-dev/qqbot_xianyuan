@@ -13,8 +13,10 @@ from ..xiuxian_config import XiuConfig
 
 xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GROUP, block=True)
 mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=True)
+xiuxian_stone = on_fullmatch("我的灵石", priority=4, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
+
 
 
 @xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True), check_player()])
@@ -104,30 +106,30 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     else:
         try:
             msg = f"""{user_name}道友的信息
-                    灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
-                    当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
-                    当前灵石：{number_to(user_info.stone)}
-                    当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
-                    当前主修功法为：{user_main_buff_date['name']}({user_main_buff_date['level']})
-                    当前副修神通为：{user_sec_buff_date['name']}({user_sec_buff_date['level']})
-                    你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
-                    你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
-                    你是踏入修仙世界的第{int(user_num)}人
-                    你的修为排在第{int(user_rank)}位
-                    你的灵石排在第{int(user_stone)}位"""
+灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
+当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
+当前灵石：{number_to(user_info.stone)}
+当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
+当前主修功法为：{user_main_buff_date['name']}({user_main_buff_date['level']})
+当前副修神通为：{user_sec_buff_date['name']}({user_sec_buff_date['level']})
+你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
+你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
+你是踏入修仙世界的第{int(user_num)}人
+你的修为排在第{int(user_rank)}位
+你的灵石排在第{int(user_stone)}位"""
             await xiuxian_send_message(xiuxian_message, message=msg)
 
         except TypeError:
             msg = f"""{user_name}道友的信息
-                    灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
-                    当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
-                    当前灵石：{number_to(user_info.stone)}
-                    当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
-                    你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
-                    你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
-                    你是踏入修仙世界的第{int(user_num)}人
-                    你的修为排在第{int(user_rank)}位
-                    你的灵石排在第{int(user_stone)}位"""
+灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
+当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
+当前灵石：{number_to(user_info.stone)}
+当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
+你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
+你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
+你是踏入修仙世界的第{int(user_num)}人
+你的修为排在第{int(user_rank)}位
+你的灵石排在第{int(user_stone)}位"""
             await xiuxian_send_message(xiuxian_message, message=msg)
 
 
@@ -136,15 +138,15 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     """
     我的状态信息
     """
-    isUser, user_msg, msg = check_user(event)
-    user_id = user_msg.user_id
+    isUser, user_info, msg = check_user(event)
+    user_id = user_info.user_id
 
-    if user_msg.hp is None or user_msg.hp == 0 or user_msg.hp == 0:
+    if user_info.hp is None or user_info.hp == 0 or user_info.hp == 0:
         sql_message.update_user_hp(user_id)
-    user_msg = sql_message.get_user_real_info(user_id)
+    user_info = sql_message.get_user_real_info(user_id)
 
-    level_rate = sql_message.get_root_rate(user_msg.root_type)  # 灵根倍率
-    realm_rate = jsondata.level_data()[user_msg.level]["spend"]  # 境界倍率
+    level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[user_info.level]["spend"]  # 境界倍率
     user_buff_data = UserBuffDate(user_id)
     main_buff_data = user_buff_data.get_user_main_buff_data()
     user_weapon_data = user_buff_data.get_user_weapon_data()
@@ -169,15 +171,29 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     impart_burst_per = impart_data.impart_burst_per if impart_data is not None else 0
     boss_atk = impart_data.boss_atk if impart_data is not None else 0
 
-    msg = f"""道号：{user_msg.user_name}
-            气血:{number_to(user_msg.hp)}/{number_to(int((user_msg.exp / 2) * (1 + main_hp_buff + impart_hp_per)))}
-            真元:{int((user_msg.mp / user_msg.exp) * 100)}%
-            攻击:{number_to(user_msg.atk)}
-            攻击修炼:{user_msg.atkpractice}级(提升攻击力{user_msg.atkpractice * 4}%)
-            修炼效率:{int(((level_rate * realm_rate) * (1 + main_buff_rate_buff)) * 100)}%
-            会心:{crit_buff + int(impart_know_per * 100)}%
-            减伤率:{def_buff}%
-            boss战增益:{int(boss_atk * 100)}%
-            会心伤害增益:{int((1.5 + impart_burst_per) * 100)}%
-            """
+    level_up_rate = jsondata.level_rate_data()[user_info.level]  # 对应境界突破的概率
+    user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
+
+    msg = f"""道号: {user_info.user_name}
+气血: {number_to(user_info.hp)}/{number_to(int((user_info.exp / 2) * (1 + main_hp_buff + impart_hp_per)))}
+真元: {int((user_info.mp / user_info.exp) * 100)}%
+攻击: {number_to(user_info.atk)}
+攻击修炼: {user_info.atkpractice}级(提升攻击力{user_info.atkpractice * 4}%)
+修炼效率: {int(((level_rate * realm_rate) * (1 + main_buff_rate_buff)) * 100)}%
+会心: {crit_buff + int(impart_know_per * 100)}%
+减伤率: {def_buff}%
+boss战增益: {int(boss_atk * 100)}%
+会心伤害增益: {int((1.5 + impart_burst_per) * 100)}%
+突破概率：{level_up_rate + user_level_uprate}%
+"""
     await xiuxian_send_message(mind_state, message=msg)
+
+
+@xiuxian_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def xiuxian_stone_(bot: Bot, event: GroupMessageEvent):
+    """
+    我的灵石信息
+    """
+    _, user_info, _ = check_user(event)
+    msg = f"道友当前身上灵石：{user_info.stone}"
+    await xiuxian_send_message(xiuxian_stone, msg)

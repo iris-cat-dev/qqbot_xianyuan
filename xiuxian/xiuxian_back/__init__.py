@@ -2,7 +2,7 @@ import asyncio
 import re
 import random
 from datetime import datetime
-from nonebot import on_command, require, get_bots, on_fullmatch
+from nonebot import on_command, require, get_bots, on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
@@ -13,6 +13,9 @@ from nonebot.adapters.onebot.v11 import (
     GROUP_OWNER,
     ActionFailed
 )
+
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import check_player
 from ..lay_out import assign_bot, assign_bot_group, Cooldown, CooldownIsolateLevel
 from nonebot.log import logger
 from nonebot.params import CommandArg
@@ -58,21 +61,22 @@ shop_added = on_command("坊市上架", priority=10, permission=GROUP, block=Tru
 shop_added_by_admin = on_command("系统坊市上架", priority=5, permission=SUPERUSER, block=True)
 shop_off = on_command("坊市下架", priority=5, permission=GROUP, block=True)
 shop_off_all = on_fullmatch("清空坊市", priority=3, permission=SUPERUSER, block=True)
-mind_back = on_command('我的背包', aliases={'我的物品'}, priority=10, permission=GROUP, block=True)
-use = on_command("使用", priority=15, permission=GROUP, block=True)
+my_back = on_fullmatch('我的背包', priority=10, permission=GROUP, block=True)
+use = on_startswith("使用", priority=15, permission=GROUP, block=True)
 no_use_zb = on_command("换装", priority=5, permission=GROUP, block=True)
 buy = on_command("坊市购买", priority=5, block=True)
-set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER), block=True)
+set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),
+                         block=True)
 creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP and SUPERUSER, block=True)
 offer_auction = on_command("交友", priority=5, permission=GROUP, block=True)
-back_help = on_command("背包帮助", aliases={'坊市帮助'}, priority=8, permission=GROUP, block=True)
-xiuxian_sone = on_fullmatch("灵石", priority=4, permission=GROUP, block=True)
-chakan_wupin = on_command("查看修仙界物品", priority=25, permission=GROUP, block=True)
+back_help = on_fullmatch("背包帮助", priority=8, permission=GROUP, block=True)
+
+chakan_wupin = on_fullmatch("查看修仙界物品", priority=25, permission=GROUP, block=True)
 
 __back_help__ = f"""
 背包帮助信息:
 指令：
-1、我的背包、我的物品:查看自身背包前98个物品的信息
+1、我的背包:查看自身背包前98个物品的信息
 2、使用+物品名字：使用物品,丹药可批量使用
 3、换装+装备名字：卸载目标装备
 4、坊市购买+物品编号:购买坊市内的物品
@@ -204,41 +208,8 @@ async def set_auction_by_scheduler_():
 
 
 @back_help.handle(parameterless=[Cooldown(at_sender=True)])
-async def back_help_(bot: Bot, event: GroupMessageEvent, session_id: int = CommandObjectID()):
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    if session_id in cache_help:
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(cache_help[session_id]))
-        await back_help.finish()
-    else:
-        msg = __back_help__
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg, scale=False)
-            cache_help[session_id] = pic
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await back_help.finish()
-
-
-@xiuxian_sone.handle(parameterless=[Cooldown(at_sender=True)])
-async def xiuxian_sone_(bot: Bot, event: GroupMessageEvent):
-    """我的灵石信息"""
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await xiuxian_sone.finish()
-    msg = f"当前灵石：{user_info.stone}"
-    if XiuConfig().img:
-        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-    else:
-        await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-    await xiuxian_sone.finish()
+async def back_help_(_: Bot, __: GroupMessageEvent):
+    await xiuxian_send_message(back_help, message=__back_help__)
 
 
 buy_lock = asyncio.Lock()
@@ -246,7 +217,9 @@ buy_lock = asyncio.Lock()
 
 @buy.handle(parameterless=[Cooldown(1.4, isolate_level=CooldownIsolateLevel.GROUP)])
 async def buy_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """购物"""
+    """
+    购物
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     async with buy_lock:
         isUser, user_info, msg = check_user(event)
@@ -315,13 +288,13 @@ async def buy_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg())
             shop_goods_number = shop_data[group_id][str(arg)]['number']
             sql_message.send_back(user_id, shop_goods_id, shop_goods_name, shop_goods_type, goods_num=shop_goods_number)
             if shop_user_id == 0:  # 0为系统
-                msg = f"道友成功购买物品{shop_goods_name}，消耗灵石{goods_price}枚，数量{shop_goods_number}！" 
+                msg = f"道友成功购买物品{shop_goods_name}，消耗灵石{goods_price}枚，数量{shop_goods_number}！"
             else:
                 service_charge = int(goods_price * 0.1)  # 手续费10%
                 give_stone = goods_price - service_charge
                 msg = f"道友成功购买{shop_user_name}道友寄售的物品{shop_goods_name}，消耗灵石{goods_price}枚，数量{shop_goods_number}，坊市收取手续费：{service_charge}枚灵石！"
                 sql_message.update_ls(shop_user_id, give_stone, 1)
-            del shop_data[group_id][str(arg)]    
+            del shop_data[group_id][str(arg)]
             shop_data[group_id] = reset_dict_num(shop_data[group_id])
             save_shop(shop_data)
             if XiuConfig().img:
@@ -433,14 +406,14 @@ async def shop_added_by_admin_(bot: Bot, event: GroupMessageEvent, args: Message
 
     try:
         number = args[2]
-        if int(number)>=1:
+        if int(number) >= 1:
             number = int(number)
         else:
             number = 1
     except:
         number = 1
-    if price <500000:
-        price = 500000 
+    if price < 500000:
+        price = 500000
 
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
@@ -562,8 +535,8 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
             number = 1
     except:
         number = 1
-    if price <500000:
-        price = 500000    
+    if price < 500000:
+        price = 500000
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
         msg = f"装备：{goods_name}已经被道友装备在身，无法上架！"
         if XiuConfig().img:
@@ -582,7 +555,7 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
         await shop_added.finish()
     if goods_type == "聚灵旗" or goods_type == "炼丹炉":
-        if user_info.root == "器师" :
+        if user_info.root == "器师":
             pass
         else:
             msg = f"道友职业无法上架！"
@@ -591,7 +564,7 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
             else:
                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await shop_added.finish() 
+            await shop_added.finish()
 
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
@@ -602,7 +575,7 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
             num += 1
         else:
             pass
-    if num >= 5 :
+    if num >= 5:
         msg = f"每人只可上架五个物品！"
         if XiuConfig().img:
             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
@@ -623,7 +596,7 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
     shop_data[group_id][id_]['number'] = number
     shop_data[group_id][id_]['price'] = price
     shop_data[group_id][id_]['user_name'] = user_info.user_name
-    sql_message.update_back_j(user_id, goods_id, num = number)
+    sql_message.update_back_j(user_id, goods_id, num=number)
     save_shop(shop_data)
     msg = f"物品：{goods_name}成功上架坊市,金额：{price}枚灵石,数量{number}！"
     if XiuConfig().img:
@@ -711,7 +684,7 @@ async def goods_re_root_(bot: Bot, event: GroupMessageEvent, args: Message = Com
         else:
             num = 1
     except:
-            num = 1 
+        num = 1
     price = int(6000000 - get_item_msg_rank(goods_id) * 100000) * num
     if price <= 0:
         msg = f"物品：{goods_name}炼金失败，凝聚{price}枚灵石，记得通知晓楠！"
@@ -828,39 +801,33 @@ async def shop_off_(bot: Bot, event: GroupMessageEvent, args: Message = CommandA
         await shop_off.finish()
 
 
-@mind_back.handle(parameterless=[Cooldown(at_sender=True)])
+@my_back.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def mind_back_(bot: Bot, event: GroupMessageEvent):
-    """我的背包
+    """
+    我的背包
     ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
     "remake", "day_num", "all_num", "action_time", "state"]
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await mind_back.finish()
+    _, user_info, msg = check_user(event)
+
     user_id = user_info.user_id
-    msg = get_user_back_msg(user_id)
-    if len(msg) >= 98:
-        msg = msg[:98]
-    if msg:
-        msg = [f"{user_info.user_name}的背包，持有灵石：{user_info.stone}枚"] + msg
+    msg_list = get_user_back_msg(user_id)
+    if len(msg_list) >= 10:
+        msg_list = msg_list[:10]
+
+    if len(msg_list) > 0:
+        msg = f"{user_info.user_name}的背包，持有灵石：{user_info.stone}枚\n"
         try:
-            await send_forward_msg(bot, event, '背包', bot.self_id, msg)
+            # await send_forward_msg(bot, event, '背包', bot.self_id, msg)
+            for item in msg_list:
+                msg += f"{item}\n"
         except ActionFailed:
-            await mind_back.finish("查看背包失败!", reply_message=True)
+                msg = "查看背包失败"
+        await xiuxian_send_message(my_back, msg)
+
     else:
         msg = '道友的背包空空如也！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await mind_back.finish()
+        await xiuxian_send_message(my_back, msg)
 
 
 @no_use_zb.handle(parameterless=[Cooldown(at_sender=True)])
@@ -942,33 +909,23 @@ async def no_use_zb_(bot: Bot, event: GroupMessageEvent, args: Message = Command
         await no_use_zb.finish()
 
 
-@use.handle(parameterless=[Cooldown(at_sender=True)])
-async def use_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
+@use.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def use_(bot: Bot, event: GroupMessageEvent):
     """使用物品
     ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
     "remake", "day_num", "all_num", "action_time", "state"]
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+    _, user_info, msg = check_user(event)
+
     user_id = user_info.user_id
-    args = args.extract_plain_text().split()
-    arg = args[0]  # 
+    message = str(event.message)
+    arg = message[2:]  #
+
     back_msg = sql_message.get_back_msg(user_id)  # 背包sql信息,list(back)
     if back_msg is None:
         msg = "道友的背包空空如也！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+        await xiuxian_send_message(use, message=msg)
+
     in_flag = False  # 判断指令是否正确，道具是否在背包内
     goods_id = None
     goods_type = None
@@ -980,24 +937,16 @@ async def use_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg())
             goods_type = back.goods_type
             goods_num = back.goods_num
             break
+
     if not in_flag:
         msg = f"请检查该道具 {arg} 是否在背包内！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+        await xiuxian_send_message(use, message=msg)
 
     if goods_type == "装备":
         if not check_equipment_can_use(user_id, goods_id):
             msg = f"该装备已被装备，请勿重复装备！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await use.finish()
+            await xiuxian_send_message(use, message=msg)
+
         else:  # 可以装备
             sql_str, item_type = get_use_equipment_sql(user_id, goods_id)
             for sql in sql_str:
@@ -1006,71 +955,33 @@ async def use_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg())
                 sql_message.updata_user_faqi_buff(user_id, goods_id)
             if item_type == "防具":
                 sql_message.updata_user_armor_buff(user_id, goods_id)
-            msg = f"成功装备{arg}！"
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await use.finish()
-    elif goods_type == "技能":
-        user_buff_info = UserBuffDate(user_id).BuffInfo
-        skill_info = items.get_data_by_item_id(goods_id)
-        skill_type = skill_info['item_type']
-        if skill_type == "神通":
-            if int(user_buff_info.sec_buff) == int(goods_id):
-                msg = f"道友已学会该神通：{skill_info['name']}，请勿重复学习！"
-            else:  # 学习sql
-                sql_message.update_back_j(user_id, goods_id)
-                sql_message.updata_user_sec_buff(user_id, goods_id)
-                msg = f"恭喜道友学会神通：{skill_info['name']}！"
-        elif skill_type == "功法":
-            if int(user_buff_info.main_buff) == int(goods_id):
-                msg = f"道友已学会该功法：{skill_info['name']}，请勿重复学习！"
-            else:  # 学习sql
-                sql_message.update_back_j(user_id, goods_id)
-                sql_message.updata_user_main_buff(user_id, goods_id)
-                msg = f"恭喜道友学会功法：{skill_info['name']}！"
-        else:
-            msg = "发生未知错误！"
 
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+            msg = f"成功装备{arg}！"
+            await xiuxian_send_message(use, message=msg)
+
+    elif goods_type == "技能":
+        pass
+
     elif goods_type == "丹药":
-        num = None
         try:
-            if 1 <= int(args[1]) <= int(goods_num):
-                num = int(args[1])
+            num_str = re.findall("\d+", message)[0]  # boss编号
+            num = int(num_str)
+            if num > int(goods_num):
+                msg = f"丹药数量不足，一共{goods_num}枚！"
+                await xiuxian_send_message(use, message=msg)
         except:
             num = 1
+
         msg = check_use_elixir(user_id, goods_id, num)
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+        await xiuxian_send_message(use, message=msg)
 
     elif goods_type == "聚灵旗":
         msg = get_use_jlq_msg(user_id, goods_id)
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+        await xiuxian_send_message(use, message=msg)
+
     else:
         msg = '该类型物品调试中，未开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await use.finish()
+        await xiuxian_send_message(use, message=msg)
 
 
 @creat_auction.handle(parameterless=[Cooldown(at_sender=True)])
@@ -1476,8 +1387,8 @@ async def shop_off_all_(bot: Bot, event: GroupMessageEvent):
     shop_data[group_id] = reset_dict_num(shop_data[group_id])
     save_shop(shop_data)
     list_msg.append(
-                    {"type": "node", "data": {"name": f"执行清空坊市ing", "uin": bot.self_id,
-                                              "content": msg}})
+        {"type": "node", "data": {"name": f"执行清空坊市ing", "uin": bot.self_id,
+                                  "content": msg}})
     try:
         await send_forward_msg_list(bot, event, list_msg)
     except ActionFailed:

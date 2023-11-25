@@ -48,7 +48,7 @@ create = on_fullmatch("生成世界boss", priority=5, rule=check_admin(), block=
 boss_info = on_fullmatch("查询世界boss", priority=6, permission=GROUP, block=True)
 battle = on_startswith("讨伐世界boss", priority=6, permission=GROUP, block=True)
 boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_admin(), block=True)
-boss_integral_info = on_fullmatch("世界积分查看", priority=10, permission=GROUP, block=True)
+boss_integral_info = on_fullmatch("世界积分查询", priority=10, permission=GROUP, block=True)
 boss_integral_use = on_startswith("世界积分兑换", priority=6, permission=GROUP, block=True)
 
 boss_time = config["Boss生成时间参数"]
@@ -62,7 +62,7 @@ __boss_help__ = f"""
 4、讨伐世界boss+编号:与世界Boss对战
 5、世界boss帮助:获取世界Boss帮助信息
 6、天罚世界boss:删除世界Boss,必须加Boss编号,管理员权限
-7、世界积分查看:查看自己的世界积分,和世界积分兑换商品
+7、世界积分查询:查看自己的世界积分,和世界积分兑换商品
 8、世界积分兑换+编号：兑换对应的商品
 """.strip()
 
@@ -419,8 +419,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
         i = 1
         for boss in boss_list:
             boss_msg += ( f"编号:{i} "
-                          f"【{boss['name']}】 "
-                         f"境界：{boss['jj']} "
+                          f"1.【（{boss['jj']}）{boss['name']}】 "
                          f"血量：{number_to(boss['气血'])} "
                          f"攻击：{number_to(boss['攻击'])} "
                          f"携带灵石：{boss['stone']}\n")
