@@ -36,21 +36,20 @@ groups = config['open']  # list
 set_rift = require("nonebot_plugin_apscheduler").scheduler
 
 set_group_rift = on_startswith("群秘境", priority=4, rule=check_admin(), block=True)
-explore_rift = on_fullmatch("探索秘境", priority=5, permission=GROUP, block=True)
+explore_rift = on_fullmatch("秘境探索", priority=5, permission=GROUP, block=True)
 rift_help = on_fullmatch("秘境帮助", priority=6, permission=GROUP, block=True)
-create_rift = on_fullmatch("生成秘境", priority=5, rule=check_admin(), block=True)
+create_rift = on_fullmatch("秘境生成", priority=5, rule=check_admin(), block=True)
 complete_rift = on_fullmatch("秘境结算", priority=7, permission=GROUP, block=True)
 break_rift = on_fullmatch("秘境探索终止", priority=7, permission=GROUP, block=True)
 
 __rift_help__ = f"""
 秘境帮助信息:
 指令：
-1、群秘境+开启/关闭:开启本群的秘境生成，管理员权限
-2、生成秘境:生成一个随机秘境，超管权限
-3、探索秘境:探索秘境获取随机奖励
-4、秘境结算、结算秘境:结算秘境奖励
-5、秘境探索终止、终止探索秘境:终止秘境事件
-6、秘境帮助:获取秘境帮助信息
+1、秘境+开启/关闭:开启本群的秘境生成，管理员权限
+2、秘境生成:生成一个随机秘境，管理员权限
+3、秘境探索:探索秘境获取随机奖励
+4、秘境结算:结算秘境奖励
+5、秘境探索终止:终止秘境事件
 非指令：
 1、每日18点30分生成一个随机等级的秘境
 """.strip()

@@ -418,10 +418,11 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
     else:
         i = 1
         for boss in boss_list:
-            boss_msg += (f"名称:{boss['name']}\t"
-                         f"境界：{boss['jj']}\t"
-                         f"血量：{number_to(boss['气血'])}\t"
-                         f"攻击：{number_to(boss['攻击'])}\t"
+            boss_msg += ( f"编号:{i} "
+                          f"【{boss['name']}】 "
+                         f"境界：{boss['jj']} "
+                         f"血量：{number_to(boss['气血'])} "
+                         f"攻击：{number_to(boss['攻击'])} "
                          f"携带灵石：{boss['stone']}\n")
             i += 1
         msg = boss_msg

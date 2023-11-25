@@ -28,7 +28,7 @@ refreshnum: Dict[str, int] = {}  # 用户悬赏令刷新次数记录
 sql_message = XiuxianDateManage()  # sql类
 items = Items()
 lscost = 500000  # 刷新灵石消耗
-count = 3  # 免费次数
+count = 3  # TODO:免费次数 保存
 
 
 class do_is_work:
@@ -48,7 +48,7 @@ async def resetrefreshnum_():
 
 
 work_help = on_fullmatch("悬赏令帮助", priority=15, block=True)
-work_lookup = on_fullmatch("悬赏令查看", priority=15, block=True)
+work_lookup = on_fullmatch("悬赏令查询", priority=15, block=True)
 work_flash = on_fullmatch("悬赏令刷新", priority=15, block=True)
 work_accept = on_startswith("悬赏令接取", priority=15, block=True)
 work_complete = on_fullmatch("悬赏令结算", priority=15, block=True)
@@ -58,7 +58,7 @@ last_work = on_command("最后的悬赏令", priority=15, block=True)
 __work_help__ = f"""
 悬赏令帮助信息:
 指令：
-1、悬赏令查看:获取对应实力的悬赏令
+1、悬赏令查询:获取对应实力的悬赏令
 2、悬赏令刷新:刷新当前悬赏令,每日免费{count}次
 3、悬赏令终止:终止当前悬赏令任务
 4、悬赏令结算:结算悬赏奖励
@@ -179,7 +179,7 @@ async def work_flash_(_: Bot, event: GroupMessageEvent):
             sql_message.update_ls(user_id, lscost, 2)
             stone_use = 1
 
-    work_msg = workhandle().do_work(0, level=user_info.user_level, exp=user_info.exp, user_id=user_id)
+    work_msg = workhandle().do_work(0, level=user_info.level, exp=user_info.exp, user_id=user_id)
     n = 1
     work_list = []
     work_msg_f = f"☆------道友的个人悬赏令------☆\n"
@@ -206,18 +206,18 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
     user_id = event.get_user_id()
     message = str(event.message)
     _, user_info, msg = check_user(event)
-    num = re.findall("\d+", message)  # boss编号
+    num = re.findall("\d+", message)[0]  # boss编号
+    max_level = "真仙境初期"
 
     if USERRANK[user_info.level] <= 22:
         msg = f"道友的境界已过创业初期，悬赏令已经不能满足道友了！"
         await xiuxian_send_message(work_accept, message=msg)
 
-    if user_info.exp >= sql_message.get_level_power(user_info.user_level):
+    if user_info.exp >= sql_message.get_level_power(max_level):
         msg = f"道友的实力已过创业初期，悬赏令已经不能满足道友了！"
         await xiuxian_send_message(work_accept, message=msg)
 
-    user_level = user_info.level
-    if int(user_info.exp) >= int(OtherSet().set_closing_type(user_level)) * XiuConfig().closing_exp_upper_limit:
+    if int(user_info.exp) >= int(OtherSet().set_closing_type(max_level)) * XiuConfig().closing_exp_upper_limit:
         # 获取下个境界需要的修为 * 1.5为闭关上限
         msg = f"道友的修为已经到达上限，悬赏令已无法在获得经验！"
         await xiuxian_send_message(work_accept, message=msg)
@@ -257,7 +257,7 @@ async def work_complete_(_: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(work_lookup, message=msg)
 
 
-    user_level = user_info.user_level
+    user_level = user_info.level
     is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
     if is_type:
         user_cd_message = sql_message.get_user_cd(user_id)
