@@ -99,7 +99,7 @@ async def reset_(_: Bot, __: GroupMessageEvent):
     """
     give_qq = None  # 艾特的时候存到这里
 
-    #TODO:
+    # TODO:
     args = []
     for arg in args:
         if arg.type == "at":

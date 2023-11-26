@@ -525,8 +525,6 @@ async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
     boss['会心'] = 30
 
     while True:
-        msg1 = "{}发起攻击，造成了{}伤害\n"
-        msg2 = "{}发起攻击，造成了{}伤害\n"
         if player1_skil_open:  # 是否开启技能
             if user1_turn_skip:  # 无需跳过回合
                 turn_start_msg = f"☆------{player1['道号']}的回合------☆"

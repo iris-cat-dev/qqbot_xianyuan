@@ -15,8 +15,8 @@ def check_player() -> None:
     依赖注入形式的玩家检查
     """
 
-    async def dependency(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
-        bot, send_group_id = await assign_bot(bot=bot, event=event)
+    async def dependency(_: Bot, matcher: Matcher, event: GroupMessageEvent):
+        # bot, send_group_id = await assign_bot(bot=bot, event=event)
         is_user, user_info, msg = check_user(event)
         if is_user is False:
             await xiuxian_send_message(matcher, msg)

@@ -18,7 +18,7 @@ from .bossconfig import get_config, savef
 from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
 from .. import DRIVER
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message, xiuxian_send_group_img_message
 from ..common.param_checker import check_player, check_admin
 from ..item_json import Items
 from ..lay_out import put_bot, layout_bot_dict, Cooldown
@@ -85,7 +85,8 @@ async def set_boss_():
                 args=[group_id],
                 misfire_grace_time=10
             )
-            logger.success('开启群{}boss,每{}小时{}分钟刷新！'.format(group_id, groups[str(group_id)]["hours"],
+            logger.success('开启群{}boss,每{}小时{}分钟刷新！'.format(group_id,
+                                                                     groups[str(group_id)]["hours"],
                                                                      groups[str(group_id)]['minutes']))
     except Exception as e:
         logger.success(f'警告,定时群boss加载失败!,{e}!')
@@ -96,43 +97,14 @@ async def send_bot(group_id: str):
     if not group_id in group_boss:
         group_boss[group_id] = []
 
+    # 到boss生成上限了，直接跳过
     if len(group_boss[group_id]) >= config['Boss个数上限']:
-        # 到boss生成上限了，直接跳过
         return
 
-    api = 'send_group_msg'  # 要调用的函数
-    data = {'group_id': int(group_id)}  # 要发送的群
-
-    bossinfo = createboss()
-    group_boss[group_id].append(bossinfo)
-    msg = f"已生成{bossinfo['jj']}Boss:{bossinfo['name']},诸位道友请击Boss得奖励吧!"
-    if XiuConfig().img:
-        pic = await get_msg_pic(f"@全体修仙者\n" + msg)
-        data['message'] = MessageSegment.image(pic)
-    else:
-        data['message'] = MessageSegment.text(msg)
-
-    try:
-        bot_id = layout_bot_dict[group_id] if group_id in layout_bot_dict else put_bot[0]
-    except:
-        bot = get_bot()
-        bot_id = bot.self_id
-
-    try:
-        if type(bot_id) is str:
-            await get_bots()[bot_id].call_api(api, **data)
-        elif type(bot_id) is list:
-            await get_bots()[random.choice(bot_id)].call_api(api, **data)
-        else:
-            await get_bots()[put_bot[0]].call_api(api, **data)
-
-    except:
-        if group_id not in bot.get_group_list():
-            logger.warning(f"群{group_id}不存在,请检查配置文件!")
-            return
-        else:
-            await get_bot().call_api(api, **data)
-
+    boss_info = createboss()
+    group_boss[group_id].append(boss_info)
+    msg = f"已生成{len(group_boss[group_id]) + 1}.{boss_info['jj']}Boss:{boss_info['name']},诸位道友请击Boss得奖励吧!"
+    await xiuxian_send_group_message(group_id, msg)
     logger.info(f"群{group_id}_已生成世界boss")
 
 
@@ -334,12 +306,6 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
         battle_flag[group_id] = False
 
-        # try:
-        #     await send_forward_msg_list(bot, event, result)
-        # except ActionFailed:
-        #     msg += "Boss战消息发送错误,可能被风控!"
-        await xiuxian_send_message(battle, message=msg)
-
     elif victor == "群友赢了":
         # 新增boss战斗积分点数
         boss_all_hp = boss_info['总血量']  # 总血量
@@ -358,13 +324,19 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
 
-        # try:
-        #     await send_forward_msg_list(bot, event, result)
-        # except ActionFailed:
-        #     msg += "Boss战消息发送错,可能被风控!"
-
         msg = f"恭喜道友击败{boss_info['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
-        await xiuxian_send_message(battle, message=msg)
+
+    # try:
+    #     await send_forward_msg_list(bot, event, result)
+    # except ActionFailed:
+    #     msg += "Boss战消息发送错,可能被风控!"
+
+    msg_list = []
+    for item in result:
+        msg_list.append(item["data"]["content"])
+
+    await xiuxian_send_group_img_message(event.group_id, msg_list)
+    await xiuxian_send_message(battle, message=msg)
 
 
 @boss_info.handle(parameterless=[Cooldown(at_sender=True), check_player()])

@@ -66,11 +66,11 @@ xiuxian_update_log = on_fullmatch('更新记录', priority=15, permission=GROUP,
 help_in = on_fullmatch("修仙帮助", priority=12, permission=GROUP, block=True)
 warring_help = on_fullmatch("风控帮助", priority=12, permission=GROUP, block=True)
 
-sql_message = XiuxianDateManage()  # sql类
+sql_message = XiuxianDateManage()
 
 
-@help_in.handle(parameterless=[Cooldown(at_sender=True)])
-async def help_in_(bot: Bot, event: GroupMessageEvent, session_id: int = CommandObjectID()):
+@help_in.handle(parameterless=[Cooldown(cd_time=5, at_sender=True)])
+async def help_in_(_: Bot, __: GroupMessageEvent):
     """
     修仙帮助
     """

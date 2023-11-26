@@ -11,6 +11,9 @@ from nonebot.adapters.onebot.v11 import (
     MessageSegment,
     ActionFailed
 )
+
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import check_player
 from ..lay_out import assign_bot, Cooldown
 from ..utils import (
     check_user,
@@ -94,37 +97,24 @@ async def impart_img_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
         await impart_img.finish()
 
 
-@impart_draw.handle(parameterless=[Cooldown(cd_time=3, at_sender=True)])
+@impart_draw.handle(parameterless=[Cooldown(cd_time=3, at_sender=True), check_player()])
 async def impart_draw_(bot: Bot, event: GroupMessageEvent):
-    """传承抽卡"""
+    """
+    传承抽卡
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await impart_draw.finish()
+    _, user_info, msg = check_user(event)
 
     user_id = user_info.user_id
     impart_data_draw = await impart_check(user_id)
     if impart_data_draw is None:
         msg = "发生未知错误，多次尝试无果请找晓楠！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await impart_draw.finish()
+        await xiuxian_send_message(impart_draw, msg)
+
     if impart_data_draw.stone_num < 10:
         msg = "思恋结晶数量不足10个,无法抽卡!"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await impart_draw.finish()
+        await xiuxian_send_message(impart_draw, msg)
+
     else:
         if get_rank(user_id):
             img_list = impart_data_json.data_all_keys()
@@ -133,12 +123,8 @@ async def impart_draw_(bot: Bot, event: GroupMessageEvent):
                 reap_img = random.choice(img_list)
             except:
                 msg = "请检查卡图数据完整！"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await impart_draw.finish()
+                await xiuxian_send_message(impart_draw, msg)
+
             list_tp = []
             if impart_data_json.data_person_add(user_id, reap_img):
                 msg = ""
@@ -164,18 +150,15 @@ async def impart_draw_(bot: Bot, event: GroupMessageEvent):
                     await send_forward_msg_list(bot, event, list_tp)
                 except ActionFailed:
                     msg = "未知原因，抽卡失败!"
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                    else:
-                        await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                    await impart_draw.finish()
+                    await xiuxian_send_message(impart_draw, msg)
+
                 xiuxian_impart.add_impart_exp_day(3540, user_id)
                 xiuxian_impart.update_stone_num(10, user_id, 2)
                 xiuxian_impart.update_impart_wish(0, user_id)
                 # 更新传承数据
                 await re_impart_data(user_id)
                 await impart_draw.finish()
+
             else:
                 msg = ""
                 msg += f"抽卡10次结果如下,获得新的传承卡片{reap_img}\n"
@@ -197,12 +180,8 @@ async def impart_draw_(bot: Bot, event: GroupMessageEvent):
                     await send_forward_msg_list(bot, event, list_tp)
                 except ActionFailed:
                     msg = "消息发送失败，抽卡失败!"
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                    else:
-                        await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                    await impart_draw.finish()
+                    await xiuxian_send_message(impart_draw, msg)
+
                 xiuxian_impart.add_impart_exp_day(660, user_id)
                 xiuxian_impart.update_stone_num(10, user_id, 2)
                 xiuxian_impart.update_impart_wish(0, user_id)
@@ -227,12 +206,8 @@ async def impart_draw_(bot: Bot, event: GroupMessageEvent):
                 await send_forward_msg_list(bot, event, list_tp)
             except ActionFailed:
                 msg = "未知原因，抽卡失败!"
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                    await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-                await impart_draw.finish()
+                await xiuxian_send_message(impart_draw, msg)
+
             xiuxian_impart.add_impart_exp_day(660, user_id)
             xiuxian_impart.update_stone_num(10, user_id, 2)
             xiuxian_impart.add_impart_wish(10, user_id)

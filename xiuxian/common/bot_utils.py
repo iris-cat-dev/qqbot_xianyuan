@@ -1,3 +1,6 @@
+import base64
+
+from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.exception import ActionFailed
 
@@ -21,6 +24,13 @@ from ..xiuxian_config import XiuConfig
 #         else:
 #             await help_in.finish(message=msg, reply_message=True)
 
+def save_tmp_img(img: bytes):
+    path = "/Users/bytedance/Library/Containers/com.tencent.qq/Data/Documents/LiteLoaderQQNT/plugins_data/LLOneBot/tmp.png"
+    with open(path, 'wb') as f:
+        f.write(img)
+    return path
+
+
 async def xiuxian_send_message(matcher, message):
     """
     TODO: img cache
@@ -28,8 +38,55 @@ async def xiuxian_send_message(matcher, message):
     try:
         if XiuConfig().img:
             pic = await get_msg_pic(message)
-            await matcher.finish(message=MessageSegment.image(pic), reply_message=True)
+            base64_data = base64.b64decode(pic.encode())
+            path = save_tmp_img(base64_data[6:])
+            await matcher.finish(message=MessageSegment.image(path), reply_message=True)
         else:
             await matcher.finish(message=message, reply_message=True)
     except ActionFailed:
         await matcher.finish("修仙界网络堵塞，发送失败!", reply_message=True)
+
+
+async def xiuxian_send_img_message(matcher, img):
+    try:
+        path = save_tmp_img(img)
+        await matcher.finish(message=MessageSegment.image(path), reply_message=True)
+    except ActionFailed:
+        await matcher.finish("修仙界网络堵塞，发送失败!", reply_message=True)
+
+
+async def xiuxian_send_group_message(group_id, message):
+    """
+
+    """
+    api = 'send_msg'
+    data = {
+        'group_id': int(group_id),
+        "message_type": "group",
+        "message": []
+    }
+    msg_seg = MessageSegment.text(message)
+    data['message'].append(msg_seg)
+    await get_bot().call_api(api, **data)
+
+
+async def xiuxian_send_group_img_message(group_id, msg_list: list):
+    """
+
+    """
+    api = 'send_msg'
+    data = {
+        'group_id': int(group_id),
+        "message_type": "group",
+        "message": []
+    }
+    text = ""
+    for msg in msg_list:
+        text += msg + "\n"
+
+    pic = await get_msg_pic(text)
+    base64_data = base64.b64decode(pic.encode())
+    path = save_tmp_img(base64_data[6:])
+    msg_seg = MessageSegment.image(path)
+    data['message'].append(msg_seg)
+    await get_bot().call_api(api, **data)

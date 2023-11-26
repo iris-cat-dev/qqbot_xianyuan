@@ -14,7 +14,7 @@ from nonebot.adapters.onebot.v11 import (
     ActionFailed
 )
 
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message
 from ..common.param_checker import check_player
 from ..lay_out import assign_bot, assign_bot_group, Cooldown, CooldownIsolateLevel
 from nonebot.log import logger
@@ -443,7 +443,9 @@ async def shop_added_by_admin_(bot: Bot, event: GroupMessageEvent, args: Message
 
 @shop_added.handle(parameterless=[Cooldown(1.4, isolate_level=CooldownIsolateLevel.GROUP)])
 async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """上架坊市"""
+    """
+    上架坊市
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -609,7 +611,9 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent, args: Message = Comman
 
 @goods_re_root.handle(parameterless=[Cooldown(at_sender=True)])
 async def goods_re_root_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """物品回收"""
+    """
+    物品回收
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -805,26 +809,17 @@ async def shop_off_(bot: Bot, event: GroupMessageEvent, args: Message = CommandA
 async def mind_back_(bot: Bot, event: GroupMessageEvent):
     """
     我的背包
-    ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
-    "remake", "day_num", "all_num", "action_time", "state"]
     """
-    _, user_info, msg = check_user(event)
-
-    user_id = user_info.user_id
+    user_id = event.user_id
     msg_list = get_user_back_msg(user_id)
-    if len(msg_list) >= 10:
-        msg_list = msg_list[:10]
-
     if len(msg_list) > 0:
-        msg = f"{user_info.user_name}的背包，持有灵石：{user_info.stone}枚\n"
-        try:
-            # await send_forward_msg(bot, event, '背包', bot.self_id, msg)
-            for item in msg_list:
-                msg += f"{item}\n"
-        except ActionFailed:
-                msg = "查看背包失败"
-        await xiuxian_send_message(my_back, msg)
-
+        # try:
+        #     for item in msg_list:
+        #         msg += f"{item}\n"
+        # except ActionFailed:
+        #     msg = "查看背包失败"
+        #     await xiuxian_send_message(my_back, msg)
+        await xiuxian_send_group_img_message(event.group_id, msg_list)
     else:
         msg = '道友的背包空空如也！'
         await xiuxian_send_message(my_back, msg)
@@ -832,7 +827,8 @@ async def mind_back_(bot: Bot, event: GroupMessageEvent):
 
 @no_use_zb.handle(parameterless=[Cooldown(at_sender=True)])
 async def no_use_zb_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """卸载物品（只支持装备）
+    """
+    卸载物品（只支持装备）
     ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
     "remake", "day_num", "all_num", "action_time", "state"]
     """
@@ -1350,7 +1346,9 @@ async def chakan_wupin_(bot: Bot, event: GroupMessageEvent, args: Message = Comm
 
 @shop_off_all.handle(parameterless=[Cooldown(60, isolate_level=CooldownIsolateLevel.GROUP, parallel=1)])
 async def shop_off_all_(bot: Bot, event: GroupMessageEvent):
-    """坊市清空"""
+    """
+    坊市清空
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:

@@ -133,10 +133,11 @@ async def send_forward_msg_list(
             "send_private_forward_msg", user_id=event.user_id, messages=messages
         )
 
+
 class Txt2Img:
     """文字转图片"""
-    
-    def __init__(self, size=32):
+
+    def __init__(self, size=36):
         self.font = str(jsondata.FONT_FILE)
         self.font_size = int(size)
         self.use_font = ImageFont.truetype(font=self.font, size=self.font_size)
@@ -147,55 +148,55 @@ class Txt2Img:
         self.padding = 12
         self.img_width = 780
         self.black_clor = (255, 255, 255)
-        self.line_num = 0  
-          
+        self.line_num = 0
+
     def prepare(self, text, scale):
         text = unicodedata.normalize('NFKC', text)
         if scale:
-            max_text_len = self.img_width - self.left_size -self.right_size
+            max_text_len = self.img_width - self.left_size - self.right_size
         else:
-            max_text_len = 1080 - self.left_size -self.right_size
+            max_text_len = 1080 - self.left_size - self.right_size
         use_font = self.use_font
         line_num = self.line_num
         text_len = 0
         text_new = ""
         for x in text:
             text_new += x
-            text_len +=  use_font.getlength(x)
+            text_len += use_font.getlength(x)
             if x == '\n':
                 text_len = 0
             if text_len >= max_text_len:
                 text_len = 0
                 text_new += '\n'
-        text_new = text_new.replace("\n\n","\n")        
+        text_new = text_new.replace("\n\n", "\n")
         text_new = text_new.rstrip()
         line_num = line_num + text_new.count("\n")
         return text_new, line_num
 
-    def draw_to(self, text, boss_name="", scale = True):
+    def draw_to(self, text, boss_name="", scale=True):
         font_size = self.font_size
         black_clor = self.black_clor
         upper_size = self.upper_size
         below_size = self.below_size
-        left_size = self.left_size 
-        padding = self.padding 
-        img_width = self.img_width 
+        left_size = self.left_size
+        padding = self.padding
+        img_width = self.img_width
         use_font = self.use_font
-        text, line_num= self.prepare(text=text, scale = scale)
+        text, line_num = self.prepare(text=text, scale=scale)
         if scale:
-            if line_num < 5:
-                blank_space = int(5 - line_num)
-                line_num =5
+            if line_num < 4:
+                blank_space = int(4 - line_num)
+                line_num = 4
                 text += "\n"
                 for k in range(blank_space):
-                    text += "(ᵔ ᵕ ᵔ)\n"
+                    text += "\n"
             else:
                 line_num = line_num
         else:
             img_width = 1080
             line_num = line_num
-        img_hight = int(upper_size + below_size + font_size * (line_num + 1) + padding * line_num )
-        out_img = Image.new(mode="RGB", size=(img_width, img_hight), 
+        img_hight = int(upper_size + below_size + font_size * (line_num + 1) + padding * line_num)
+        out_img = Image.new(mode="RGB", size=(img_width, img_hight),
                             color=black_clor)
         draw = ImageDraw.Draw(out_img, "RGBA")
 
@@ -263,7 +264,6 @@ class Txt2Img:
                 )
         return self.img2b64(out_img)
 
-
     def img2b64(self, out_img) -> str:
         """ image to base64 """
         buf = BytesIO()
@@ -272,7 +272,7 @@ class Txt2Img:
         return base64_str
 
 
-async def get_msg_pic(msg, boss_name="", scale = True):
+async def get_msg_pic(msg, boss_name="", scale=True):
     img = Txt2Img()
     pic = img.draw_to(msg, boss_name, scale)
     return pic
@@ -302,6 +302,7 @@ def number_to(num):
     '''
     递归实现，精确为最大单位值 + 小数点后一位
     '''
+
     def strofsize(num, level):
         if level >= 2:
             return num, level
@@ -311,10 +312,9 @@ def number_to(num):
             return strofsize(num, level)
         else:
             return num, level
+
     units = ['', '万', '亿']
     num, level = strofsize(num, 0)
     if level > len(units):
         level -= 1
     return '{}{}'.format(round(num, 1), units[level])
-
-

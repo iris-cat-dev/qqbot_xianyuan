@@ -19,7 +19,7 @@ from .jsondata import save_rift_data, read_rift_data
 from .old_rift_info import old_rift_info
 from .riftconfig import get_config, savef
 from .. import DRIVER
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.param_checker import check_player, check_admin
 from ..lay_out import assign_bot_group, Cooldown
 from ..utils import check_user, check_user_type, get_msg_pic
@@ -32,6 +32,7 @@ sql_message = XiuxianDateManage()  # sql类
 cache_help = {}
 group_rift = {}  # dict
 groups = config['open']  # list
+
 # 定时任务
 set_rift = require("nonebot_plugin_apscheduler").scheduler
 
@@ -51,7 +52,7 @@ __rift_help__ = f"""
 4、秘境结算:结算秘境奖励
 5、秘境探索终止:终止秘境事件
 非指令：
-1、每日18点30分生成一个随机等级的秘境
+1、每日14点0分生成一个随机等级的秘境
 """.strip()
 
 
@@ -70,24 +71,21 @@ async def save_rift_():
 
 
 # 定时任务生成群秘境
-@set_rift.scheduled_job("cron", hour=18, minute=50)
+@set_rift.scheduled_job("cron", hour=14, minute=0)
 async def set_rift_():
     global group_rift
-    # bot = get_bots()[put_bot[0]]
     if groups:
         group_rift = {}
         for group_id in groups:
-            bot = await assign_bot_group(group_id=group_id)
             rift = Rift()
             rift.name = get_rift_type()
             rift.rank = config['rift'][rift.name]['rank']
             rift.count = config['rift'][rift.name]['count']
             rift.time = config['rift'][rift.name]['time']
             group_rift[group_id] = rift
-            msg = f"秘境已刷新，野生的{rift.name}已开启！可探索次数：{rift.count}次，请诸位道友发送 探索秘境 来加入吧！"
-            pic = await get_msg_pic(msg)  #
+            msg = f"随着一阵空间波动，秘境【{rift.name}】已开启！可探索次数：{rift.count}次，请诸位道友抓紧时间 【探索秘境】吧！"
             try:
-                await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
+                await xiuxian_send_group_message(group_id, msg)
             except:
                 logger.warning(f"群{group_id}秘境消息发送失败，大概率是机器人不在此群里！")
 

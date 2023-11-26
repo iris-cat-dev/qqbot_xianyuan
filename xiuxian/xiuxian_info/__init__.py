@@ -2,7 +2,7 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
 
 from .draw_user_info import draw_user_info_img
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
 from ..lay_out import Cooldown
@@ -101,7 +101,7 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     }
     if XiuConfig().user_info_image:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
-        await xiuxian_send_message(xiuxian_message, message=MessageSegment.image(img_res))
+        await xiuxian_send_img_message(xiuxian_message, img_res)
 
     else:
         try:

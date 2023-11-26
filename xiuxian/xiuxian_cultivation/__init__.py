@@ -68,6 +68,11 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent):
     _, user_1, msg = check_user(event)
 
     two_qq = None  # 艾特的时候存到这里
+    try:
+        two_qq = event.original_message[1].data.get("qq", "")
+    except:
+        msg = "指令输入错误：【双修+@对方】"
+        await xiuxian_send_message(two_exp, message=msg)
 
     if two_qq is None:
         msg = "请at你的道侣,与其一起双修！"
@@ -259,32 +264,17 @@ async def in_closing_(bot: Bot, event: GroupMessageEvent):
     """
     闭关
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
     user_type = 1  # 状态0为无事件
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await in_closing.finish(message=msg, reply_message=True)
+    _, user_info, msg = check_user(event)
 
     user_id = user_info.user_id
     is_type, msg = check_user_type(user_id, 0)
     if is_type:  # 符合
         sql_message.in_closing(user_id, user_type)
         msg = "进入闭关状态，如需出关，发送【出关】！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await in_closing.finish(message=msg, reply_message=True)
+        await xiuxian_send_message(in_closing, message=msg)
     else:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await in_closing.finish(message=msg, reply_message=True)
+        await xiuxian_send_message(in_closing, message=msg)
 
 
 @out_closing.handle(parameterless=[Cooldown(at_sender=True), check_player()])

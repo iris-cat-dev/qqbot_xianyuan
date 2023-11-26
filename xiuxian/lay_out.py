@@ -1,5 +1,3 @@
-#!usr/bin/env python3
-# -*- coding: utf-8 -*-
 import random
 from asyncio import get_running_loop
 from collections import defaultdict
@@ -64,7 +62,7 @@ _chat_flmt_notice = random.choice(
         "时间还没到，还有{}秒，歇会歇会~~"
     ]
 )
-bu_ji_notice = random.choice(["别急！", "急也没用!", "让我先急!"])
+cd_notice = random.choice(["别急！", "急也没用!", "让我先急!"])
 
 
 class CooldownIsolateLevel(IntEnum):
@@ -116,14 +114,13 @@ def Cooldown(
             del time_sy[key]
         return
 
-    async def dependency(bot: Bot, matcher: Matcher, event: MessageEvent):
+    async def dependency(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
         group_id = str(event.group_id)
         conf_data = JsonConfig().read_data()
 
         limit_type = limit_all_run(str(event.get_user_id()))
         if limit_type is True:
-            await assign_bot_group(group_id=group_id)
-            await matcher.finish(event=event, message=bu_ji_notice)
+            await matcher.finish(message=cd_notice, reply_message=True)
         elif limit_type is False:
             await matcher.finish()
         else:
@@ -154,7 +151,7 @@ def Cooldown(
                     event.get_user_id() in bot.config.superusers
             ):
                 bot = await assign_bot_group(group_id=group_id)
-                await matcher.finish(event=event, message=MessageSegment.at(
+                await matcher.finish( message=MessageSegment.at(
                     event.get_user_id()) + f"本群已关闭修仙模组,请联系管理员开启,开启命令为【启用修仙功能】!")
             else:
                 await matcher.finish()
