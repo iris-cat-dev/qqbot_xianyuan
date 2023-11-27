@@ -335,7 +335,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     for item in result:
         msg_list.append(item["data"]["content"])
 
-    await xiuxian_send_group_img_message(event.group_id, msg_list)
+    # await xiuxian_send_group_img_message(event.group_id, msg_list)
     await xiuxian_send_message(battle, message=msg)
 
 

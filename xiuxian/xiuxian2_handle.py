@@ -23,8 +23,16 @@ SectInfo = namedtuple("SectInfo",
                       ["sect_id", "sect_name", "sect_owner", "sect_scale", "sect_used_stone", "sect_fairyland",
                        "sect_materials", "mainbuff", "secbuff", "elixir_room_level"])
 BuffInfo = namedtuple("BuffInfo",
-                      ["id", "user_id", "main_buff", "sec_buff", "faqi_buff", "fabao_weapon", "armor_buff", "atk_buff",
-                       "blessed_spot", "sub_buff"])
+                      ["id",
+                       "user_id",
+                       "main_buff",
+                       "sec_buff",
+                       "faqi_buff",
+                       "fabao_weapon",
+                       "sub_buff",
+                       "armor_buff",
+                       "atk_buff",
+                       "blessed_spot"])
 back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
                            "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
 
@@ -256,7 +264,8 @@ class XiuxianDateManage:
         if not result:
             self._create_user(user_id, args[0], args[1], args[2], args[3], args[4])
             self.conn.commit()
-            return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1], args[2], args[3])
+            return '欢迎进入修仙世界的，你的灵根为：{},类型是：{},你的战力为：{},当前境界：江湖好手'.format(args[0], args[1],
+                                                                                                       args[2], args[3])
         else:
             return '您已迈入修仙世界，输入【我的修仙信息】获取数据吧！'
 
@@ -271,7 +280,7 @@ class XiuxianDateManage:
         elif result[0] == 0:
             ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit, XiuConfig().sign_in_lingshi_upper_limit)
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+? WHERE user_id=?"
-            cur.execute(sql2, (ls,user_id))
+            cur.execute(sql2, (ls, user_id))
             self.conn.commit()
             return '签到成功，获取{}块灵石!'.format(ls)
         elif result[0] == 1:
@@ -368,7 +377,9 @@ class XiuxianDateManage:
         return result
 
     def singh_remake(self):
-        """重置签到"""
+        """
+        重置签到
+        """
         sql = f"UPDATE user_xiuxian SET is_sign=0"
         cur = self.conn.cursor()
         cur.execute(sql, )
@@ -620,7 +631,7 @@ class XiuxianDateManage:
         cur.execute(sql, (user_id,))
         result = cur.fetchone()
         return result
-    
+
     def stone_top(self):
         sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY stone DESC LIMIT 10"
         cur = self.conn.cursor()
@@ -1134,7 +1145,8 @@ class OtherSet(XiuConfig):
         if user_exp >= need_exp:
             pass
         else:
-            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp - user_exp, is_updata_level)
+            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp - user_exp,
+                                                                                      is_updata_level)
 
         success_rate = True if random.randint(0, 100) < rate else False
 

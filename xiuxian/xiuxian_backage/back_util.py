@@ -1,18 +1,13 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
+from datetime import datetime
+
 from ..item_json import Items
-from ..xiuxian2_handle import XiuxianDateManage
-from ..read_buff import(
+from ..read_buff import (
     UserBuffDate, get_weapon_info_msg,
     get_armor_info_msg, get_sec_msg, get_main_info_msg
 )
-from datetime import datetime
-import os
-from pathlib import Path
-from ..xiuxian_config import USERRANK
 from ..read_buff import get_player_info, save_player_info
+from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian_config import USERRANK
 
 items = Items()
 sql_message = XiuxianDateManage()
@@ -233,31 +228,6 @@ def get_ldl_msg(l_msg, user_id, goods_id, goods_num):
     return l_msg
 
 
-YAOCAIINFOMSG = {
-    "-1": "性寒",
-    "0": "性平",
-    "1": "性热",
-    "2": "生息",
-    "3": "养气",
-    "4": "炼气",
-    "5": "聚元",
-    "6": "凝神",
-}
-
-
-def get_yaocai_info(yaocai_info):
-    msg = f"主药 {YAOCAIINFOMSG[str(yaocai_info['主药']['h_a_c']['type'])]}"
-    msg += f"{yaocai_info['主药']['h_a_c']['power']}"
-    msg += f" {YAOCAIINFOMSG[str(yaocai_info['主药']['type'])]}"
-    msg += f"{yaocai_info['主药']['power']}\n"
-    msg += f"药引 {YAOCAIINFOMSG[str(yaocai_info['药引']['h_a_c']['type'])]}"
-    msg += f"{yaocai_info['药引']['h_a_c']['power']}"
-    msg += f"辅药 {YAOCAIINFOMSG[str(yaocai_info['辅药']['type'])]}"
-    msg += f"{yaocai_info['辅药']['power']}"
-
-    return msg
-
-
 def get_equipment_msg(l_msg, user_id, goods_id, goods_num):
     """
     获取背包内的装备信息
@@ -305,80 +275,6 @@ def get_elixir_msg(l_msg, goods_id, goods_num):
     msg += f"拥有数量：{goods_num}"
     l_msg.append(msg)
     return l_msg
-
-
-def get_item_msg(goods_id):
-    """
-    获取单个物品的消息
-    """
-    item_info = items.get_data_by_item_id(goods_id)
-    if item_info['type'] == '丹药':
-        msg = f"名字：{item_info['name']}\n"
-        msg += f"效果：{item_info['desc']}"
-
-    elif item_info['item_type'] == '神通':
-        msg = f"名字：{item_info['name']}\n"
-        msg += f"品阶：{item_info['level']}\n"
-        msg += f"效果：{get_sec_msg(item_info)}"
-
-    elif item_info['item_type'] == '功法':
-        msg = f"名字：{item_info['name']}\n"
-        msg += f"品阶：{item_info['level']}\n"
-        msg += f"效果：{get_main_info_msg(goods_id)[1]}"
-
-    elif item_info['item_type'] == '防具':
-        msg = get_armor_info_msg(goods_id, item_info)
-
-    elif item_info['item_type'] == '法器':
-        msg = get_weapon_info_msg(goods_id, item_info)
-
-    elif item_info['item_type'] == "药材":
-        msg = get_yaocai_info_msg(goods_id, item_info)
-
-    elif item_info['item_type'] == "聚灵旗":
-        msg = f"名字：{item_info['name']}\n"
-        msg += f"效果：{item_info['desc']}"
-
-    elif item_info['item_type'] == "炼丹炉":
-        msg = f"名字：{item_info['name']}\n"
-        msg += f"效果：{item_info['desc']}"
-
-    else:
-        msg = '不支持的物品'
-    return msg
-
-
-def get_item_msg_rank(goods_id):
-    """
-    获取单个物品的rank
-    """
-    item_info = items.get_data_by_item_id(goods_id)
-    if item_info['type'] == '丹药':
-        msg = item_info['rank']
-    elif item_info['item_type'] == '神通':
-        msg = item_info['rank']
-    elif item_info['item_type'] == '功法':
-        msg = item_info['rank']
-    elif item_info['item_type'] == '防具':
-        msg = item_info['rank']
-    elif item_info['item_type'] == '法器':
-        msg = item_info['rank']
-    elif item_info['item_type'] == "药材":
-        msg = item_info['rank']
-    elif item_info['item_type'] == "聚灵旗":
-        msg = item_info['rank']
-    elif item_info['item_type'] == "炼丹炉":
-        msg = item_info['rank']        
-    else:
-        msg = 520
-    return int(msg)
-
-
-def get_yaocai_info_msg(goods_id, item_info):
-    msg = f"名字：{item_info['name']}\n"
-    msg += f"品级：{item_info['level']}\n"
-    msg += get_yaocai_info(item_info)
-    return msg
 
 
 def check_use_elixir(user_id, goods_id, num):
@@ -533,33 +429,8 @@ def get_use_jlq_msg(user_id, goods_id):
     return msg
 
 
-def get_shop_data(group_id):
-    try:
-        data = read_shop()
-    except:
-        data = {}
-    try:
-        data[group_id]
-    except:
-        data[group_id] = {}
-    save_shop(data)
-    return data
 
 
-PATH = Path(__file__).parent
-FILEPATH = PATH / 'shop.json'
 
 
-def read_shop():
-    with open(FILEPATH, "r", encoding="UTF-8") as f:
-        data = f.read()
-    return json.loads(data)
 
-
-def save_shop(data):
-    data = json.dumps(data, ensure_ascii=False, indent=4)
-    savemode = "w" if os.path.exists(FILEPATH) else "x"
-    with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
-        f.write(data)
-        f.close()
-    return True

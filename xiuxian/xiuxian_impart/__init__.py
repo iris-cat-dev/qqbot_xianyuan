@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import random
-from nonebot import on_command, on_fullmatch
+from nonebot import on_command, on_fullmatch, on_startswith
 from nonebot.params import CommandArg
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -12,7 +12,7 @@ from nonebot.adapters.onebot.v11 import (
     ActionFailed
 )
 
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.param_checker import check_player
 from ..lay_out import assign_bot, Cooldown
 from ..utils import (
@@ -39,7 +39,7 @@ impart_back = on_command("传承背包", aliases={"我的传承背包"}, priorit
 impart_data = on_command("传承信息", aliases={"我的传承信息", "我的传承"}, priority=10, permission=GROUP, block=True)
 impart_help = on_command("传承帮助", aliases={"虚神界帮助"}, priority=8, permission=GROUP, block=True)
 re_impart_load = on_fullmatch("加载传承数据", priority=45, permission=GROUP, block=True)
-impart_img = on_command("传承卡图", aliases={"传承卡片"}, priority=50, permission=GROUP, block=True)
+impart_img = on_startswith("传承卡图", priority=50, permission=GROUP, block=True)
 
 __impart_help__ = f"""
 传承帮助信息:
@@ -78,23 +78,18 @@ async def impart_help_(bot: Bot, event: GroupMessageEvent, session_id: int = Com
         await impart_help.finish()
 
 
-@impart_img.handle(parameterless=[Cooldown(at_sender=True)])
-async def impart_img_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    """传承卡图"""
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
+@impart_img.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def impart_img_(_: Bot, event: GroupMessageEvent):
+    """
+    传承卡图
+    """
     img_name = args.extract_plain_text().strip()
     img = img_path / str(img_name + ".png")
     if not os.path.exists(img):
         msg = "没有找到此卡图！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await impart_img.finish()
+        await xiuxian_send_message(impart_img, msg)
     else:
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(img))
-        await impart_img.finish()
+        await xiuxian_send_img_message(impart_img,img)
 
 
 @impart_draw.handle(parameterless=[Cooldown(cd_time=3, at_sender=True), check_player()])

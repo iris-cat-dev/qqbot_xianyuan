@@ -1,21 +1,19 @@
-#!usr/bin/env python3
-# -*- coding: utf-8 -*-
-from .download_xiuxian_data import download_xiuxian_data
-from nonebot.plugin import PluginMetadata
-from nonebot.log import logger
-from nonebot.message import event_preprocessor, IgnoredException
+from pathlib import Path
+from pkgutil import iter_modules
+
+from nonebot import get_driver
+from nonebot import require, load_all_plugins, get_plugin_by_module_name
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GroupMessageEvent
 )
-from nonebot import get_driver
-from .xiuxian_config import XiuConfig
-from pathlib import Path
-from pkgutil import iter_modules
 from nonebot.log import logger
-from nonebot import require, load_all_plugins, get_plugin_by_module_name
-from .config import config as _config
+from nonebot.message import event_preprocessor, IgnoredException
+from nonebot.plugin import PluginMetadata
 
+from .config import config as _config
+from .common.download_xiuxian_data import download_xiuxian_data
+from .xiuxian_config import XiuConfig
 
 DRIVER = get_driver()
 
@@ -48,10 +46,10 @@ if get_plugin_by_module_name("xiuxian"):
             f"xiuxian.{module.name}"
             for module in iter_modules([str(Path(__file__).parent)])
             if module.ispkg
-            and (
-                (name := module.name[11:]) == "meta"
-                or name not in _config.disabled_plugins
-            )
+               and (
+                       (name := module.name[11:]) == "meta"
+                       or name not in _config.disabled_plugins
+               )
             # module.name[:11] == xiuxian_
         ],
         [],
@@ -61,8 +59,8 @@ __plugin_meta__ = PluginMetadata(
     name='修仙模拟器',
     description='',
     usage=(
-        "必死之境机逢仙缘，修仙之路波澜壮阔！\n"
-        " 输入 < 修仙帮助 > 获取仙界信息"
+        "必死之境逢仙缘，修仙之路何壮阔！\n"
+        "输入 < 修仙帮助 > 获取仙界信息。"
     ),
     extra={
         "show": True,
@@ -84,5 +82,3 @@ async def do_something(bot: Bot, event: GroupMessageEvent):
                 pass
         else:
             raise IgnoredException("非主bot信息,已忽略")
-
-

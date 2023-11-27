@@ -4,7 +4,6 @@ from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Depends
 
 from .bot_utils import xiuxian_send_message
-from ..lay_out import assign_bot
 from ..utils import check_user
 
 from nonebot.rule import Rule

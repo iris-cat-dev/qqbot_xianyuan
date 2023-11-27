@@ -35,7 +35,7 @@ mix_elixir = on_fullmatch("炼丹", priority=17, permission=GROUP, block=True)
 mix_make = on_command("配方", priority=5, permission=GROUP, block=True)
 elixir_help = on_fullmatch("炼丹帮助", priority=7, permission=GROUP, block=True)
 mix_elixir_help = on_fullmatch("炼丹配方帮助", priority=7, permission=GROUP, block=True)
-yaocai_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)
+
 my_mix_elixir_info = on_fullmatch("我的炼丹信息", priority=6, permission=GROUP, block=True)
 mix_elixir_sqdj_up = on_fullmatch("升级收取等级", priority=6, permission=GROUP, block=True)
 mix_elixir_dykh_up = on_fullmatch("升级丹药控火", priority=6, permission=GROUP, block=True)
@@ -161,63 +161,6 @@ async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
     await mix_elixir_dykh_up.finish()
 
 
-@yaocai_get.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def yaocai_get_(bot: Bot, event: GroupMessageEvent):
-    """灵田收取"""
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    _, user_info, _ = check_user(event)
-
-    user_id = user_info.user_id
-    if int(user_info.blessed_spot_flag) == 0:
-        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        await xiuxian_send_message(yaocai_get, message=msg)
-
-    mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
-    GETCONFIG = {
-        "time_cost": 48,  # 单位小时
-        "加速基数": 0.05
-    }
-    last_time = mix_elixir_info['收取时间']
-    if last_time != 0:
-        nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # str
-        timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') - datetime.strptime(last_time,
-                                                                                              '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600,
-                         2)
-        if timedeff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2):
-            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
-            # 加入传承
-            impart_data = xiuxian_impart.get_user_message(user_id)
-            impart_reap_per = impart_data.impart_reap_per if impart_data is not None else 0
-            num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级'] + impart_reap_per
-            msg = ''
-            if not yaocai_id_list:
-                sql_message.send_back(user_info.user_id, 3001, '恒心草', '药材', num)  # 没有合适的，保底
-                msg += f"道友成功收获药材：恒心草 {num} 个！\n"
-            else:
-                i = 1
-                give_dict = {}
-                while i <= num:
-                    id = random.choice(yaocai_id_list)
-                    try:
-                        give_dict[id] += 1
-                        i += 1
-                    except LookupError:
-                        give_dict[id] = 1
-                        i += 1
-                for k, v in give_dict.items():
-                    goods_info = items.get_data_by_item_id(k)
-                    msg += f"道友成功收获药材：{goods_info['name']} {v} 个！\n"
-                    sql_message.send_back(user_info.user_id, k, goods_info['name'], '药材', v)
-
-            mix_elixir_info['收取时间'] = nowtime
-            save_player_info(user_id, mix_elixir_info, "mix_elixir_info")
-            await xiuxian_send_message(yaocai_get, message=msg)
-
-        else:
-            msg = f"道友的灵田还不能收取，下次收取时间为：{round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2) - timedeff}小时之后"
-            await xiuxian_send_message(yaocai_get, message=msg)
-
-
 @my_mix_elixir_info.handle(parameterless=[Cooldown(at_sender=True)])
 async def my_mix_elixir_info_(bot: Bot, event: GroupMessageEvent):
     bot, send_group_id = await assign_bot(bot=bot, event=event)
@@ -250,27 +193,12 @@ async def my_mix_elixir_info_(bot: Bot, event: GroupMessageEvent):
 
 @elixir_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def elixir_help_(bot: Bot, event: GroupMessageEvent, session_id: int = CommandObjectID()):
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    if session_id in cache_help:
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(cache_help[session_id]))
-        await elixir_help.finish()
-    else:
-        msg = __elixir_help__
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg, scale=False)
-            cache_help[session_id] = pic
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await elixir_help.finish()
+    await xiuxian_send_message(mix_elixir_help, message=__elixir_help__)
 
 
 @mix_elixir_help.handle(parameterless=[Cooldown(at_sender=True)])
-async def mix_elixir_help_(bot: Bot, event: GroupMessageEvent):
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
-    msg = __mix_elixir_help__
-    await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-    await mix_elixir_help.finish()
+async def mix_elixir_help_(_: Bot, __: GroupMessageEvent):
+    await xiuxian_send_message(mix_elixir_help, message=__mix_elixir_help__)
 
 
 user_ldl_dict = {}

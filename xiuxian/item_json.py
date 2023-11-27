@@ -1,7 +1,4 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
+import json
 import os
 from pathlib import Path
 from typing import List

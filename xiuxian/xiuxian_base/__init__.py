@@ -36,7 +36,9 @@ async def xiuxian_check_in_reset():
 
 @run_xiuxian.handle(parameterless=[Cooldown(at_sender=True)])
 async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
-    """加入修仙"""
+    """
+    加入修仙
+    """
     user_id = event.get_user_id()
     # 获取为用户名
     user_name = (

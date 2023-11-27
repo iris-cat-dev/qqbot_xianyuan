@@ -1,31 +1,25 @@
 import random
 from datetime import datetime
 
-from nonebot import on_command, require, on_fullmatch, on_startswith
+from nonebot import require, on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
-    Message,
-    GroupMessageEvent,
-    GROUP_ADMIN,
-    GROUP_OWNER,
-    MessageSegment
+    GroupMessageEvent
 )
 from nonebot.log import logger
-from nonebot.params import CommandArg
-from nonebot.permission import SUPERUSER
 
 from .jsondata import save_rift_data, read_rift_data
 from .old_rift_info import old_rift_info
 from .riftconfig import get_config, savef
+from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
+    get_boss_battle_info, get_treasure_info
 from .. import DRIVER
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.param_checker import check_player, check_admin
-from ..lay_out import assign_bot_group, Cooldown
-from ..utils import check_user, check_user_type, get_msg_pic
+from ..lay_out import Cooldown
+from ..utils import check_user, check_user_type
 from ..xiuxian2_handle import XiuxianDateManage
-from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
-    get_boss_battle_info, get_treasure_info
 
 config = get_config()
 sql_message = XiuxianDateManage()  # sql类
@@ -42,15 +36,17 @@ rift_help = on_fullmatch("秘境帮助", priority=6, permission=GROUP, block=Tru
 create_rift = on_fullmatch("秘境生成", priority=5, rule=check_admin(), block=True)
 complete_rift = on_fullmatch("秘境结算", priority=7, permission=GROUP, block=True)
 break_rift = on_fullmatch("秘境探索终止", priority=7, permission=GROUP, block=True)
+explore_lookup = on_fullmatch("秘境查询", priority=5, permission=GROUP, block=True)
 
 __rift_help__ = f"""
 秘境帮助信息:
 指令：
 1、秘境+开启/关闭:开启本群的秘境生成，管理员权限
 2、秘境生成:生成一个随机秘境，管理员权限
-3、秘境探索:探索秘境获取随机奖励
-4、秘境结算:结算秘境奖励
-5、秘境探索终止:终止秘境事件
+3、 秘境查询: 查询当前秘境信息
+4、秘境探索:探索秘境获取随机奖励
+5、秘境结算:结算秘境奖励
+6、秘境探索终止:终止秘境事件
 非指令：
 1、每日14点0分生成一个随机等级的秘境
 """.strip()
@@ -83,6 +79,7 @@ async def set_rift_():
             rift.count = config['rift'][rift.name]['count']
             rift.time = config['rift'][rift.name]['time']
             group_rift[group_id] = rift
+            old_rift_info.save_rift(group_rift)
             msg = f"随着一阵空间波动，秘境【{rift.name}】已开启！可探索次数：{rift.count}次，请诸位道友抓紧时间 【探索秘境】吧！"
             try:
                 await xiuxian_send_group_message(group_id, msg)
@@ -97,6 +94,23 @@ def is_in_groups(event: GroupMessageEvent):
 @rift_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def rift_help_(_: Bot, __: GroupMessageEvent):
     await xiuxian_send_message(rift_help, __rift_help__)
+
+
+@explore_lookup.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def rift_help_(_: Bot, event: GroupMessageEvent):
+    group_id = str(event.group_id)
+    if group_id not in groups:
+        msg = '本群尚未开启秘境，请联系管理员开启群秘境'
+        await xiuxian_send_message(create_rift, msg)
+
+    if group_id in group_rift:
+        rift = group_rift[group_id]
+        msg = (f"秘境【{rift.name}】，"
+               f"秘境等级 {rift.rank}，"
+               f"秘境可探索次数：{rift.count}次，"
+               f"需要时间{rift.time}分钟")
+
+    await xiuxian_send_message(rift_help, msg)
 
 
 # 生成秘境
@@ -118,6 +132,7 @@ async def create_rift_(_: Bot, event: GroupMessageEvent):
         rift.time = config['rift'][rift.name]['time']
         group_rift[group_id] = rift
         msg = f"野生的{rift.name}出现了！秘境可探索次数：{rift.count}次，请诸位道友发送【探索秘境】来加入吧！"
+        old_rift_info.save_rift(group_rift)
         await xiuxian_send_message(create_rift, msg)
 
 
@@ -154,12 +169,12 @@ async def _(_: Bot, event: GroupMessageEvent):
             "time": group_rift[group_id].time,
             "rank": group_rift[group_id].rank
         }
-
         save_rift_data(user_id, rift_data)
+
         sql_message.do_work(user_id, 3, rift_data["time"])
         if group_rift[group_id].count == 0:
             del group_rift[group_id]
-            logger.info('群{group_id}秘境已到上限次数！')
+            logger.info(f'群{group_id}秘境已到上限次数！')
             msg += "秘境随着道友的进入，已无法再维持更多的人，而关闭了！"
             await xiuxian_send_message(explore_rift, msg)
 
@@ -193,7 +208,7 @@ async def complete_rift_(bot: Bot, event: GroupMessageEvent):
         work_time = datetime.strptime(
             user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
         )
-        exp_time = (datetime.now() - work_time).seconds // 60  # 时长计算
+        exp_time = (datetime.now() - work_time).total_seconds() // 60  # 时长计算
         time2 = rift_info["time"]
         if exp_time < time2:
             msg = f"进行中的：{rift_info['name']}探索，预计{time2 - exp_time}分钟后可结束"
@@ -278,3 +293,4 @@ async def set_group_rift_(bot: Bot, event: GroupMessageEvent):
     else:
         msg = f'指令错误：群秘境+开启/关闭!'
         await xiuxian_send_message(set_group_rift, msg)
+
