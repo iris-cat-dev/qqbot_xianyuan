@@ -13,7 +13,7 @@ from .jsondata import save_rift_data, read_rift_data
 from .old_rift_info import old_rift_info
 from .riftconfig import get_config, savef
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
-    get_boss_battle_info, get_treasure_info
+    get_boss_battle_info, get_treasure_info, STORY
 from .. import DRIVER
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.param_checker import check_player, check_admin
@@ -220,12 +220,20 @@ async def complete_rift_(bot: Bot, event: GroupMessageEvent):
             rift_type = get_story_type()  # 无事、宝物、战斗
             if rift_type == "无事":
                 msg = random.choice(NONEMSG)
+                stone_base = STORY['宝物']['灵石']['stone']
+                give_stone = stone_base / 2
+                sql_message.update_ls(user_info.user_id, give_stone, 1)
+                msg += f"获得少量灵石：{give_stone}枚！"
                 await xiuxian_send_message(complete_rift, msg)
 
             elif rift_type == "战斗":
                 rift_type = get_battle_type()
                 if rift_type == "掉血事件":
                     msg = get_dxsj_info("掉血事件", user_info)
+                    stone_base = STORY['宝物']['灵石']['stone']
+                    give_stone = stone_base / 2
+                    sql_message.update_ls(user_info.user_id, give_stone, 1)
+                    msg += f"获得少量灵石：{give_stone}枚！"
                     await xiuxian_send_message(complete_rift, msg)
 
                 elif rift_type == "Boss战斗":
@@ -293,4 +301,3 @@ async def set_group_rift_(bot: Bot, event: GroupMessageEvent):
     else:
         msg = f'指令错误：群秘境+开启/关闭!'
         await xiuxian_send_message(set_group_rift, msg)
-

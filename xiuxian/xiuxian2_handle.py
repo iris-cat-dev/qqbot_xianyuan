@@ -287,7 +287,9 @@ class XiuxianDateManage:
             return '贪心的人是不会有好运的！'
 
     def ramaker(self, lg, type, user_id):
-        """洗灵根"""
+        """
+        洗灵根
+        """
         cur = self.conn.cursor()
 
         # 查灵石
@@ -376,7 +378,7 @@ class XiuxianDateManage:
         result = cur.fetchall()
         return result
 
-    def singh_remake(self):
+    def check_in_reset(self):
         """
         重置签到
         """
@@ -550,11 +552,13 @@ class XiuxianDateManage:
         self.conn.commit()
 
     def realm_top(self):
-        """境界排行榜"""
+        """
+        境界排行榜
+        """
         sql = f"""SELECT user_name,level,exp FROM user_xiuxian 
         WHERE user_name is NOT NULL
         ORDER BY CASE
-        WHEN level = '祭道之上' THEN '1'
+        WHEN level = '天道之上' THEN '1'
         WHEN level = '仙帝境圆满' THEN '2'
         WHEN level = '仙帝境中期' THEN '3'
         WHEN level = '仙帝境初期' THEN '4'
@@ -564,51 +568,51 @@ class XiuxianDateManage:
         WHEN level = '仙王境圆满' THEN '8'
         WHEN level = '仙王境中期' THEN '9'
         WHEN level = '仙王境初期' THEN '10'
-        WHEN level = '真仙境圆满' THEN '11'
-        WHEN level = '真仙境中期' THEN '12'
-        WHEN level = '真仙境初期' THEN '13'
-        WHEN level = '至尊境圆满' THEN '14'
-        WHEN level = '至尊境中期' THEN '15'
-        WHEN level = '至尊境初期' THEN '16'
-        WHEN level = '遁一境圆满' THEN '17'
-        WHEN level = '遁一境中期' THEN '18'
-        WHEN level = '遁一境初期' THEN '19'
-        WHEN level = '斩我境圆满' THEN '20'
-        WHEN level = '斩我境中期' THEN '21'
-        WHEN level = '斩我境初期' THEN '22'
-        WHEN level = '虚道境圆满' THEN '23'
-        WHEN level = '虚道境中期' THEN '24'
-        WHEN level = '虚道境初期' THEN '25'
-        WHEN level = '天神境圆满' THEN '26'
-        WHEN level = '天神境中期' THEN '27'
-        WHEN level = '天神境初期' THEN '28'
-        WHEN level = '圣祭境圆满' THEN '29'
-        WHEN level = '圣祭境中期' THEN '30'
-        WHEN level = '圣祭境初期' THEN '31'
-        WHEN level = '真一境圆满' THEN '32'
-        WHEN level = '真一境中期' THEN '33'
-        WHEN level = '真一境初期' THEN '34'
-        WHEN level = '神火境圆满' THEN '35'
-        WHEN level = '神火境中期' THEN '36'
-        WHEN level = '神火境初期' THEN '37'
-        WHEN level = '尊者境圆满' THEN '38'
-        WHEN level = '尊者境中期' THEN '39'
-        WHEN level = '尊者境初期' THEN '40'
-        WHEN level = '列阵境圆满' THEN '41'
-        WHEN level = '列阵境中期' THEN '42'
-        WHEN level = '列阵境初期' THEN '43'
-        WHEN level = '铭纹境圆满' THEN '44'
-        WHEN level = '铭纹境中期' THEN '45'
-        WHEN level = '铭纹境初期' THEN '46'
-        WHEN level = '化灵境圆满' THEN '47'
-        WHEN level = '化灵境中期' THEN '48'
-        WHEN level = '化灵境初期' THEN '49'
-        WHEN level = '洞天境圆满' THEN '50'
-        WHEN level = '洞天境中期' THEN '51'
-        WHEN level = '洞天境初期' THEN '52'
-        WHEN level = '搬血境圆满' THEN '53'
-        WHEN level = '搬血境中期' THEN '54'
-        WHEN level = '搬血境初期' THEN '55'
+        WHEN level = '大罗境圆满' THEN '11'
+        WHEN level = '大罗境中期' THEN '12'
+        WHEN level = '大罗境初期' THEN '13'
+        WHEN level = '太乙境圆满' THEN '14'
+        WHEN level = '太乙境中期' THEN '15'
+        WHEN level = '太乙境初期' THEN '16'
+        WHEN level = '天仙境圆满' THEN '17'
+        WHEN level = '天仙境中期' THEN '18'
+        WHEN level = '天仙境初期' THEN '19'
+        WHEN level = '地仙境圆满' THEN '20'
+        WHEN level = '地仙境中期' THEN '21'
+        WHEN level = '地仙境初期' THEN '22'
+        WHEN level = '玄仙境圆满' THEN '23'
+        WHEN level = '玄仙境中期' THEN '24'
+        WHEN level = '玄仙境初期' THEN '25'
+        WHEN level = '真仙境圆满' THEN '26'
+        WHEN level = '真仙境中期' THEN '27'
+        WHEN level = '真仙境初期' THEN '28'
+        WHEN level = '渡劫境圆满' THEN '29'
+        WHEN level = '渡劫境中期' THEN '30'
+        WHEN level = '渡劫境初期' THEN '31'
+        WHEN level = '大乘境圆满' THEN '32'
+        WHEN level = '大乘境中期' THEN '33'
+        WHEN level = '大乘境初期' THEN '34'
+        WHEN level = '合体境圆满' THEN '35'
+        WHEN level = '合体境中期' THEN '36'
+        WHEN level = '合体境初期' THEN '37'
+        WHEN level = '炼虚境圆满' THEN '38'
+        WHEN level = '炼虚境中期' THEN '39'
+        WHEN level = '炼虚境初期' THEN '40'
+        WHEN level = '化神境圆满' THEN '41'
+        WHEN level = '化神境中期' THEN '42'
+        WHEN level = '化神境初期' THEN '43'
+        WHEN level = '元婴境圆满' THEN '44'
+        WHEN level = '元婴境中期' THEN '45'
+        WHEN level = '元婴境初期' THEN '46'
+        WHEN level = '结丹境圆满' THEN '47'
+        WHEN level = '结丹境中期' THEN '48'
+        WHEN level = '结丹境初期' THEN '49'
+        WHEN level = '筑基境圆满' THEN '50'
+        WHEN level = '筑基境中期' THEN '51'
+        WHEN level = '筑基境初期' THEN '52'
+        WHEN level = '练气境圆满' THEN '53'
+        WHEN level = '练气境中期' THEN '54'
+        WHEN level = '练气境初期' THEN '55'
         WHEN level = '江湖好手' THEN '56'
         ELSE level END ASC,exp DESC LIMIT 10"""
         cur = self.conn.cursor()
@@ -828,7 +832,7 @@ class XiuxianDateManage:
         :param goods_id: 物品id
         :return: 物品数量
         """
-        sql = f"SELECT num FROM back where user_id=? and goods_id=?"
+        sql = f"SELECT goods_num FROM back where user_id=? and goods_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (user_id, goods_id))
         result = cur.fetchone()

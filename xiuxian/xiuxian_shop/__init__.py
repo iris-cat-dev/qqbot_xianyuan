@@ -224,10 +224,6 @@ async def shop_added_by_admin_(bot: Bot, event: GroupMessageEvent):
     except:
         number = 1
 
-    if price < 100000:
-        msg = "这位道友，坊市也要赚钱，请输入大于 100000 金额"
-        await xiuxian_send_message(shop_added_by_admin, msg)
-
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
     if shop_data == {}:

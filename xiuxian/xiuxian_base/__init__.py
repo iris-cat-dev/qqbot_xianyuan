@@ -30,7 +30,7 @@ async def xiuxian_check_in_reset():
     """
      重置每日签到
     """
-    sql_message.singh_remake()
+    sql_message.check_in_reset()
     logger.info("每日修仙签到重置成功！")
 
 
@@ -66,7 +66,7 @@ async def sign_in_(_: Bot, event: GroupMessageEvent):
 @replay.handle(parameterless=[Cooldown(90, at_sender=True), check_player()])
 async def restart_(_: Bot, event: GroupMessageEvent):
     """
-    重开游戏
+    重入仙途
     """
     user_id = event.get_user_id()
     name, root_type = XiuxianJsonDate().linggen_get()

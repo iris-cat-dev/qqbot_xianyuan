@@ -27,7 +27,7 @@ work = {}  # 悬赏令信息记录
 refreshnum: Dict[str, int] = {}  # 用户悬赏令刷新次数记录
 sql_message = XiuxianDateManage()  # sql类
 items = Items()
-lscost = 500000  # 刷新灵石消耗
+lscost = 100000  # 刷新灵石消耗
 count = 3  # TODO:免费次数 保存
 
 
@@ -80,7 +80,7 @@ async def last_work_(_: Bot, event: GroupMessageEvent):
     user_level = user_info.level
     is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
     if (is_type and USERRANK[user_info.level] <= 22) or (
-            is_type and user_info.exp >= sql_message.get_level_power("虚道境圆满")) or (
+            is_type and user_info.exp >= sql_message.get_level_power("玄仙境圆满")) or (
             is_type and int(user_info.exp) >= int(
         OtherSet().set_closing_type(user_level)) * XiuConfig().closing_exp_upper_limit
     ):

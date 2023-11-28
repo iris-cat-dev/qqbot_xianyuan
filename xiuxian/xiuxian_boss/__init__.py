@@ -42,7 +42,7 @@ xiuxian_impart = XIUXIAN_IMPART_BUFF()
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
 set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
 create = on_fullmatch("生成世界boss", priority=5, rule=check_admin(), block=True)
-boss_info = on_fullmatch("查询世界boss", priority=6, permission=GROUP, block=True)
+boss_info = on_fullmatch("世界boss查询", priority=6, permission=GROUP, block=True)
 battle = on_startswith("讨伐世界boss", priority=6, permission=GROUP, block=True)
 boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_admin(), block=True)
 boss_integral_info = on_fullmatch("世界积分查询", priority=10, permission=GROUP, block=True)
@@ -54,7 +54,7 @@ __boss_help__ = f"""
 世界Boss帮助信息:
 指令：
 1、生成世界boss:生成一只随机大境界的世界Boss,超管权限
-2、查询世界boss:查询本群全部世界Boss,可加Boss编号查询对应Boss信息
+2、世界boss查询:查询本群全部世界Boss,可加Boss编号查询对应Boss信息
 3、世界boss+开启/关闭:开启后才可以生成世界Boss,管理员权限
 4、讨伐世界boss+编号:与世界Boss对战
 5、世界boss帮助:获取世界Boss帮助信息
