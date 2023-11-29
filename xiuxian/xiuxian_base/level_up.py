@@ -16,7 +16,7 @@ from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 level_up = on_fullmatch("突破", priority=6, permission=GROUP, block=True)
 level_up_dr = on_fullmatch("渡厄突破", priority=7, permission=GROUP, block=True)
 level_up_zj = on_fullmatch("直接突破", priority=7, permission=GROUP, block=True)
-user_level_up_rate = on_fullmatch('突破概率', priority=5, permission=GROUP, block=True)
+user_level_up_rate = on_fullmatch('我的突破概率', priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
 

@@ -204,9 +204,15 @@ def get_player_info(user_id, info_name):
     return player_info
 
 
-def read_player_info(user_id, info_name):
+def read_player_info(user_id, info_name, default_value=None):
     user_id = str(user_id)
     FILEPATH = PLAYERSDATA / user_id / f"{info_name}.json"
+
+    if not os.path.exists(FILEPATH):
+        with open(FILEPATH, 'w') as file:
+            file.write(json.dumps(default_value))
+        return default_value
+
     with open(FILEPATH, "r", encoding="UTF-8") as f:
         data = f.read()
     return json.loads(data)

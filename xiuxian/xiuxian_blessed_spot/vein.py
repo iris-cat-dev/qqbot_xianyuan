@@ -14,7 +14,6 @@ from ..xiuxian2_handle import XiuxianDateManage
 vein_get = on_fullmatch("灵矿收取", priority=8, permission=GROUP, block=True)
 vein_add = on_fullmatch("灵矿开垦", priority=5, permission=GROUP, block=True)
 vein_up = on_fullmatch("灵矿升级", priority=5, permission=GROUP, block=True)
-vein_up = on_fullmatch("灵矿升级", priority=5, permission=GROUP, block=True)
 vein_help = on_fullmatch("灵矿帮助", priority=5, permission=GROUP, block=True)
 
 VEIN_LEVEL_UP_CONFIG = {
@@ -79,13 +78,11 @@ async def vein_add_(_: Bot, event: GroupMessageEvent):
     if has_bs is False:
         await xiuxian_send_message(vein_add, message=msg)
 
-    vein_info = read_player_info(user_id, "vein")
-    if vein_info is None:
-        vein_info = {
-            'num': 0,
-            '收取时间': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
-
+    vein_info = {
+        'num': 0,
+        '收取时间': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    vein_info = read_player_info(user_id, "vein", vein_info)
     now_num = vein_info['num']
     if now_num == len(VEIN_LEVEL_UP_CONFIG):
         msg = f"道友的灵矿已全部开垦完毕，无法继续开垦了！"

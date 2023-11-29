@@ -59,7 +59,7 @@ def check_user_type(user_id, need_type):
             msg = "道友现在在闭关呢，小心走火入魔！"
 
         elif user_type == 2:
-            msg = "道友现在在做悬赏令呢，小心走火入魔！"
+            msg = "道友现在在做悬赏令呢，分身乏术！"
 
         elif user_type == 3:
             msg = "道友现在正在秘境中，分身乏术！"

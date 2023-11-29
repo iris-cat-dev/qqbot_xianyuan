@@ -19,7 +19,7 @@ shop_added = on_startswith("坊市上架", priority=10, permission=GROUP, block=
 shop_off = on_startswith("坊市下架", priority=5, permission=GROUP, block=True)
 shop_off_all = on_fullmatch("清空坊市", priority=3, rule=check_admin(), block=True)
 shop_buy = on_startswith("坊市购买", priority=5, block=True)
-goods_re_root = on_startswith("坊市回收", priority=6, permission=GROUP, block=True)
+goods_re_root = on_startswith("1坊市回收", priority=6, permission=GROUP, block=True)
 chakan_wupin = on_startswith("查看物品大全", priority=25, permission=GROUP, block=True)
 shop_added_by_admin = on_startswith("系统上架坊市", priority=5, rule=check_admin(), block=True)
 shop_help = on_fullmatch("坊市帮助", priority=8, permission=GROUP, block=True)
@@ -310,8 +310,8 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent):
     except:
         number = 1
 
-    if price < 100000:
-        msg = "这位道友，坊市也要赚钱，请输入大于 100000 金额"
+    if price < 10000:
+        msg = "这位道友，坊市也要赚钱，请输入大于 10000 金额"
         await xiuxian_send_message(shop_added_by_admin, msg)
 
     if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
@@ -407,7 +407,7 @@ async def goods_re_root_(bot: Bot, event: GroupMessageEvent):
     except:
         num = 1
 
-    price = int(6000000 - get_item_msg_rank(goods_id) * 100000) * num
+    price = round((6000000 - get_item_msg_rank(goods_id)) * 100000 * num / 10)
     if price <= 0:
         msg = f"物品：{goods_name}回收失败，获得{price}枚灵石！"
         await xiuxian_send_message(shop_added_by_admin, msg)

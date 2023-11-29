@@ -104,7 +104,7 @@ class XiuConfig:
         self.level_up_probability = 0.3  # 突破失败增加当前境界突破概率的比例
         self.sign_in_lingshi_lower_limit = 10000  # 每日签到灵石下限
         self.sign_in_lingshi_upper_limit = 100000  # 每日签到灵石上限
-        self.tou = 1000000  # 偷灵石惩罚
+        self.tou = 100000  # 偷灵石惩罚
         self.tou_cd = 600  # 偷灵石cd/秒
         self.tou_lower_limit = 0.01  # 偷灵石下限(百分比)
         self.tou_upper_limit = 0.2  # 偷灵石上限(百分比)

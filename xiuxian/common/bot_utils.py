@@ -1,7 +1,8 @@
 import base64
+import re
 
 from nonebot import get_bot
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent
 from nonebot.exception import ActionFailed
 
 from ..utils import get_msg_pic
@@ -90,3 +91,23 @@ async def xiuxian_send_group_img_message(group_id, msg_list: list):
     msg_seg = MessageSegment.image(path)
     data['message'].append(msg_seg)
     await get_bot().call_api(api, **data)
+
+
+def get_input_at_qq(event: MessageEvent):
+    try:
+        give_qq = event.original_message[1].data.get("qq", "")
+        return give_qq, ""
+    except:
+        return None, "指令输入错误，"
+
+
+def get_input_number(event: MessageEvent):
+    try:
+        msg = str(event.message)
+        pos = msg.find("]")
+        if pos > 0:
+            msg = msg[pos:]
+        num = re.findall("\d+", msg)
+        return num[0], ""
+    except:
+        return None, "指令输入错误，"

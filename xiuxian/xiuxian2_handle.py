@@ -527,7 +527,9 @@ class XiuxianDateManage:
         self.conn.commit()
 
     def out_closing(self, user_id, the_type):
-        """出关状态更新"""
+        """
+        出关状态更新
+        """
         pass
 
     def update_exp(self, user_id, exp):

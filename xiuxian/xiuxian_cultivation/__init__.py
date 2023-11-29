@@ -31,7 +31,6 @@ stone_exp = on_startswith("灵石修炼", priority=5, permission=GROUP, block=Tr
 two_exp = on_startswith("双修", priority=5, permission=GROUP, block=True)
 my_exp_num = on_fullmatch("我的双修次数", priority=9, permission=GROUP, block=True)
 del_exp_decimal = on_fullmatch("抑制黑暗动乱", priority=9, permission=GROUP, block=True)
-out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
 
 
 __cul_help__ = f"""
