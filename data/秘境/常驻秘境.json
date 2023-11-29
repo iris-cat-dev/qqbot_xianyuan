@@ -1,0 +1,26 @@
+{
+  "龙陵墓穴": {
+    "type_rate": 200,
+    "rank": 1,
+    "count": 20,
+    "time": 60
+  },
+  "大漠禁区": {
+    "type_rate": 100,
+    "rank": 2,
+    "count": 15,
+    "time": 90
+  },
+  "东海遗迹": {
+    "type_rate": 50,
+    "rank": 3,
+    "count": 15,
+    "time": 120
+  },
+  "终焉雪山": {
+    "type_rate": 50,
+    "rank": 4,
+    "count": 15,
+    "time": 150
+  }
+}
