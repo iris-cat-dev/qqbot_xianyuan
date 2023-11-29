@@ -34,6 +34,11 @@ LING_TIAN_CONFIG = {
         "level_up_cost": 160000000
     }
 }
+GETCONFIG = {
+    "time_cost": 4,  # 单位小时
+    "加速基数": 0.05
+}
+
 sql_message = XiuxianDateManage()
 items = Items()
 
@@ -94,10 +99,7 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(garden_get, message=msg)
 
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
-    GETCONFIG = {
-        "time_cost": 4,  # 单位小时
-        "加速基数": 0.05
-    }
+
     last_time = mix_elixir_info['收取时间']
     if last_time != 0:
         now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # str

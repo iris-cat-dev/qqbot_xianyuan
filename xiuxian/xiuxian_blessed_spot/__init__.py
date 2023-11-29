@@ -1,12 +1,13 @@
 from datetime import datetime
 from .garden import garden_get, garden_up, garden_help
+from .vein import vein_help, vein_get, vein_up
 from nonebot import on_fullmatch, on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
 from ..lay_out import Cooldown
-from ..read_buff import save_player_info, get_player_info, UserBuffDate
+from ..read_buff import save_player_info, get_player_info, UserBuffDate, read_player_info
 from ..utils import check_user
 from ..xiuxian2_handle import XiuxianDateManage
 
@@ -26,6 +27,7 @@ __buff_help__ = f"""
 2、我的洞天福地:查看自己的洞天福地
 3、洞天福地改名+名字：修改自己洞天福地的名字
 4、灵田系统:输入【灵田帮助】
+5、灵矿系统:输入【灵矿帮助】
 """.strip()
 
 
@@ -72,16 +74,19 @@ async def blessed_spot_info_(_: Bot, event: GroupMessageEvent):
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
         await xiuxian_send_message(blessed_spot_info, message=msg)
 
-    msg = f'\n道友的洞天福地:\n'
+    msg = f'道友的洞天福地:\n'
     user_buff_data = UserBuffDate(user_id).BuffInfo
     if user_info.blessed_spot_name == 0:
         blessed_spot_name = "尚未命名"
     else:
         blessed_spot_name = user_info.blessed_spot_name
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
+    vein_info = read_player_info(user_id, "vein")
+
     msg += f"名字：{blessed_spot_name}\n"
     msg += f"修炼速度：增加{int(user_buff_data.blessed_spot) * 100}%\n"
-    msg += f"灵田数量：{mix_elixir_info['灵田数量']}"
+    msg += f"灵田数量：{mix_elixir_info['灵田数量']}\n"
+    msg += f"灵矿数量：{vein_info['num']}"
     await xiuxian_send_message(blessed_spot_info, message=msg)
 
 

@@ -157,9 +157,9 @@ async def _(_: Bot, event: GroupMessageEvent):
             msg = '野外秘境尚未生成，请道友耐心等待!'
             await xiuxian_send_message(explore_rift, msg)
 
-        if user_id in group_rift[group_id].l_user_id:
-            msg = '道友已经参加过本次秘境啦，请把机会留给更多的道友！'
-            await xiuxian_send_message(explore_rift, msg)
+        # if user_id in group_rift[group_id].l_user_id:
+        #     msg = '道友已经参加过本次秘境啦，请把机会留给更多的道友！'
+        #     await xiuxian_send_message(explore_rift, msg)
 
         group_rift[group_id].l_user_id.append(user_id)
         group_rift[group_id].count -= 1

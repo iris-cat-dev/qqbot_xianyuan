@@ -133,7 +133,7 @@ async def shop_buy_(bot: Bot, event: GroupMessageEvent):
 
         try:
             msg = str(event.message)
-            arg = re.findall("\d+", msg)  # boss编号
+            arg = re.findall("\d+", msg)
             arg = int(arg[0])
             if arg <= 0 or arg > len(shop_data[group_id]):
                 msg = "请输入正确的编号！"
@@ -363,7 +363,7 @@ async def goods_re_root_(bot: Bot, event: GroupMessageEvent):
     """
     user_id = event.user_id
     message = str(event.message)
-    args = message[4:0]
+    args = message[4:]
     if args is None:
         msg = "请输入要回收的物品！"
         await xiuxian_send_message(shop_added_by_admin, msg)

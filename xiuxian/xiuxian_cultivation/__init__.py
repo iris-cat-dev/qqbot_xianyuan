@@ -31,6 +31,8 @@ stone_exp = on_startswith("灵石修炼", priority=5, permission=GROUP, block=Tr
 two_exp = on_startswith("双修", priority=5, permission=GROUP, block=True)
 my_exp_num = on_fullmatch("我的双修次数", priority=9, permission=GROUP, block=True)
 del_exp_decimal = on_fullmatch("抑制黑暗动乱", priority=9, permission=GROUP, block=True)
+out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
+
 
 __cul_help__ = f"""
 修炼帮助信息:
@@ -39,6 +41,7 @@ __cul_help__ = f"""
 2、出关:结束闭关
 3、灵石出关:使用灵石进行闭关，自动计算消耗灵石
 4、灵石修炼:通过灵石增加修为
+
 5、双修: 与道侣一起修炼
 6、我的双修次数:每日的双修剩余次数
 7、抑制黑暗动乱:清除修为浮点数
