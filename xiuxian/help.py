@@ -3,9 +3,8 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 
 from .common.bot_utils import xiuxian_send_message
 from .lay_out import Cooldown
-from .utils import CommandObjectID, check_user
 from .xiuxian2_handle import XiuxianDateManage
-from ..xiuxian import XiuConfig
+from .xiuxian_config import XiuConfig
 
 __xiuxian_notes__ = f"""
 指令：
@@ -83,36 +82,3 @@ async def warring_help_(bot: Bot, _: GroupMessageEvent):
 @xiuxian_update_log.handle(parameterless=[Cooldown(at_sender=True)])
 async def xiuxian_update_log_(bot: Bot, _: GroupMessageEvent):
     await xiuxian_send_message(xiuxian_update_log, __xiuxian_updata_data__)
-
-
-@xiuxian_update_level.handle(parameterless=[Cooldown(at_sender=True)])
-async def xiuxian_updata_level_(bot: Bot, event: GroupMessageEvent):
-    """将修仙1的境界适配到修仙2"""
-    _, user_info, msg = check_user(event)
-    level_dict = {
-        "练气境": "练气境",
-        "筑基境": "筑基境",
-        "结丹境": "结丹境",
-        "元婴境": "元婴境",
-        "化神境": "化神境",
-        "炼虚境": "炼虚境",
-        "合体境": "合体境",
-        "大乘境": "大乘境",
-        "渡劫境": "渡劫境",
-        "半步真仙": "真仙境中期",
-        "真仙境": "玄仙境",
-        "金仙境": "地仙境",
-        "太乙境": "天仙境"
-    }
-    level = user_info.level
-    user_id = user_info.user_id
-    if level == "半步真仙":
-        level = "真仙境中期"
-    else:
-        try:
-            level = level_dict.get(level[:3]) + level[-2:]
-        except:
-            level = level
-    sql_message.updata_level(user_id=user_id, level_name=level)
-    msg = '境界适配成功成功！'
-    await xiuxian_send_message(xiuxian_update_level, msg)

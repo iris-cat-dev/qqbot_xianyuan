@@ -4,10 +4,11 @@ import random
 import sqlite3
 from collections import namedtuple
 from pathlib import Path
+
+from nonebot import get_driver
 from nonebot.log import logger
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
-from . import DRIVER
 
 DATABASE = Path() / "data" / "xiuxian"
 
@@ -1312,25 +1313,21 @@ class OtherSet(XiuConfig):
 
 from .read_buff import UserBuffDate
 from .item_json import Items
-from .xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
 
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
+DRIVER = get_driver()
+
 items = Items()
 
 
 def final_user_data(user_data):
-    """传入用户当前信息、buff信息,返回最终信息"""
+    """
+    传入用户当前信息、buff信息,返回最终信息
+    """
     user_data = list(user_data)
-    #
-    impart_data = xiuxian_impart.get_user_message(user_data[1])
-    if impart_data:
-        pass
-    else:
-        xiuxian_impart._create_user(user_data[1])
-    impart_data = xiuxian_impart.get_user_message(user_data[1])
-    impart_hp_per = impart_data.impart_hp_per if impart_data is not None else 0
-    impart_mp_per = impart_data.impart_mp_per if impart_data is not None else 0
-    impart_atk_per = impart_data.impart_atk_per if impart_data is not None else 0
+
+    impart_hp_per = 0
+    impart_mp_per = 0
+    impart_atk_per = 0
     #
     user_buff_data = UserBuffDate(user_data[1]).BuffInfo
     if int(user_buff_data.faqi_buff) == 0:
@@ -1349,6 +1346,25 @@ def final_user_data(user_data):
     # 每级+4%攻击
     user_data = tuple(user_data)
     return user_data
+
+
+sql_message = XiuxianDateManage()
+
+def leave_harm_time(user_id):
+    hp_speed = 25
+    user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
+    level = user_mes.level
+    level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
+    realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+    user_buff_data = UserBuffDate(user_id)
+    mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+    mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0  # 功法修炼倍率
+    try:
+        time = int(((user_mes.exp / 10) - user_mes.hp) / ((XiuConfig().closing_exp * level_rate * realm_rate * (
+                    1 + mainbuffratebuff)) * hp_speed))
+    except:
+        time = "无穷大"
+    return time
 
 
 @DRIVER.on_shutdown

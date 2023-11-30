@@ -10,7 +10,7 @@ from ..item_json import Items
 from ..lay_out import Cooldown
 from ..read_buff import get_player_info, save_player_info
 from ..utils import check_user
-from ..xiuxian2_handle import XiuxianDateManage, xiuxian_impart
+from ..xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import USERRANK
 
 garden_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)

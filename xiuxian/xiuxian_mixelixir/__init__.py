@@ -1,33 +1,29 @@
-import random
 import re
+
 from nonebot import on_command, on_fullmatch
-from nonebot.params import EventPlainText
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
     GroupMessageEvent,
     MessageSegment
 )
+from nonebot.params import EventPlainText
 
+from .mix_elixir_config import MIXELIXIRCONFIG
+from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix, make_dict
 from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player
-from ..lay_out import assign_bot, Cooldown
-from ..xiuxian2_handle import XiuxianDateManage
+from ..item_json import Items
+from ..lay_out import Cooldown
+from ..read_buff import get_player_info, save_player_info
 from ..utils import (
     check_user,
     send_forward_msg, get_msg_pic,
     CommandObjectID
 )
-from ..item_json import Items
-from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix, make_dict
-from ..read_buff import get_player_info, save_player_info
-from ..xiuxian_config import USERRANK, XiuConfig
-from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
-from datetime import datetime
-from .mix_elixir_config import MIXELIXIRCONFIG
+from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian_config import XiuConfig
 
-sql_message = XiuxianDateManage()  # sql类
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
+sql_message = XiuxianDateManage()
 items = Items()
 cache_help = {}
 

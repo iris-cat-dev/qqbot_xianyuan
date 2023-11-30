@@ -4,14 +4,14 @@ import re
 from nonebot import on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
-from .. import XiuConfig
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
 from ..common.param_checker import check_player
+from ..data_source import jsondata
 from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate
 from ..utils import check_user
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet, xiuxian_impart
-from ..xn_xiuxian_impart import leave_harm_time
+from ..xiuxian2_handle import XiuxianDateManage, OtherSet, leave_harm_time
+from ..xiuxian_config import XiuConfig
 
 give_stone = on_startswith("送灵石", priority=5, permission=GROUP, block=True)
 steal_stone = on_startswith("偷灵石", priority=4, permission=GROUP, block=True)
@@ -210,7 +210,6 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(give_stone, message=msg)
 
 
-
 # @gm_command.handle(parameterless=[Cooldown(at_sender=True)])
 # async def gm_command_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
 #     """
@@ -326,16 +325,13 @@ async def rob_stone_(bot: Bot, event: GroupMessageEvent):
             msg = f"道友重伤未愈，动弹不得！距离脱离生命危险还需要{time_msg}分钟！"
             await xiuxian_send_message(rob_stone, message=msg)
 
-        impart_data_1 = xiuxian_impart.get_user_message(user_id)
         player1['user_id'] = user_info.user_id
         player1['道号'] = user_info.user_name
         player1['气血'] = user_info.hp
         player1['攻击'] = user_info.atk
         player1['真元'] = user_info.mp
-        player1['会心'] = int(
-            (0.01 + impart_data_1.impart_know_per if impart_data_1 is not None else 0) * 100)
-        player1['爆伤'] = int(
-            1.5 + impart_data_1.impart_burst_per if impart_data_1 is not None else 0)
+        player1['会心'] = int(0)
+        player1['爆伤'] = int(1.5 + 0)
         user_buff_data = UserBuffDate(user_id)
         user_armor_data = user_buff_data.get_user_armor_buff_data()
         if user_armor_data is not None:
@@ -344,16 +340,13 @@ async def rob_stone_(bot: Bot, event: GroupMessageEvent):
             def_buff = 0
         player1['防御'] = def_buff
 
-        impart_data_2 = xiuxian_impart.get_user_message(user_2.user_id)
         player2['user_id'] = user_2.user_id
         player2['道号'] = user_2.user_name
         player2['气血'] = user_2.hp
         player2['攻击'] = user_2.atk
         player2['真元'] = user_2.mp
-        player2['会心'] = int(
-            (0.01 + impart_data_2.impart_know_per if impart_data_2 is not None else 0) * 100)
-        player2['爆伤'] = int(
-            1.5 + impart_data_2.impart_burst_per if impart_data_2 is not None else 0)
+        player1['会心'] = int(0)
+        player1['爆伤'] = int(1.5 + 0)
         user_buff_data = UserBuffDate(user_2.user_id)
         user_armor_data = user_buff_data.get_user_armor_buff_data()
         if user_armor_data is not None:

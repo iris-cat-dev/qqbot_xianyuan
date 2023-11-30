@@ -4,7 +4,7 @@ from datetime import datetime
 from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
-from .. import XiuConfig
+
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
@@ -12,6 +12,7 @@ from ..item_json import Items
 from ..lay_out import Cooldown
 from ..utils import check_user
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..xiuxian_config import XiuConfig
 
 level_up = on_fullmatch("突破", priority=6, permission=GROUP, block=True)
 level_up_dr = on_fullmatch("渡厄突破", priority=7, permission=GROUP, block=True)

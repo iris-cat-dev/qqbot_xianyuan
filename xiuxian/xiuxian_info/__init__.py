@@ -8,7 +8,7 @@ from ..data_source import jsondata
 from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate
 from ..utils import check_user, number_to
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet, xiuxian_impart
+from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 
 xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GROUP, block=True)

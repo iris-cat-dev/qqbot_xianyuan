@@ -4,7 +4,7 @@ import random
 import re
 from pathlib import Path
 
-from nonebot import get_bots, get_bot, on_fullmatch, on_startswith
+from nonebot import get_bots, get_bot, on_fullmatch, on_startswith, get_driver
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
@@ -17,18 +17,16 @@ from nonebot_plugin_apscheduler import scheduler
 from .bossconfig import get_config, savef
 from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
-from .. import DRIVER
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message, xiuxian_send_group_img_message
 from ..common.param_checker import check_player, check_admin
 from ..item_json import Items
-from ..lay_out import put_bot, layout_bot_dict, Cooldown
+from ..lay_out import  Cooldown
 from ..player_fight import Boss_fight
 from ..read_buff import UserBuffDate
 from ..utils import number_to, check_user, get_msg_pic
-from ..xiuxian2_handle import XiuxianDateManage
+from ..xiuxian2_handle import XiuxianDateManage, leave_harm_time
 from ..xiuxian_config import USERRANK, MAX_RANK
 from ..xiuxian_config import XiuConfig
-from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF, leave_harm_time
 
 config = get_config()
 cache_help = {}
@@ -37,7 +35,6 @@ group_boss = {}
 groups = config['open']
 battle_flag = {}
 sql_message = XiuxianDateManage()
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
 
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
 set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
@@ -63,6 +60,7 @@ __boss_help__ = f"""
 8、世界积分兑换+编号：兑换对应的商品
 """.strip()
 
+DRIVER = get_driver()
 
 @DRIVER.on_startup
 async def read_boss_():
@@ -255,8 +253,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     userinfo = XiuxianDateManage().get_user_real_info(user_id)
     user_weapon_data = UserBuffDate(userinfo.user_id).get_user_weapon_data()
 
-    impart_data = xiuxian_impart.get_user_message(user_id)
-    boss_atk = impart_data.boss_atk if impart_data.boss_atk is not None else 0
+    boss_atk =  0
 
     if user_weapon_data != None:
         player['会心'] = int(user_weapon_data['crit_buff'] * 100)

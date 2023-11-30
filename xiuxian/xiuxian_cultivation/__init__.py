@@ -10,17 +10,15 @@ from .two_exp_cd import two_exp_cd
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
-from ..lay_out import assign_bot, Cooldown
+from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate
 from ..utils import check_user
 from ..utils import check_user_type, get_msg_pic
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
-from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
 
 cache_help = {}
 sql_message = XiuxianDateManage()
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
 
 two_exp_cd_up = require("nonebot_plugin_apscheduler").scheduler
 
@@ -31,7 +29,6 @@ stone_exp = on_startswith("灵石修炼", priority=5, permission=GROUP, block=Tr
 two_exp = on_startswith("双修", priority=5, permission=GROUP, block=True)
 my_exp_num = on_fullmatch("我的双修次数", priority=9, permission=GROUP, block=True)
 del_exp_decimal = on_fullmatch("抑制黑暗动乱", priority=9, permission=GROUP, block=True)
-
 
 __cul_help__ = f"""
 修炼帮助信息:
@@ -54,6 +51,7 @@ async def two_exp_cd_up_():
 
 
 two_exp_limit = 3
+
 
 @cul_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def work_help_(_: Bot, __: GroupMessageEvent):
@@ -95,10 +93,9 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent):
             limt_1 = two_exp_cd.find_user(user_1.user_id)
             limt_2 = two_exp_cd.find_user(user_2.user_id)
             # 加入传承
-            impart_data_1 = xiuxian_impart.get_user_message(user_1.user_id)
-            impart_data_2 = xiuxian_impart.get_user_message(user_2.user_id)
-            impart_two_exp_1 = impart_data_1.impart_two_exp if impart_data_1 is not None else 0
-            impart_two_exp_2 = impart_data_2.impart_two_exp if impart_data_2 is not None else 0
+
+            impart_two_exp_1 = 0
+            impart_two_exp_2 = 0
             if limt_1 >= two_exp_limit + impart_two_exp_1:
                 msg = "道友今天双修次数已经到达上限！"
                 await xiuxian_send_message(two_exp, message=msg)
@@ -324,8 +321,8 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
             # 洞天福地为加法
         )  # 本次闭关获取的修为
         # 计算传承增益
-        impart_data = xiuxian_impart.get_user_message(user_id)
-        impart_exp_up = impart_data.impart_exp_up if impart_data is not None else 0
+
+        impart_exp_up = 0
         exp = int(exp * (1 + impart_exp_up))
         if exp >= user_get_exp_max:
             # 用户获取的修为到达上限
@@ -390,7 +387,6 @@ async def del_exp_decimal_(bot: Bot, event: GroupMessageEvent):
     """
     清除修为浮点数
     """
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
         if XiuConfig().img:
@@ -399,9 +395,11 @@ async def del_exp_decimal_(bot: Bot, event: GroupMessageEvent):
         else:
             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
         await del_exp_decimal.finish()
+
     user_id = user_info.user_id
     exp = user_info.exp
     sql_message.del_exp_decimal(user_id, exp)
+
     msg = "黑暗动乱暂时抑制成功！"
     if XiuConfig().img:
         pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)

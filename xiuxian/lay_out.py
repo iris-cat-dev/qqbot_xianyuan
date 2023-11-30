@@ -4,16 +4,14 @@ from collections import defaultdict
 from enum import IntEnum, auto
 from typing import DefaultDict, Dict, Any
 
-from nonebot import get_bots, get_bot, require
+from nonebot import require
 from nonebot.adapters.onebot.v11 import Bot, MessageSegment
-from nonebot.adapters.onebot.v11.event import MessageEvent, GroupMessageEvent
+from nonebot.adapters.onebot.v11.event import GroupMessageEvent
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import Depends
-from nonebot.rule import Rule
 
-from .utils import get_msg_pic
-from .xiuxian_config import XiuConfig, JsonConfig
+from .xiuxian_config import JsonConfig
 
 limit_all = require("nonebot_plugin_apscheduler").scheduler
 limit_all_data: Dict[str, Any] = {}
@@ -37,8 +35,7 @@ def limit_all_run(user_id: str):
         num = limit_all_data[user_id]["num"]
         tip = limit_all_data[user_id]["tip"]
     except:
-        limit_all_data[user_id] = {"num": 0,
-                                   "tip": False}
+        limit_all_data[user_id] = {"num": 0, "tip": False}
         num = 0
         tip = False
     num += 1
@@ -55,27 +52,23 @@ def limit_all_run(user_id: str):
         return None
 
 
-_chat_flmt_notice = random.choice(
+cd_notice = random.choice(
     [
         "慢...慢一..点❤，还有{}秒，让我再歇会！",
         "冷静一下，还有{}秒，让我再歇会！",
         "时间还没到，还有{}秒，歇会歇会~~"
     ]
 )
-cd_notice = random.choice(["别急！", "急也没用!", "让我先急!"])
 
 
 class CooldownIsolateLevel(IntEnum):
-    """命令冷却的隔离级别"""
-
-    GLOBAL = auto()
-    """全局使用同一个冷却计时"""
-    GROUP = auto()
-    """群组内使用同一个冷却计时"""
-    USER = auto()
-    """按用户使用同一个冷却计时"""
-    GROUP_USER = auto()
-    """群组内每个用户使用同一个冷却计时"""
+    """
+    命令冷却的隔离级别
+    """
+    GLOBAL = auto()  # 全局使用同一个冷却计时
+    GROUP = auto()  # 群组内使用同一个冷却计时
+    USER = auto()  # 每个用户同一个冷却计时
+    GROUP_USER = auto()  # 群组内每个用户使用同一个冷却计时
 
 
 def Cooldown(
@@ -150,8 +143,7 @@ def Cooldown(
                     event.sender.role == "owner" or
                     event.get_user_id() in bot.config.superusers
             ):
-                bot = await assign_bot_group(group_id=group_id)
-                await matcher.finish( message=MessageSegment.at(
+                await matcher.finish(message=MessageSegment.at(
                     event.get_user_id()) + f"本群已关闭修仙模组,请联系管理员开启,开启命令为【启用修仙功能】!")
             else:
                 await matcher.finish()
@@ -162,14 +154,7 @@ def Cooldown(
                 time = int(cd_time - (loop.time() - time_sy[key]))
                 if time <= 1:
                     time = 1
-                if XiuConfig().img:
-                    pic = await get_msg_pic(f"@{event.sender.nickname}\n" + _chat_flmt_notice.format(time))
-                    bot = await assign_bot_group(group_id=group_id)
-                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-                    await matcher.finish()
-                else:
-                    bot = await assign_bot_group(group_id=group_id)
-                    await matcher.finish(group_id=int(group_id), message=_chat_flmt_notice.format(time))
+                await matcher.finish(group_id=int(group_id), message=cd_notice.format(time))
             else:
                 await matcher.finish()
         else:
@@ -179,68 +164,3 @@ def Cooldown(
         return
 
     return Depends(dependency)
-
-
-put_bot = XiuConfig().put_bot
-main_bot = XiuConfig().main_bo
-layout_bot_dict = XiuConfig().layout_bot_dict
-
-
-async def check_bot(bot: Bot) -> bool:  # 检测bot实例是否为主qq
-    if str(bot.self_id) in put_bot:
-        return True
-    else:
-        return False
-
-
-def check_rule_bot() -> Rule:  # 对传入的消息检测，是主qq传入的消息就响应，其他的不响应
-    async def _check_bot_(bot: Bot, event: GroupMessageEvent) -> bool:
-        if str(bot.self_id) in put_bot:
-            if str(event.get_user_id()) in main_bot:
-                return False
-            else:
-                return True
-        else:
-            return False
-
-    return Rule(_check_bot_)
-
-
-async def range_bot(bot: Bot, event: GroupMessageEvent):  # 随机一个qq发送消息
-    group_id = str(event.group_id)
-    bot_list = list(get_bots().keys())
-    try:
-        bot = get_bots()[random.choice(bot_list)]
-    except KeyError:
-        pass
-    return bot, group_id
-
-
-async def assign_bot(bot: Bot, event: GroupMessageEvent):  # 按字典分配对应qq发送消息
-    group_id = str(event.group_id)
-    try:
-        bot_id = layout_bot_dict[group_id]
-        if type(bot_id) is str:
-            bot = get_bots()[bot_id]
-        elif type(bot_id) is list:
-            bot = get_bots()[random.choice(bot_id)]
-        else:
-            bot = bot
-    except:
-        bot = bot
-    return bot, group_id
-
-
-async def assign_bot_group(group_id):  # 只导入群号，按字典分配对应qq发送消息
-    group_id = str(group_id)
-    try:
-        bot_id = layout_bot_dict[group_id]
-        if type(bot_id) is str:
-            bot = get_bots()[bot_id]
-        elif type(bot_id) is list:
-            bot = get_bots()[random.choice(bot_id)]
-        else:
-            bot = get_bots()[put_bot[0]]
-    except:
-        bot = get_bot()
-    return bot

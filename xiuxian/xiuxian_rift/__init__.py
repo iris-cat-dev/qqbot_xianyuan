@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 
-from nonebot import require, on_fullmatch, on_startswith
+from nonebot import require, on_fullmatch, on_startswith, get_driver
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
@@ -14,7 +14,6 @@ from .old_rift_info import old_rift_info
 from .riftconfig import get_config, savef
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
     get_boss_battle_info, get_treasure_info, STORY
-from .. import DRIVER
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.param_checker import check_player, check_admin
 from ..lay_out import Cooldown
@@ -52,6 +51,7 @@ __rift_help__ = f"""
 """.strip()
 
 
+DRIVER = get_driver()
 @DRIVER.on_startup
 async def read_rift_():
     global group_rift

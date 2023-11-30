@@ -7,10 +7,8 @@ from ..xiuxian2_handle import XiuxianDateManage
 from ..player_fight import Boss_fight
 from ..item_json import Items
 from ..xiuxian_config import USERRANK
-from ..xn_xiuxian_impart import XIUXIAN_IMPART_BUFF
 
 sql_message = XiuxianDateManage()
-xiuxian_impart = XIUXIAN_IMPART_BUFF()
 items = Items()
 skill_data = read_f()
 
