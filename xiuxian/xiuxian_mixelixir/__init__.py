@@ -61,7 +61,9 @@ https://huggingface.co/spaces/chewing/liandan
 
 @mix_elixir_sqdj_up.handle(parameterless=[Cooldown(at_sender=True)])
 async def mix_elixir_sqdj_up_(bot: Bot, event: GroupMessageEvent):
-    """收取等级升级"""
+    """
+    收取等级升级
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:
@@ -114,7 +116,9 @@ async def mix_elixir_sqdj_up_(bot: Bot, event: GroupMessageEvent):
 
 @mix_elixir_dykh_up.handle(parameterless=[Cooldown(at_sender=True)])
 async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
-    """丹药控火升级"""
+    """
+    丹药控火升级
+    """
     bot, send_group_id = await assign_bot(bot=bot, event=event)
     isUser, user_info, msg = check_user(event)
     if not isUser:

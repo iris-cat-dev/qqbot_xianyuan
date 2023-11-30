@@ -65,20 +65,7 @@ __back_help__ = f"""
 指令：
 1、我的背包:查看自身背包前98个物品的信息
 2、使用+物品名字：使用物品,丹药可批量使用
-3、换装+装备名字：卸载目标装备
-4、坊市购买+物品编号:购买坊市内的物品
-5、坊市查看、查看坊市:查询坊市在售物品
-6、坊市上架:坊市上架 物品 金额 数量，上架背包内的物品,最低金额50w
-7、系统坊市上架:系统坊市上架 物品 金额 数量，上架任意存在的物品，超管权限
-8、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
-9、群交流会开启、关闭:开启交友行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报交友消息
-10、交友+金额：对本次交友会的物品进行交友
-11、炼金+物品名字：将物品炼化为灵石,支持批量炼金和绑定丹药炼金
-12、背包帮助:获取背包帮助指令
-13、查看修仙界物品:支持类型【功法|神通|丹药|合成丹药|法器|防具】
-14、清空坊市:清空本群坊市,管理员权限
-非指令：
-1、定时生成交友会,每天{auction_time_config['hours']}点每整点生成一场交友会
+3、卸下+装备名字：卸载目标装备
 """.strip()
 
 
@@ -95,7 +82,7 @@ async def back_help_(_: Bot, __: GroupMessageEvent):
 
 
 @my_back.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def mind_back_(bot: Bot, event: GroupMessageEvent):
+async def mind_back_(_: Bot, event: GroupMessageEvent):
     """
     我的背包
     """
@@ -165,9 +152,8 @@ async def no_use_zb_(_: Bot, event: GroupMessageEvent):
 
 @use.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def use_(bot: Bot, event: GroupMessageEvent):
-    """使用物品
-    ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
-    "remake", "day_num", "all_num", "action_time", "state"]
+    """
+    使用物品
     """
     _, user_info, msg = check_user(event)
 

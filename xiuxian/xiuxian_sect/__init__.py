@@ -10,7 +10,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.log import logger
 
 from .sectconfig import get_config
-from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq
+from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
 from ..item_json import Items
@@ -36,12 +36,12 @@ resetusertask = require("nonebot_plugin_apscheduler").scheduler
 
 sect_help = on_fullmatch("宗门帮助", priority=5, permission=GROUP, block=True)
 upatkpractice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP, block=True)
-my_sect = on_command("我的宗门", aliases={"宗门信息"}, priority=5, permission=GROUP, block=True)
-create_sect = on_command("创建宗门", priority=5, permission=GROUP, block=True)
+my_sect = on_fullmatch("我的宗门", priority=5, permission=GROUP, block=True)
+create_sect = on_fullmatch("创建宗门", priority=5, permission=GROUP, block=True)
 join_sect = on_command("加入宗门", priority=5, permission=GROUP, block=True)
 sect_position_update = on_command("宗门职位变更", priority=5, permission=GROUP, block=True)
 sect_donate = on_command("宗门捐献", priority=5, permission=GROUP, block=True)
-sect_out = on_command("退出宗门", priority=5, permission=GROUP, block=True)
+sect_out = on_fullmatch("退出宗门", priority=5, permission=GROUP, block=True)
 sect_kick_out = on_command("踢出宗门", priority=5, permission=GROUP, block=True)
 sect_owner_change = on_command("宗主传位", priority=5, permission=GROUP, block=True)
 sect_list = on_fullmatch("宗门列表", priority=5, permission=GROUP, block=True)
@@ -590,24 +590,21 @@ async def sect_task_refresh_(bot: Bot, event: GroupMessageEvent):
 
 
 @sect_list.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def sect_list_(_: Bot, __: GroupMessageEvent):
+async def sect_list_(_: Bot, event: GroupMessageEvent):
     """
     宗门列表：当前为返回转发内容
     """
-    sectlists = sql_message.get_all_scale()
-    msg = ''
+    sect_list = sql_message.get_all_scale()
     msg_list = []
-    for sect in sectlists:
+    msg_list.append("☆------宗门列表------☆")
+    for sect in sect_list:
+        user_name = ""
         try:
             user_name = sql_message.get_user_message(int(sect.sect_owner)).user_name
         except AttributeError:
             pass
-        msg += f'编号{sect.sect_id}:{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}\n'
         msg_list.append(f'编号{sect.sect_id}:{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
-
-    # TODO
-    # await send_forward_msg(bot, event, '宗门列表', bot.self_id, msg_list)
-    await xiuxian_send_message(sect_list, msg)
+    await xiuxian_send_group_img_message(event.group_id, msg_list)
 
 
 @sect_users.handle(parameterless=[Cooldown(at_sender=True), check_player()])

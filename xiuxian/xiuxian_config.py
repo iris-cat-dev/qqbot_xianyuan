@@ -89,15 +89,8 @@ class XiuConfig:
         self.user_info_cd = 60  # 我的存档冷却时间
         self.level_up_cd = 60  # 突破CD(分钟)
         self.closing_exp = 30  # 闭关每分钟获取的修为
-        self.put_bot = ["2906783821"]  # 接收消息qq,主qq，框架将只处理此qq的消息，
-        self.main_bo = ["2906783821"]  # 负责发送消息的qq
-        self.shield_group = []  # 屏蔽的群聊
-        self.layout_bot_dict = {
-
-        }
-        # QQ所负责的群聊 #{群 ：bot}   其中 bot类型 []或str }
         self.sect_min_level = "元婴境圆满"
-        self.sect_create_cost = 5000000
+        self.sect_create_cost = 4000000
         self.closing_exp_upper_limit = 1.5  # 闭关获取修为上限（例如：1.5 下个境界的修为数*1.5）
         self.level_punishment_floor = 1  # 突破失败扣除修为，惩罚下限（百分比）
         self.level_punishment_limit = 10  # 突破失败扣除修为，惩罚上限(百分比)

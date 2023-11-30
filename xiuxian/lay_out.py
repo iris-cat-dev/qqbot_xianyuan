@@ -54,7 +54,7 @@ def limit_all_run(user_id: str):
 
 cd_notice = random.choice(
     [
-        "慢...慢一..点❤，还有{}秒，让我再歇会！",
+        "别急别急，还有{}秒，让我再歇会！",
         "冷静一下，还有{}秒，让我再歇会！",
         "时间还没到，还有{}秒，歇会歇会~~"
     ]
@@ -78,12 +78,11 @@ def Cooldown(
         parallel: int = 1,
 ) -> None:
     """依赖注入形式的命令冷却
-
     用法:
-        ```python
-        @matcher.handle(parameterless=[Cooldown(cooldown=11.4514, ...)])
-        async def handle_command(matcher: Matcher, message: Message):
-            ...
+        ```
+            @matcher.handle(parameterless=[Cooldown(cooldown=11.4514, ...)])
+            async def handle_command(matcher: Matcher, message: Message):
+                pass
         ```
 
     参数:
@@ -113,7 +112,7 @@ def Cooldown(
 
         limit_type = limit_all_run(str(event.get_user_id()))
         if limit_type is True:
-            await matcher.finish(message=cd_notice, reply_message=True)
+            await matcher.finish(message=cd_notice.format(5), reply_message=True)
         elif limit_type is False:
             await matcher.finish()
         else:

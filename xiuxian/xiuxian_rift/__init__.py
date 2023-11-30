@@ -50,8 +50,9 @@ __rift_help__ = f"""
 1、每日14点0分生成一个随机等级的秘境
 """.strip()
 
-
 DRIVER = get_driver()
+
+
 @DRIVER.on_startup
 async def read_rift_():
     global group_rift
@@ -109,8 +110,7 @@ async def rift_help_(_: Bot, event: GroupMessageEvent):
                f"秘境等级 {rift.rank}，"
                f"秘境可探索次数：{rift.count}次，"
                f"需要时间{rift.time}分钟")
-
-    await xiuxian_send_message(rift_help, msg)
+        await xiuxian_send_message(rift_help, msg)
 
 
 # 生成秘境

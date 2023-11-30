@@ -164,7 +164,7 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     main_buff_rate_buff = main_buff_data['ratebuff'] if main_buff_data is not None else 0
     main_hp_buff = main_buff_data['hpbuff'] if main_buff_data is not None else 0
     main_mp_buff = main_buff_data['mpbuff'] if main_buff_data is not None else 0
-    impart_data = xiuxian_impart.get_user_message(user_id)
+    impart_data = None
     impart_hp_per = impart_data.impart_hp_per if impart_data is not None else 0
     impart_mp_per = impart_data.impart_mp_per if impart_data is not None else 0
     impart_know_per = impart_data.impart_know_per if impart_data is not None else 0
