@@ -25,6 +25,7 @@ from ..xiuxian_config import XiuConfig
 #         else:
 #             await help_in.finish(message=msg, reply_message=True)
 
+
 def save_tmp_img(img: bytes):
     path = "/Users/bytedance/Library/Containers/com.tencent.qq/Data/Documents/LiteLoaderQQNT/plugins_data/LLOneBot/tmp.png"
     with open(path, 'wb') as f:
@@ -93,7 +94,7 @@ async def xiuxian_send_group_img_message(group_id, msg_list: list):
     await get_bot().call_api(api, **data)
 
 
-def get_input_at_qq(event: MessageEvent):
+def get_input_at_qq(event: MessageEvent) -> (int, str):
     try:
         give_qq = event.original_message[1].data.get("qq", "")
         return give_qq, ""
@@ -101,7 +102,7 @@ def get_input_at_qq(event: MessageEvent):
         return None, "指令输入错误，"
 
 
-def get_input_number(event: MessageEvent):
+def get_input_number(event: MessageEvent) -> (int, str):
     try:
         msg = str(event.message)
         pos = msg.find("]")
@@ -109,5 +110,14 @@ def get_input_number(event: MessageEvent):
             msg = msg[pos:]
         num = re.findall("\d+", msg)
         return num[0], ""
+    except:
+        return None, "指令输入错误，"
+
+
+def get_input_cmd(event: MessageEvent, position: int) -> (str, str):
+    try:
+        message = str(event.message)
+        cmd = message[position:]
+        return cmd, ""
     except:
         return None, "指令输入错误，"

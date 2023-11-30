@@ -1,7 +1,8 @@
 from .reward_data_source import *
 import random
+
+from ..common.rank import RANK
 from ..item_json import Items
-from ..xiuxian_config import USERRANK
 from ..xiuxian2_handle import OtherSet
 
 
@@ -31,7 +32,7 @@ def workmake(work_level, exp, user_level):
         success_msg = work_info['succeed']
         fail_msg = work_info['fail']
         item_type = get_random_item_type()
-        item_id = item_s.get_random_id_list_by_rank_and_item_type(USERRANK[user_level], item_type)
+        item_id = item_s.get_random_id_list_by_rank_and_item_type(RANK[user_level], item_type)
         if not item_id:
             item_id = 0
         else:

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from ..common.rank import RANK
 from ..item_json import Items
 from ..read_buff import (
     UserBuffDate, get_weapon_info_msg,
@@ -7,7 +8,6 @@ from ..read_buff import (
 )
 from ..read_buff import get_player_info, save_player_info
 from ..xiuxian2_handle import XiuxianDateManage
-from ..xiuxian_config import USERRANK
 
 items = Items()
 sql_message = XiuxianDateManage()
@@ -279,7 +279,7 @@ def get_elixir_msg(l_msg, goods_id, goods_num):
 
 def check_use_elixir(user_id, goods_id, num):
     user_info = sql_message.get_user_message(user_id)
-    user_rank = USERRANK[user_info.level]
+    user_rank = RANK[user_info.level]
     goods_info = items.get_data_by_item_id(goods_id)
     goods_rank = goods_info['rank']
     goods_name = goods_info['name']

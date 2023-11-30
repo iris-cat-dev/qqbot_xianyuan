@@ -11,7 +11,7 @@ from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.params import Depends
 
-from .xiuxian_config import JsonConfig
+from nonebot_plugin_xiuxian3.xiuxian.xiuxian_config import GlobalGameData
 
 limit_all = require("nonebot_plugin_apscheduler").scheduler
 limit_all_data: Dict[str, Any] = {}
@@ -26,11 +26,10 @@ def limit_all():
     logger.success("已重置消息字典！")
 
 
-def limit_all_run(user_id: str):
+def limit_all_run(user_id: int):
     global limit_all_data
     user_id = str(user_id)
-    num = None
-    tip = None
+
     try:
         num = limit_all_data[user_id]["num"]
         tip = limit_all_data[user_id]["tip"]
@@ -107,10 +106,10 @@ def Cooldown(
         return
 
     async def dependency(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
-        group_id = str(event.group_id)
-        conf_data = JsonConfig().read_data()
+        group_id = event.group_id
+        conf_data = GlobalGameData()
 
-        limit_type = limit_all_run(str(event.get_user_id()))
+        limit_type = limit_all_run(event.user_id)
         if limit_type is True:
             await matcher.finish(message=cd_notice.format(5), reply_message=True)
         elif limit_type is False:
@@ -136,18 +135,19 @@ def Cooldown(
             )
         else:
             key = CooldownIsolateLevel.GLOBAL.name
-        if group_id not in conf_data["group"]:
+        if group_id not in conf_data.groups:
             if (
                     event.sender.role == "admin" or
                     event.sender.role == "owner" or
                     event.get_user_id() in bot.config.superusers
             ):
                 await matcher.finish(message=MessageSegment.at(
-                    event.get_user_id()) + f"本群已关闭修仙模组,请联系管理员开启,开启命令为【启用修仙功能】!")
+                    event.get_user_id()) + f"本群已关闭修仙模组,请联系管理员开启,开启命令为【群修仙开启】!")
             else:
                 await matcher.finish()
         else:
             pass
+
         if running[key] <= 0:
             if cd_time >= 1.5:
                 time = int(cd_time - (loop.time() - time_sy[key]))

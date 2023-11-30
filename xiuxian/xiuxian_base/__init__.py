@@ -1,28 +1,26 @@
 from datetime import datetime
 
-from nonebot import on_command, on_fullmatch, on_startswith
+from nonebot import on_fullmatch, on_startswith
 from nonebot import require
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
-from nonebot.permission import SUPERUSER
 
-from ..common.bot_utils import xiuxian_send_message
+from ..common.bot_utils import xiuxian_send_message, get_input_cmd
 from ..common.param_checker import check_player
 
 from ..lay_out import Cooldown
 from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate
-from ..xiuxian_config import JsonConfig
 
 from .level_up import level_up, level_up_zj, level_up_dr
 from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
+from ..xiuxian_config import GlobalGameData
 
-
+open_xiuxian = on_startswith("群修仙", priority=5, block=True)
 run_xiuxian = on_fullmatch("我要修仙", priority=8, block=True)
-open_xiuxian = on_command("启用修仙功能", aliases={'禁用修仙功能'}, permission=SUPERUSER, priority=5, block=True)
 check_in = on_fullmatch("修仙签到", priority=13, permission=GROUP, block=True)
 replay = on_fullmatch("重入仙途", permission=GROUP, priority=7, block=True)
+reset = on_startswith("重置状态", priority=12, block=True)
 rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
-reset = on_startswith("重置状态", permission=SUPERUSER, priority=12, block=True)
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 sql_message = XiuxianDateManage()
@@ -81,14 +79,17 @@ async def restart_(_: Bot, event: GroupMessageEvent):
 @rename.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def rename_(_: Bot, event: GroupMessageEvent):
     """
-    修改道号
+    改名
     """
     user_id = event.get_user_id()
-    message = str(event.message)
-    user_name = message[2:]
+    user_name, msg = get_input_cmd(event, 2)
+    if not user_name:
+        msg += "请输入：【改名+道号】"
+        return await xiuxian_send_message(open_xiuxian, message=msg)
+
     length = len(user_name.encode('gbk'))
     if length > 20:
-        msg = "道号长度过长，请修改后重试！"
+        msg = "道号太长会遭天谴的，请修改后重试！"
         await xiuxian_send_message(rename, message=msg)
 
     msg = sql_message.update_user_name(user_id, user_name)
@@ -122,15 +123,27 @@ async def reset_(_: Bot, __: GroupMessageEvent):
 
 @open_xiuxian.handle()
 async def open_xiuxian_(_: Bot, event: GroupMessageEvent):
-    """群修仙开关配置"""
-    group_msg = str(event.message)
-    group_id = str(event.group_id)
-    if "启用" in group_msg:
-        JsonConfig().write_data(1, group_id)  # 添加
+    """
+    群修仙开关配置
+    """
+    group_id = event.group_id
+    cmd, msg = get_input_cmd(event, 3)
+    if not cmd:
+        msg += "请输入：【群修仙+开启/关闭】"
+        return await xiuxian_send_message(open_xiuxian, message=msg)
+
+    global_data = GlobalGameData()
+    if "开启" == cmd:
+        if group_id not in global_data.groups:
+            global_data.groups.append(group_id)
         msg = "当前群聊修仙模组已启用！"
-    elif "禁用" in group_msg:
-        JsonConfig().write_data(2, group_id)  # 删除
+
+    elif "关闭" == cmd:
+        if group_id in global_data.groups:
+            global_data.groups.remove(group_id)
         msg = "当前群聊修仙模组已禁用！"
     else:
-        msg = "指令错误，请输入：启用修仙功能/禁用修仙功能"
+        msg = "指令错误！请输入：【群修仙+开启/关闭】"
+
+    global_data.save()
     await xiuxian_send_message(open_xiuxian, message=msg)

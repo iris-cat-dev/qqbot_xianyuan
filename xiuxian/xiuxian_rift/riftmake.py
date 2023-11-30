@@ -1,12 +1,12 @@
 import random
 from .riftconfig import get_config
+from ..common.rank import RANK
 from ..xiuxian2_handle import OtherSet
 from .jsondata import read_f
 from ..read_buff import UserBuffDate
 from ..xiuxian2_handle import XiuxianDateManage
 from ..player_fight import Boss_fight
 from ..item_json import Items
-from ..xiuxian_config import USERRANK
 
 sql_message = XiuxianDateManage()
 items = Items()
@@ -123,7 +123,7 @@ async def get_boss_battle_info(user_info, rift_rank, bot_id):
     result, victor, bossinfo_new, stone = await Boss_fight(player, boss_info, bot_id=bot_id)  # 未开启，1不写入，2写入
 
     if victor == "群友赢了":  # 获胜
-        user_rank = 50 - USERRANK[user_info.level]  # 50-用户当前等级
+        user_rank = 50 - RANK[user_info.level]  # 50-用户当前等级
         success_info = STORY['战斗']['Boss战斗']["success"]
         msg = success_info['desc'].format(boss_info["name"])
         give_exp = int(random.choice(success_info["give"]["exp"]) * user_info.exp)
@@ -264,7 +264,7 @@ def get_goods_type():
 def get_id_by_rank(dict_data, user_level, rift_rank=0):
     """根据字典的rank、用户等级、秘境等级随机获取key"""
     l_temp = []
-    final_rank = USERRANK[user_level] - rift_rank  # 秘境等级，会提高用户的等级
+    final_rank = RANK[user_level] - rift_rank  # 秘境等级，会提高用户的等级
     pass_rank = 30  # 最终等级超过次等级会抛弃
     for k, v in dict_data.items():
         if v["rank"] >= final_rank and (v["rank"] - final_rank) <= pass_rank:
@@ -318,7 +318,7 @@ def get_main_info(user_level, rift_rank):
 
 def get_sec_info(user_level, rift_rank):
     """获取神通的信息"""
-    user_rank = USERRANK[user_level]  # type=int，用户等级
+    user_rank = RANK[user_level]  # type=int，用户等级
     sec_buff_type = get_skill_by_rank(user_level, rift_rank)  # 天地玄黄
     sec_buff_id_list = skill_data[sec_buff_type]['st_list']
     init_rate = 60  # 初始概率为60
@@ -335,7 +335,7 @@ def get_sec_info(user_level, rift_rank):
 
 def get_skill_by_rank(user_level, rift_rank):
     """根据用户等级、秘境等级随机获取一个技能"""
-    user_rank = USERRANK[user_level]  # type=int，用户等级
+    user_rank = RANK[user_level]  # type=int，用户等级
     temp_dict = []
     for k, v in skill_data.items():
         if user_rank - rift_rank <= v['rank']:  # 秘境等级会增幅用户等级

@@ -14,11 +14,12 @@ from .reward_data_source import PLAYERSDATA
 from .work_handle import workhandle
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
+from ..common.rank import RANK
 from ..item_json import Items
 from ..lay_out import Cooldown
 from ..utils import check_user, check_user_type
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
-from ..xiuxian_config import USERRANK, XiuConfig
+from ..xiuxian_config import XiuConfig
 
 # 定时任务
 resetrefreshnum = require("nonebot_plugin_apscheduler").scheduler
@@ -79,7 +80,7 @@ async def last_work_(_: Bot, event: GroupMessageEvent):
     user_id = user_info.user_id
     user_level = user_info.level
     is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
-    if (is_type and USERRANK[user_info.level] <= 22) or (
+    if (is_type and RANK[user_info.level] <= 22) or (
             is_type and user_info.exp >= sql_message.get_level_power("玄仙境圆满")) or (
             is_type and int(user_info.exp) >= int(
         OtherSet().set_closing_type(user_level)) * XiuConfig().closing_exp_upper_limit
@@ -196,7 +197,7 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
     num = re.findall("\d+", message)[0]  # boss编号
     max_level = "真仙境初期"
 
-    if USERRANK[user_info.level] <= 22:
+    if RANK[user_info.level] <= 22:
         msg = f"道友的境界已过创业初期，悬赏令已经不能满足道友了！"
         await xiuxian_send_message(work_accept, message=msg)
 

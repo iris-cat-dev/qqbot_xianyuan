@@ -1,22 +1,22 @@
-from .xiuxian2_handle import XiuxianDateManage
+import datetime
+import json
+import math
+import os
+import unicodedata
+from base64 import b64encode
+from io import BytesIO
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
     GroupMessageEvent
 )
-import json
-import random
-import math
-import datetime
-import unicodedata
 from nonebot.params import Depends
-from base64 import b64encode
-from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
-from wcwidth import wcwidth
-import os
+
 from .data_source import jsondata
-from pathlib import Path
+from .xiuxian2_handle import XiuxianDateManage
 
 sql_message = XiuxianDateManage()  # sql类
 boss_img_path = Path() / "data" / "xiuxian" / "boss_img"

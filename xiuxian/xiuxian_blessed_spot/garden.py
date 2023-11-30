@@ -1,17 +1,17 @@
 import random
 from datetime import datetime
 
-from nonebot import on_fullmatch, on_startswith, Bot
+from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
+from ..common.rank import RANK
 from ..item_json import Items
 from ..lay_out import Cooldown
 from ..read_buff import get_player_info, save_player_info
 from ..utils import check_user
 from ..xiuxian2_handle import XiuxianDateManage
-from ..xiuxian_config import USERRANK
 
 garden_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)
 garden_up = on_fullmatch("灵田开垦", priority=5, permission=GROUP, block=True)
@@ -107,9 +107,9 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
                           datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600,
                          2)
         if time_deff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2):
-            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(USERRANK[user_info.level], ['药材'])
+            yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level], ['药材'])
             # 加入传承
-            impart_data = xiuxian_impart.get_user_message(user_id)
+            impart_data = None
             impart_reap_per = impart_data.impart_reap_per if impart_data is not None else 0
             num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级'] + impart_reap_per
             msg = ''

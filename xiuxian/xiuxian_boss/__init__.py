@@ -1,15 +1,13 @@
 import json
 import os
-import random
 import re
 from pathlib import Path
 
-from nonebot import get_bots, get_bot, on_fullmatch, on_startswith, get_driver
+from nonebot import on_fullmatch, on_startswith, get_driver
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
-    GroupMessageEvent,
-    MessageSegment
+    GroupMessageEvent
 )
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
@@ -17,15 +15,15 @@ from nonebot_plugin_apscheduler import scheduler
 from .bossconfig import get_config, savef
 from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
-from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message, xiuxian_send_group_img_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.param_checker import check_player, check_admin
+from ..common.rank import RANK, MAX_RANK
 from ..item_json import Items
-from ..lay_out import  Cooldown
+from ..lay_out import Cooldown
 from ..player_fight import Boss_fight
 from ..read_buff import UserBuffDate
-from ..utils import number_to, check_user, get_msg_pic
+from ..utils import number_to, check_user
 from ..xiuxian2_handle import XiuxianDateManage, leave_harm_time
-from ..xiuxian_config import USERRANK, MAX_RANK
 from ..xiuxian_config import XiuConfig
 
 config = get_config()
@@ -101,7 +99,7 @@ async def send_bot(group_id: str):
 
     boss_info = createboss()
     group_boss[group_id].append(boss_info)
-    msg = f"已生成{len(group_boss[group_id]) + 1}.{boss_info['jj']}Boss:{boss_info['name']},诸位道友请击Boss得奖励吧!"
+    msg = f"已生成{len(group_boss[group_id])}.{boss_info['jj']}Boss:{boss_info['name']},诸位道友请击Boss得奖励吧!"
     await xiuxian_send_group_message(group_id, msg)
     logger.info(f"群{group_id}_已生成世界boss")
 
@@ -269,11 +267,11 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
     boss_info = group_boss[group_id][boss_num - 1]
     if boss_info['jj'] == "祭道之上":
-        boss_rank = USERRANK[(boss_info['jj'])]
+        boss_rank = RANK[(boss_info['jj'])]
     else:
-        boss_rank = USERRANK[(boss_info['jj'] + '中期')]
+        boss_rank = RANK[(boss_info['jj'] + '中期')]
 
-    user_rank = USERRANK[userinfo.level]
+    user_rank = RANK[userinfo.level]
     boss_old_hp = boss_info['气血']  # 打之前的血量
     more_msg = ''
     battle_flag[group_id] = True
