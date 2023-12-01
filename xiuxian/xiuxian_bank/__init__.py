@@ -196,7 +196,9 @@ async def bank_settlement_(_: Bot, event: GroupMessageEvent):
 
 
 def get_give_stone(bankinfo):
-    """获取利息：利息=give_stone,结算时间=timedeff"""
+    """
+    获取利息：利息=give_stone,结算时间=timedeff
+    """
     savetime = bankinfo['savetime']  # str
     nowtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # str
     timedeff = round((datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S') -

@@ -7,9 +7,9 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 
 from .two_exp_cd import two_exp_cd
-from .. import Rank
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
+from ..common.rank import Rank
 from ..data_source import jsondata
 from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate

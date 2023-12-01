@@ -76,6 +76,13 @@ class Items:
     def get_data_by_item_id(self, item_id):
         return self.items[str(item_id)]
 
+    def get_data_by_item_name(self, name: str):
+        for key, value in self.items.items():
+            if value['name'] == name:
+                value["id"] = int(key)
+                return value
+        return None
+
     def set_item_data(self, dict_data, item_type):
         for k, v in dict_data.items():
             if item_type == '功法' or item_type == '神通':

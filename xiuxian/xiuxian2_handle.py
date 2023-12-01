@@ -8,7 +8,7 @@ from pathlib import Path
 from nonebot import get_driver
 from nonebot.log import logger
 
-from . import Rank
+from .common.rank import Rank
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
 

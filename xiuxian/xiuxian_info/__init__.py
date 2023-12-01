@@ -2,9 +2,9 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
 
 from .draw_user_info import draw_user_info_img
-from .. import Rank
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.param_checker import check_player
+from ..common.rank import Rank
 from ..data_source import jsondata
 from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate

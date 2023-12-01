@@ -147,7 +147,6 @@ def get_dxsj_info(rift_type, user_info):
     """
     获取掉血事件的内容
     """
-    msg = None
     battle_data = STORY['战斗']
     cost_type = get_dict_type_rate(battle_data[rift_type]['cost'])
     value = random.choice(battle_data[rift_type]['cost'][cost_type]['value'])
@@ -158,7 +157,7 @@ def get_dxsj_info(rift_type, user_info):
         nowmp = user_info.mp - exp if (user_info.mp - exp) > 0 else 1
         sql_message.update_user_hp_mp(user_info.user_id, nowhp, nowmp)  # 修为掉了，血量、真元也要掉
         msg = random.choice(battle_data[rift_type]['desc']).format(f"修为减少了：{exp}点！=")
-    elif cost_type == "hp":
+    else:
         cost_hp = int((user_info.exp / 2) * value)
         now_hp = user_info.hp - cost_hp
         if now_hp < 0:
