@@ -3,17 +3,18 @@ import re
 from datetime import datetime
 
 from nonebot import on_fullmatch, require, on_startswith, on_endswith
-from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 
 from .two_exp_cd import two_exp_cd
+from .. import Rank
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
 from ..lay_out import Cooldown
 from ..read_buff import UserBuffDate
 from ..utils import check_user
-from ..utils import check_user_type, get_msg_pic
+from ..utils import check_user_type
 from ..xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 
@@ -280,7 +281,6 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     """
     出关
     """
-
     _, user_info, msg = check_user(event)
 
     user_type = 0  # 状态0为无事件
@@ -302,17 +302,13 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     is_type, msg = check_user_type(user_id, 1)
     if not is_type:
         await xiuxian_send_message(out_closing, message=msg)
-
     else:
-        # 用户状态为1
-        in_closing_time = datetime.strptime(
-            user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f"
-        )  # 进入闭关的时间
-        exp_time = (
-                OtherSet().date_diff(now_time, in_closing_time) // 60
-        )  # 闭关时长计算(分钟) = second // 60
+        # 用户状态为 1
+        in_closing_time = datetime.strptime(  user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f" )  # 进入闭关的时间
+        exp_time = ( OtherSet().date_diff(now_time, in_closing_time) // 60 )  # 闭关时长计算(分钟) = second // 60
         level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
-        realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+        realm_rate = Rank().get_rank_speed(level) # 境界倍率
+
         user_buff_data = UserBuffDate(user_id)
         mainbuffdata = user_buff_data.get_user_main_buff_data()
         mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0  # 功法修炼倍率
@@ -382,31 +378,17 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
                 await xiuxian_send_message(out_closing, message=msg)
 
 
-@del_exp_decimal.handle(parameterless=[Cooldown(at_sender=True)])
+@del_exp_decimal.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def del_exp_decimal_(bot: Bot, event: GroupMessageEvent):
     """
     清除修为浮点数
     """
-    isUser, user_info, msg = check_user(event)
-    if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await del_exp_decimal.finish()
-
+    _, user_info, msg = check_user(event)
     user_id = user_info.user_id
     exp = user_info.exp
     sql_message.del_exp_decimal(user_id, exp)
-
     msg = "黑暗动乱暂时抑制成功！"
-    if XiuConfig().img:
-        pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-        await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-    else:
-        await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-    await del_exp_decimal.finish()
+    await xiuxian_send_message(del_exp_decimal, message=msg)
 
 
 @my_exp_num.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -419,7 +401,7 @@ async def my_exp_num_(bot: Bot, event: GroupMessageEvent):
 
     user_id = user_info.user_id
     limit = two_exp_cd.find_user(user_id)
-    impart_data = xiuxian_impart.get_user_message(user_id)
+    impart_data = None
     impart_two_exp = impart_data.impart_two_exp if impart_data is not None else 0
     num = (two_exp_limit + impart_two_exp) - limit
     if num <= 0:

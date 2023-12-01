@@ -1,7 +1,7 @@
 import random
 import re
 
-from nonebot import on_command, on_fullmatch, require
+from nonebot import on_command, on_fullmatch, require, on_startswith
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
@@ -10,9 +10,10 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.log import logger
 
 from .sectconfig import get_config
-from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message
+from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message, \
+    get_input_cmd
 from ..common.param_checker import check_player
-from ..common.rank import RANK
+from ..common.rank import RANK, Rank
 from ..data_source import jsondata
 from ..item_json import Items
 from ..lay_out import Cooldown
@@ -38,8 +39,8 @@ resetusertask = require("nonebot_plugin_apscheduler").scheduler
 sect_help = on_fullmatch("宗门帮助", priority=5, permission=GROUP, block=True)
 upatkpractice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP, block=True)
 my_sect = on_fullmatch("我的宗门", priority=5, permission=GROUP, block=True)
-create_sect = on_fullmatch("创建宗门", priority=5, permission=GROUP, block=True)
-join_sect = on_command("加入宗门", priority=5, permission=GROUP, block=True)
+create_sect = on_startswith("创建宗门", priority=5, permission=GROUP, block=True)
+join_sect = on_startswith("加入宗门", priority=5, permission=GROUP, block=True)
 sect_position_update = on_command("宗门职位变更", priority=5, permission=GROUP, block=True)
 sect_donate = on_command("宗门捐献", priority=5, permission=GROUP, block=True)
 sect_out = on_fullmatch("退出宗门", priority=5, permission=GROUP, block=True)
@@ -805,18 +806,18 @@ async def create_sect_(_: Bot, event: GroupMessageEvent):
     user_id = user_info.user_id
     # 首先判断是否满足创建宗门的三大条件
     level = user_info.level
-    list_level_all = list(jsondata.level_data().keys())
-    if (list_level_all.index(level) < list_level_all.index(XiuConfig().sect_min_level) or
+
+    if (Rank().compare(level, XiuConfig().sect_min_level) == -1 or
             user_info.stone < XiuConfig().sect_create_cost or
             user_info.sect_id
     ):
         msg = f"""创建宗门要求:
 (1)创建者境界最低要求为{XiuConfig().sect_min_level}
 (2)花费{XiuConfig().sect_create_cost}灵石费用
-(3)创建者当前处于无宗门状态。道友暂未满足所有条件，请逐一核实后，再来寻我。"""
+(3)创建者当前处于无宗门状态。道友暂未满足所有条件，请逐一核实后，再来寻我。
+"""
     else:
-        # 切割command获取宗门名称
-        sect_name = args.extract_plain_text().strip()
+        sect_name = get_input_cmd(event, 4)
         if sect_name:
             # sect表新增
             sql_message.create_sect(user_id, sect_name)
@@ -830,7 +831,7 @@ async def create_sect_(_: Bot, event: GroupMessageEvent):
             sql_message.update_ls(user_id, XiuConfig().sect_min_level, 2)
             msg = f"恭喜{user_info.user_name}道友创建宗门——{sect_name}，宗门编号为{new_sect.sect_id}。为道友贺！为仙道贺！"
         else:
-            msg = f"道友确定要创建无名之宗门？还请三思。"
+            msg = f"道友确定要创建无名之宗门？还请三思。请发送【创建宗门+名字】"
     await xiuxian_send_message(create_sect, msg)
 
 

@@ -1,7 +1,4 @@
-from nonebot import require
 from nonebot.plugin import PluginMetadata
-
-require('nonebot_plugin_apscheduler')
 
 __plugin_meta__ = PluginMetadata(
     name='修仙模拟器',

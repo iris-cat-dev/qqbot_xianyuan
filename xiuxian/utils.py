@@ -18,7 +18,7 @@ from nonebot.params import Depends
 from .data_source import jsondata
 from .xiuxian2_handle import XiuxianDateManage
 
-sql_message = XiuxianDateManage()  # sql类
+sql_message = XiuxianDateManage()
 boss_img_path = Path() / "data" / "xiuxian" / "boss_img"
 
 

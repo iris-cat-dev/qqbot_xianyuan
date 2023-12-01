@@ -18,13 +18,6 @@ class JsonDate:
         self.BANNER_FILE = DATABASE / "image" / "banner.png"
         self.FONT_FILE = DATABASE / "font" / "sarasa-mono-sc-regular.ttf"
 
-    def level_data(self):
-        """境界数据"""
-        with open(self.level_jsonpath, 'r', encoding='utf-8') as e:
-            tp = e.read()
-            data = json.loads(tp)
-            return data
-
     def sect_config_data(self):
         """宗门玩法配置"""
         with open(self.sect_json_pth, "r", encoding="utf-8") as fp:
@@ -33,14 +26,18 @@ class JsonDate:
             return config_data
 
     def root_data(self):
-        """获取灵根数据"""
+        """
+        获取灵根数据
+        """
         with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
             file_data = e.read()
             data = json.loads(file_data)
             return data
 
     def level_rate_data(self):
-        """获取境界突破概率"""
+        """
+        获取境界突破概率
+        """
         with open(self.level_rate_jsonpath, 'r', encoding='utf-8') as e:
             file_data = e.read()
             data = json.loads(file_data)

@@ -1,3 +1,6 @@
+from . import singleton
+from .game_data_manager import GameConfig
+
 RANK = {
     '江湖好手': 56,
     '练气境初期': 55,  # '练气境初期': 54,
@@ -57,4 +60,47 @@ RANK = {
     '天道之上': 1,
 }
 
-MAX_RANK = len(list(RANK.keys()))
+RANK_LIST = list(RANK.keys())
+MAX_RANK = len(RANK_LIST)
+
+
+@singleton
+class Rank(GameConfig):
+
+    def __init__(self):
+        super().__init__("境界")
+
+    def to_level(self, name: str) -> int:
+        return RANK[name]
+
+    def get_rank_info(self, name: str, next_count: int = 0):
+        if next_count == 0:
+            rank_info = self._data_source[name]
+            rank_name = name
+        else:
+            idx = RANK_LIST.index(name)
+            rank_name = RANK_LIST[idx + next_count]
+            rank_info = self._data_source[RANK_LIST[idx + next_count]]
+
+        rank_info["name"] = rank_name
+        return rank_info
+
+    def compare(self, name1: str, name2: str) -> int:
+        if name1 == name2:
+            return 0
+        elif RANK[name1] > RANK[name2]:
+            # 等级低于
+            return -1
+        else:
+            # 等级高于
+            return 1
+
+    def is_max(self, name) -> bool:
+        return RANK[name] == MAX_RANK
+
+    def get_rank_exp(self, name) -> int:
+        return self._data_source[name]["exp"]
+
+    def get_rank_speed(self, name) -> int:
+        print(self._data_source[name])
+        return self._data_source[name]["speed"]

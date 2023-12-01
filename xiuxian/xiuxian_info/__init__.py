@@ -2,6 +2,7 @@ from nonebot import on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSegment
 
 from .draw_user_info import draw_user_info_img
+from .. import Rank
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.param_checker import check_player
 from ..data_source import jsondata
@@ -16,7 +17,6 @@ mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=Tr
 xiuxian_stone = on_fullmatch("我的灵石", priority=4, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
-
 
 
 @xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True), check_player()])
@@ -38,7 +38,7 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
         user_name = "无名氏(发送改名+道号更新)"
 
     level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
-    realm_rate = jsondata.level_data()[user_info.level]["spend"]  # 境界倍率
+    realm_rate = Rank().get_rank_speed(user_info.level) # 境界倍率
     sect_id = user_info.sect_id
     if sect_id:
         sect_info = sql_message.get_sect_info(sect_id)
@@ -54,8 +54,8 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     if list_all == now_index:
         exp_meg = "位面至高"
     else:
-        is_updata_level = OtherSet().level[now_index + 1]
-        need_exp = sql_message.get_level_power(is_updata_level)
+        is_update_level = OtherSet().level[now_index + 1]
+        need_exp = Rank().get_rank_exp(is_update_level)
         get_exp = need_exp - user_info.exp
         if get_exp > 0:
             exp_meg = "还需{}修为可突破！".format(number_to(get_exp))
@@ -146,7 +146,8 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     user_info = sql_message.get_user_real_info(user_id)
 
     level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
-    realm_rate = jsondata.level_data()[user_info.level]["spend"]  # 境界倍率
+    realm_rate = Rank().get_rank_speed(user_info.level)  # 境界倍率
+
     user_buff_data = UserBuffDate(user_id)
     main_buff_data = user_buff_data.get_user_main_buff_data()
     user_weapon_data = user_buff_data.get_user_weapon_data()

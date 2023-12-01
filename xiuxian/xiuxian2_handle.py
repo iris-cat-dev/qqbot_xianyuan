@@ -7,6 +7,8 @@ from pathlib import Path
 
 from nonebot import get_driver
 from nonebot.log import logger
+
+from . import Rank
 from .data_source import jsondata
 from .xiuxian_config import XiuConfig
 
@@ -308,27 +310,28 @@ class XiuxianDateManage:
             return f"你的灵石还不够呢，快去赚点灵石吧！需要{XiuConfig().remake} 灵石！"
 
     def get_root_rate(self, name):
-        """获取灵根倍率"""
+        """
+        获取灵根倍率
+        """
         data = jsondata.root_data()
         return data[name]['type_speeds']
 
-    def get_level_power(self, name):
-        """获取境界倍率|exp"""
-        data = jsondata.level_data()
-        return data[name]['power']
-
     def update_power2(self, user_id) -> None:
-        """更新战力"""
+        """
+        更新战力
+        """
         UserMessage = self.get_user_message(user_id)
         cur = self.conn.cursor()
-        level = jsondata.level_data()
+        speed = Rank().get_rank_speed(UserMessage.level)
         root = jsondata.root_data()
         sql = f"UPDATE user_xiuxian SET power=round(exp*?*?,0) WHERE user_id=?"
-        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], level[UserMessage.level]["spend"], user_id))
+        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], speed, user_id))
         self.conn.commit()
 
     def update_ls(self, user_id, price, key):
-        """更新灵石  1为增加，2为减少"""
+        """
+        更新灵石  1为增加，2为减少
+        """
         cur = self.conn.cursor()
 
         if key == 1:
@@ -1129,39 +1132,14 @@ class OtherSet(XiuConfig):
 
     def __init__(self):
         super().__init__()
+        self._rank = Rank()
 
-    def set_closing_type(self, user_level):
-        list_all = len(self.level) - 1
-        now_index = self.level.index(user_level)
-        if list_all == now_index:
-            need_exp = 0.001
-        is_updata_level = self.level[now_index + 1]
-        need_exp = XiuxianDateManage().get_level_power(is_updata_level)
-        return need_exp
+    def set_closing_type(self, user_level) -> int:
+        if self._rank.is_max(user_level):
+            return 0
 
-    def get_type(self, user_exp, rate, user_level):
-        list_all = len(self.level) - 1
-        now_index = self.level.index(user_level)
-        if list_all == now_index:
-            return "道友已是最高境界，无法突破！"
-
-        is_updata_level = self.level[now_index + 1]
-        need_exp = XiuxianDateManage().get_level_power(is_updata_level)
-
-        # 判断修为是否足够突破
-        if user_exp >= need_exp:
-            pass
-        else:
-            return "道友的修为不足以突破！距离下次突破需要{}修为！突破境界为：{}".format(need_exp - user_exp,
-                                                                                      is_updata_level)
-
-        success_rate = True if random.randint(0, 100) < rate else False
-
-        if success_rate:
-
-            return [self.level[now_index + 1]]
-        else:
-            return '失败'
+        need_rank = self._rank.get_rank_info(user_level, 1)
+        return need_rank["exp"]
 
     def calculated(self, rate: dict) -> str:
         """
@@ -1350,18 +1328,19 @@ def final_user_data(user_data):
 
 sql_message = XiuxianDateManage()
 
+
 def leave_harm_time(user_id):
     hp_speed = 25
     user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
     level = user_mes.level
     level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
-    realm_rate = jsondata.level_data()[level]["spend"]  # 境界倍率
+    realm_rate = Rank().get_rank_speed(level)  # 境界倍率
     user_buff_data = UserBuffDate(user_id)
     mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
     mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0  # 功法修炼倍率
     try:
         time = int(((user_mes.exp / 10) - user_mes.hp) / ((XiuConfig().closing_exp * level_rate * realm_rate * (
-                    1 + mainbuffratebuff)) * hp_speed))
+                1 + mainbuffratebuff)) * hp_speed))
     except:
         time = "无穷大"
     return time
