@@ -9,19 +9,15 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.log import logger
 
-from .sectconfig import get_config
+from .sectconfig import get_config, SectConfig
 from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message, \
     get_input_cmd
-from ..common.param_checker import check_player
+from ..common.param_checker import check_player,Cooldown
 from ..common.rank import RANK, Rank
-from ..data_source import jsondata
-from ..item_json import Items
-from ..lay_out import Cooldown
-from ..read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
-from ..utils import (
-    check_user, number_to
-)
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.item_json import Items
+from ..common.read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
+from ..common.utils import check_user, number_to
+from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 
 items = Items()
@@ -29,7 +25,7 @@ config = get_config()
 LEVLECOST = config["LEVLECOST"]
 cache_help = {}
 userstask = {}
-
+jsondata = SectConfig()
 sql_message = XiuxianDateManage()
 
 # 定时任务

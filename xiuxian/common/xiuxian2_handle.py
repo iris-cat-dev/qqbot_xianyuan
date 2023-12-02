@@ -1,4 +1,3 @@
-import json
 import datetime
 import random
 import sqlite3
@@ -8,9 +7,9 @@ from pathlib import Path
 from nonebot import get_driver
 from nonebot.log import logger
 
-from .common.rank import Rank
-from .data_source import jsondata
-from .xiuxian_config import XiuConfig
+from .rank import Rank
+from .root import Root
+from ..xiuxian_config import XiuConfig
 
 DATABASE = Path() / "data" / "xiuxian"
 
@@ -40,6 +39,8 @@ back = namedtuple("back", ["user_id", "goods_id", "goods_name", "goods_type", "g
                            "remake", "day_num", "all_num", "action_time", "state", "bind_num"])
 
 num = '578043031'
+
+root = Root()
 
 
 class XiuxianDateManage:
@@ -309,23 +310,16 @@ class XiuxianDateManage:
         else:
             return f"你的灵石还不够呢，快去赚点灵石吧！需要{XiuConfig().remake} 灵石！"
 
-    def get_root_rate(self, name):
-        """
-        获取灵根倍率
-        """
-        data = jsondata.root_data()
-        return data[name]['type_speeds']
-
     def update_power2(self, user_id) -> None:
         """
         更新战力
         """
-        UserMessage = self.get_user_message(user_id)
+        user_info = self.get_user_message(user_id)
         cur = self.conn.cursor()
-        speed = Rank().get_rank_speed(UserMessage.level)
-        root = jsondata.root_data()
+        rank_speed = Rank().get_rank_speed(user_info.level)
+        root_speed = Root().get_root_speed()
         sql = f"UPDATE user_xiuxian SET power=round(exp*?*?,0) WHERE user_id=?"
-        cur.execute(sql, (root[UserMessage.root_type]["type_speeds"], speed, user_id))
+        cur.execute(sql, (root_speed, rank_speed, user_id))
         self.conn.commit()
 
     def update_ls(self, user_id, price, key):
@@ -1087,47 +1081,6 @@ class XiuxianDateManage:
         self.conn.commit()
 
 
-class XiuxianJsonDate:
-    def __init__(self):
-        self.root_jsonpath = DATABASE / "灵根.json"
-        self.level_jsonpath = DATABASE / "突破概率.json"
-
-    def beifen_linggen_get(self):
-        with open(self.root_jsonpath, 'r', encoding='utf-8') as e:
-            a = e.read()
-            data = json.loads(a)
-            lg = random.choice(data)
-            return lg['name'], lg['type']
-
-    def level_rate(self, level):
-        with open(self.level_jsonpath, 'r', encoding='utf-8') as e:
-            a = e.read()
-            data = json.loads(a)
-            return data[0][level]
-
-    def linggen_get(self):
-        """获取灵根信息"""
-        data = jsondata.root_data()
-        rate_dict = {}
-        for i, v in data.items():
-            rate_dict[i] = v["type_rate"]
-        lgen = OtherSet().calculated(rate_dict)
-        if data[lgen]["type_flag"]:
-            flag = random.choice(data[lgen]["type_flag"])
-            root = random.sample(data[lgen]["type_list"], flag)
-            msg = ""
-            for j in root:
-                if j == root[-1]:
-                    msg += j
-                    break
-                msg += (j + "、")
-
-            return msg + '属性灵根', lgen
-        else:
-            root = random.choice(data[lgen]["type_list"])
-            return root, lgen
-
-
 class OtherSet(XiuConfig):
 
     def __init__(self):
@@ -1333,7 +1286,7 @@ def leave_harm_time(user_id):
     hp_speed = 25
     user_mes = sql_message.get_user_message(user_id)  # 获取用户信息
     level = user_mes.level
-    level_rate = sql_message.get_root_rate(user_mes.root_type)  # 灵根倍率
+    level_rate = root.get_root_speed(user_mes.root_type)  # 灵根倍率
     realm_rate = Rank().get_rank_speed(level)  # 境界倍率
     user_buff_data = UserBuffDate(user_id)
     mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()

@@ -1,10 +1,10 @@
-from ..data_source import *
-import os
+import json
+from pathlib import Path
 
 WORKDATA = Path() / "data" / "xiuxian" / "work"
 
 
-class reward(JsonDate):
+class reward():
 
     def __init__(self):
         super().__init__()
@@ -54,17 +54,3 @@ def readf(user_id):
     return json.loads(data)
 
 
-def savef(user_id, data):
-    user_id = str(user_id)
-
-    if not os.path.exists(PLAYERSDATA / user_id):
-        print("目录不存在，创建目录")
-        os.makedirs(PLAYERSDATA / user_id)
-
-    FILEPATH = PLAYERSDATA / user_id / "workinfo.json"
-
-    savemode = "w" if os.path.exists(FILEPATH) else "x"
-    with open(FILEPATH, mode=savemode, encoding="UTF-8") as f:
-        f.write(data)
-        f.close()
-    return True

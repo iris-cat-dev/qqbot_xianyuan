@@ -5,12 +5,10 @@ from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player
+from ..common.param_checker import check_player,Cooldown
 from ..common.rank import Rank
-from ..data_source import jsondata
-from ..lay_out import Cooldown
-from ..utils import check_user
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.utils import check_user
+from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_backpack.back_util import backpack_check_item
 from ..xiuxian_config import XiuConfig
 
@@ -67,7 +65,7 @@ async def level_up_(_: Bot, event: GroupMessageEvent):
         return await xiuxian_send_message(level_up_zj, message=msg)
 
     level_name = user_info.level  # 用户境界
-    level_rate = jsondata.level_rate_data()[level_name]  # 对应境界突破的概率
+    level_rate = rank.get_rank_rate(level_name)  # 对应境界突破的概率
 
     elixir_name = "渡厄丹"
     user_level_uprate = int(user_info.level_up_rate)
@@ -101,7 +99,7 @@ async def level_up_zj_(_: Bot, event: GroupMessageEvent):
 
     next_rank = rank.get_rank_info(user_info.level, 1)
     next_rank_name = next_rank["name"]
-    level_rate = jsondata.level_rate_data()[user_info.level]  # 对应境界突破的概率
+    level_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
     total_rate = level_rate + user_level_uprate
     success = True if random.randint(0, 100) < total_rate else False
@@ -162,7 +160,7 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
     # 获取概率，判断是否成功
     next_rank = rank.get_rank_info(user_info.level, 1)
     next_rank_name = next_rank["name"]
-    level_rate = jsondata.level_rate_data()[user_info.level]  # 对应境界突破的概率
+    level_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
     total_rate = level_rate + user_level_uprate
     success = True if random.randint(0, 100) < total_rate else False

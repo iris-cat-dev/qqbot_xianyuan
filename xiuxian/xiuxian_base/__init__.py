@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 
 from nonebot import on_fullmatch, on_startswith
@@ -6,10 +7,9 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 
 from ..common.bot_utils import xiuxian_send_message, get_input_cmd
-from ..common.param_checker import check_player
-
-from ..lay_out import Cooldown
-from ..xiuxian2_handle import XiuxianDateManage, XiuxianJsonDate
+from ..common.param_checker import check_player,Cooldown
+from ..common.root import Root
+from ..common.xiuxian2_handle import XiuxianDateManage
 
 from .level_up import level_up, level_up_zj, level_up_dr
 from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
@@ -24,7 +24,7 @@ rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 sql_message = XiuxianDateManage()
-
+root = Root()
 
 @scheduler.scheduled_job("cron", hour=0, minute=0)
 async def xiuxian_check_in_reset():
@@ -33,6 +33,8 @@ async def xiuxian_check_in_reset():
     """
     sql_message.check_in_reset()
     logger.info("每日修仙签到重置成功！")
+
+
 
 
 @run_xiuxian.handle(parameterless=[Cooldown(at_sender=True)])
@@ -45,12 +47,12 @@ async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
     user_name = (
         event.sender.card if event.sender.card else event.sender.nickname
     )
-    root, root_type = XiuxianJsonDate().linggen_get()  # 获取灵根，灵根类型
-    rate = sql_message.get_root_rate(root_type)  # 灵根倍率
-    power = 100 * float(rate)  # 战力=境界的 power 字段 * 灵根的 rate 字段
+    root_name, root_type = root.get_random_root()  # 获取灵根，灵根类型
+    root_speed = root.get_root_speed(root_type)  # 灵根倍率
+    power = 100 * float(root_speed)  # 战力=境界的 power 字段 * 灵根的 rate 字段
     create_time = str(datetime.now())
     msg = sql_message.create_user(
-        user_id, root, root_type, int(power), create_time, user_name
+        user_id, root_name, root_type, int(power), create_time, user_name
     )
     await xiuxian_send_message(run_xiuxian, msg)
 
@@ -70,7 +72,7 @@ async def restart_(_: Bot, event: GroupMessageEvent):
     重入仙途
     """
     user_id = event.get_user_id()
-    name, root_type = XiuxianJsonDate().linggen_get()
+    name, root_type = root.get_random_root()
     msg = sql_message.ramaker(name, root_type, user_id)
     sql_message.update_power2(user_id)  # 更新战力
     await xiuxian_send_message(replay, msg)

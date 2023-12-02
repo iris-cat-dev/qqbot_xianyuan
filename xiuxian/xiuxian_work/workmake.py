@@ -2,8 +2,8 @@ from .reward_data_source import *
 import random
 
 from ..common.rank import RANK
-from ..item_json import Items
-from ..xiuxian2_handle import OtherSet
+from ..common.item_json import Items
+from ..common.xiuxian2_handle import OtherSet
 
 
 def workmake(work_level, exp, user_level):

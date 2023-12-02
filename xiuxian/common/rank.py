@@ -102,5 +102,7 @@ class Rank(GameConfig):
         return self._data_source[name]["exp"]
 
     def get_rank_speed(self, name) -> int:
-        print(self._data_source[name])
         return self._data_source[name]["speed"]
+
+    def get_rank_rate(self, name) -> int:
+        return self._data_source[name]["rate"]

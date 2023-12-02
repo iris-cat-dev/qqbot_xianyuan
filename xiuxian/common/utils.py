@@ -15,7 +15,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.params import Depends
 
-from .data_source import jsondata
+from .common.game_resource import GameResource
 from .xiuxian2_handle import XiuxianDateManage
 
 sql_message = XiuxianDateManage()
@@ -138,7 +138,7 @@ class Txt2Img:
     """文字转图片"""
 
     def __init__(self, size=36):
-        self.font = str(jsondata.FONT_FILE)
+        self.font = str(GameResource.FONT_FILE)
         self.font_size = int(size)
         self.use_font = ImageFont.truetype(font=self.font, size=self.font_size)
         self.upper_size = 30
@@ -204,8 +204,8 @@ class Txt2Img:
         banner_size = 12
         border_color = (220, 211, 196)
         out_padding = 15
-        mi_img = Image.open(jsondata.BACKGROUND_FILE)
-        mi_banner = Image.open(jsondata.BANNER_FILE).resize(
+        mi_img = Image.open(GameResource.BACKGROUND_FILE)
+        mi_banner = Image.open(GameResource.BANNER_FILE).resize(
             (banner_size, banner_size), resample=3
         )
 
@@ -250,7 +250,7 @@ class Txt2Img:
         )
 
         if boss_name:
-            boss_img_path = jsondata.BOSS_IMG / f'{boss_name}.png'
+            boss_img_path = GameResource.BOSS_IMG / f'{boss_name}.png'
             if os.path.exists(boss_img_path):
                 boss_img = Image.open(boss_img_path)
                 base_cc = boss_img.height / img_hight

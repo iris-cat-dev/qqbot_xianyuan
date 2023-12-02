@@ -2,7 +2,7 @@ from nonebot import Bot, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 
 from .common.bot_utils import xiuxian_send_message
-from .lay_out import Cooldown
+from .common.param_checker import Cooldown
 from .xiuxian2_handle import XiuxianDateManage
 from .xiuxian_config import XiuConfig
 
@@ -72,7 +72,7 @@ async def help_in_(_: Bot, __: GroupMessageEvent):
 
 
 @warring_help.handle(parameterless=[Cooldown(at_sender=True)])
-async def warring_help_(bot: Bot, _: GroupMessageEvent):
+async def warring_help_(_: Bot, __: GroupMessageEvent):
     """
     风控帮助
     """
@@ -80,5 +80,5 @@ async def warring_help_(bot: Bot, _: GroupMessageEvent):
 
 
 @xiuxian_update_log.handle(parameterless=[Cooldown(at_sender=True)])
-async def xiuxian_update_log_(bot: Bot, _: GroupMessageEvent):
+async def xiuxian_update_log_(_: Bot, __: GroupMessageEvent):
     await xiuxian_send_message(xiuxian_update_log, __xiuxian_updata_data__)

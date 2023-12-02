@@ -1,6 +1,6 @@
 import random
 
-from .common.rank import RANK
+from .rank import RANK
 from .xiuxian2_handle import XiuxianDateManage
 from .read_buff import UserBuffDate
 

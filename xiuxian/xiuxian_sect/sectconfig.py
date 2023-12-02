@@ -1,10 +1,9 @@
-try:
-    import ujson as json
-except ImportError:
-    import json
+import json
 import os
 from pathlib import Path
 
+from ..common import singleton
+from ..common.game_data_manager import GameConfig
 
 configkey = [
     "LEVLECOST",
@@ -205,3 +204,13 @@ def savef(data):
         f.write(data)
         f.close()
     return True
+
+@singleton
+class SectConfig(GameConfig):
+
+    def __init__(self):
+        super().__init__("宗门/宗门职位")
+
+    def sect_config_data(self):
+        return self._data_source
+

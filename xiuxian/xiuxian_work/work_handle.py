@@ -3,7 +3,7 @@ from .workmake import *
 from ..item_json import Items
 
 
-class workhandle(XiuxianJsonDate):
+class workhandle:
 
     def do_work(self, key, work_list=None, name=None, level="江湖好手", exp=None, user_id=None):
         """悬赏令获取"""

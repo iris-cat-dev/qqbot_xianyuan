@@ -1,22 +1,12 @@
-import asyncio
-import random
 import re
-from datetime import datetime
 
-from nonebot import on_command, require, on_fullmatch, on_startswith
+from nonebot import require, on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GROUP,
-    Message,
-    GroupMessageEvent,
-    MessageSegment,
-    GROUP_ADMIN,
-    GROUP_OWNER,
-    ActionFailed
+    GroupMessageEvent
 )
 from nonebot.log import logger
-from nonebot.params import CommandArg
-from nonebot.permission import SUPERUSER
 
 from .back_util import (
     get_user_back_msg, check_equipment_can_use,
@@ -25,18 +15,14 @@ from .back_util import (
 )
 from .backconfig import get_config, savef
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message
-from ..common.param_checker import check_player
-from ..item_json import Items
-from ..lay_out import Cooldown, CooldownIsolateLevel
-from ..read_buff import (
+from ..common.item_json import Items
+from ..common.param_checker import check_player, Cooldown
+from ..common.read_buff import (
     get_weapon_info_msg, get_armor_info_msg,
     get_sec_msg, get_main_info_msg
 )
-from ..utils import (
-    check_user, get_msg_pic
-)
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
-from ..xiuxian_config import XiuConfig
+from ..common.utils import  check_user
+from ..common.xiuxian2_handle import XiuxianDateManage
 
 items = Items()
 config = get_config()

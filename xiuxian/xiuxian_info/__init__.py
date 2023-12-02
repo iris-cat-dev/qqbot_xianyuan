@@ -3,20 +3,22 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSe
 
 from .draw_user_info import draw_user_info_img
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
-from ..common.param_checker import check_player
+from ..common.param_checker import check_player,Cooldown
 from ..common.rank import Rank
-from ..data_source import jsondata
-from ..lay_out import Cooldown
-from ..read_buff import UserBuffDate
-from ..utils import check_user, number_to
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.root import Root
+from ..common.read_buff import UserBuffDate
+from ..common.utils import check_user, number_to
+from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
+from ..xiuxian_sect import SectConfig
 
 xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GROUP, block=True)
 mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=True)
 xiuxian_stone = on_fullmatch("我的灵石", priority=4, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
+root = Root()
+rank = Rank()
 
 
 @xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True), check_player()])
@@ -37,13 +39,13 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     else:
         user_name = "无名氏(发送改名+道号更新)"
 
-    level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
-    realm_rate = Rank().get_rank_speed(user_info.level) # 境界倍率
+    level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
+    realm_rate = Rank().get_rank_speed(user_info.level)  # 境界倍率
     sect_id = user_info.sect_id
     if sect_id:
         sect_info = sql_message.get_sect_info(sect_id)
         sectmsg = sect_info.sect_name
-        sectzw = jsondata.sect_config_data()[f"{user_info.sect_position}"]["title"]
+        sectzw = SectConfig().sect_config_data()[f"{user_info.sect_position}"]["title"]
     else:
         sectmsg = '无宗门'
         sectzw = '无'
@@ -80,6 +82,7 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     if user_armor_data is not None:
         armor_name = f"{user_armor_data['name']}({user_armor_data['level']})"
 
+    level_rate = rank.get_rank_rate(user_info.level)
     DETAIL_MAP = {
         '道号': f'{user_name}',
         '境界': f'{user_info.level}',
@@ -87,7 +90,7 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
         '灵石': f'{user_info.stone}',
         '战力': f'{number_to(int(user_info.exp * level_rate * realm_rate))}',
         '灵根': f'{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)',
-        '突破状态': f'{exp_meg}概率：{jsondata.level_rate_data()[user_info.level] + int(user_info.level_up_rate)}%',
+        '突破状态': f'{exp_meg}概率：{level_rate + int(user_info.level_up_rate)}%',
         '攻击力': f'{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级',
         '所在宗门': sectmsg,
         '宗门职位': sectzw,
@@ -145,8 +148,8 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
         sql_message.update_user_hp(user_id)
     user_info = sql_message.get_user_real_info(user_id)
 
-    level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
-    realm_rate = Rank().get_rank_speed(user_info.level)  # 境界倍率
+    level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
+    realm_rate = rank.get_rank_speed(user_info.level)  # 境界倍率
 
     user_buff_data = UserBuffDate(user_id)
     main_buff_data = user_buff_data.get_user_main_buff_data()
@@ -172,7 +175,7 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     impart_burst_per = impart_data.impart_burst_per if impart_data is not None else 0
     boss_atk = impart_data.boss_atk if impart_data is not None else 0
 
-    level_up_rate = jsondata.level_rate_data()[user_info.level]  # 对应境界突破的概率
+    level_up_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
 
     msg = f"""道号: {user_info.user_name}

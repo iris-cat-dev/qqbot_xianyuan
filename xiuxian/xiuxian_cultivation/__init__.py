@@ -8,19 +8,17 @@ from nonebot.log import logger
 
 from .two_exp_cd import two_exp_cd
 from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player
+from ..common.param_checker import check_player,Cooldown
 from ..common.rank import Rank
-from ..data_source import jsondata
-from ..lay_out import Cooldown
-from ..read_buff import UserBuffDate
-from ..utils import check_user
-from ..utils import check_user_type
-from ..xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.root import Root
+from ..common.read_buff import UserBuffDate
+from ..common.utils import check_user,check_user_type
+from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 
 cache_help = {}
 sql_message = XiuxianDateManage()
-
+root = Root()
 two_exp_cd_up = require("nonebot_plugin_apscheduler").scheduler
 
 cul_help = on_fullmatch("修炼帮助", priority=5, permission=GROUP, block=True)
@@ -306,7 +304,7 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
         # 用户状态为 1
         in_closing_time = datetime.strptime(  user_cd_message.create_time, "%Y-%m-%d %H:%M:%S.%f" )  # 进入闭关的时间
         exp_time = ( OtherSet().date_diff(now_time, in_closing_time) // 60 )  # 闭关时长计算(分钟) = second // 60
-        level_rate = sql_message.get_root_rate(user_info.root_type)  # 灵根倍率
+        level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
         realm_rate = Rank().get_rank_speed(level) # 境界倍率
 
         user_buff_data = UserBuffDate(user_id)
