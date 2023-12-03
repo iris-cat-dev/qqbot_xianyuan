@@ -2,7 +2,7 @@ import random
 
 from . import singleton
 from .game_data_manager import GameConfig
-from ..xiuxian2_handle import OtherSet
+from .rate_calculater import calculated
 
 
 @singleton
@@ -23,7 +23,7 @@ class Root(GameConfig):
         rate_dict = {}
         for key, value in self._data_source.items():
             rate_dict[key] = value["type_rate"]
-        lgen = OtherSet().calculated(rate_dict)
+        lgen = calculated(rate_dict)
         if self._data_source[lgen]["type_flag"]:
             flag = random.choice(self._data_source[lgen]["type_flag"])
             root_name = random.sample(self._data_source[lgen]["type_list"], flag)

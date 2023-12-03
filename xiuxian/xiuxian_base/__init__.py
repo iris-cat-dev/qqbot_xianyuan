@@ -66,7 +66,7 @@ async def sign_in_(_: Bot, event: GroupMessageEvent):
     await xiuxian_send_message(check_in, msg)
 
 
-@replay.handle(parameterless=[Cooldown(90, at_sender=True), check_player()])
+@replay.handle(parameterless=[Cooldown(30, at_sender=True), check_player()])
 async def restart_(_: Bot, event: GroupMessageEvent):
     """
     重入仙途

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 DATA_ROOT = Path() / "data" / "xiuxian"
+PLAYER_ROOT = Path() / "data" / "xiuxian" / "players"
 CONFIG_ROOT = Path() / "nonebot_plugin_xiuxian3" / "data"
 
 
@@ -22,7 +23,7 @@ def _save_json(filepath, data):
         f.close()
 
 
-class GameDate:
+class GameData:
 
     def __init__(self, name):
         self.name = name
@@ -40,11 +41,33 @@ class GameDate:
         return _save_json(DATA_ROOT / f"{name}.json", data)
 
 
+class PlayerData:
+
+    def __init__(self, user_id, name):
+        self.name = name
+        self.user_id = str(user_id)
+        self._load_data(name)
+
+    def save(self):
+        save_dict = self.__dict__
+        name = self.name
+        self._save_data(name, save_dict)
+
+    def _load_data(self, name):
+        self.__dict__ = _read_json(PLAYER_ROOT / self.user_id / f"{name}.json", self.__dict__)
+
+    def _save_data(self, name, data):
+        return _save_json(PLAYER_ROOT / self.user_id / f"{name}.json", data)
+
+
 class GameConfig:
 
     def __init__(self, name):
         self._data_source = {}
         self._load_data(name)
+
+    def load_data(self, name):
+        return _read_json(CONFIG_ROOT / f"{name}.json")
 
     def _load_data(self, name):
         self._data_source = _read_json(CONFIG_ROOT / f"{name}.json")

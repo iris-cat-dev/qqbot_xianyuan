@@ -5,7 +5,7 @@ from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent
 from nonebot.exception import ActionFailed
 
-from ..utils import get_msg_pic
+from .utils import get_msg_pic
 from ..xiuxian_config import XiuConfig
 
 
@@ -109,7 +109,7 @@ def get_input_number(event: MessageEvent) -> (int, str):
         if pos > 0:
             msg = msg[pos:]
         num = re.findall("\d+", msg)
-        return num[0], ""
+        return int(num[0]), ""
     except:
         return None, "指令输入错误，"
 

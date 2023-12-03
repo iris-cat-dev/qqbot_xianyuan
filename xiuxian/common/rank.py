@@ -73,6 +73,16 @@ class Rank(GameConfig):
     def to_level(self, name: str) -> int:
         return RANK[name]
 
+    def to_big_rank(self, name) -> str:
+        """
+        取境界前3位，去除初期、中期、圆满
+        """
+        if name == '江湖好手':
+            big_rank = '江湖好手'
+        else:
+            big_rank = name[:3]
+        return big_rank
+
     def get_rank_info(self, name: str, next_count: int = 0):
         if next_count == 0:
             rank_info = self._data_source[name]
@@ -88,8 +98,9 @@ class Rank(GameConfig):
     def compare(self, name1: str, name2: str) -> int:
         if name1 == name2:
             return 0
+
         elif RANK[name1] > RANK[name2]:
-            # 等级低于
+            # 等级1 低于 等级2
             return -1
         else:
             # 等级高于

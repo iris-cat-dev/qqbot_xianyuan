@@ -1,9 +1,11 @@
-from nonebot import Bot
+from nonebot import Bot, get_driver
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot.message import event_preprocessor
 
 
 from typing import TypeVar, Callable
+
+DRIVER = get_driver()
 
 T = TypeVar('T')
 

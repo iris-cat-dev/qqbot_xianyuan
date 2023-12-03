@@ -2,6 +2,7 @@ import datetime
 import json
 import math
 import os
+import random
 import unicodedata
 from base64 import b64encode
 from io import BytesIO
@@ -15,7 +16,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.params import Depends
 
-from .common.game_resource import GameResource
+from .game_resource import GameResource
 from .xiuxian2_handle import XiuxianDateManage
 
 sql_message = XiuxianDateManage()
@@ -79,16 +80,16 @@ def check_user(event: GroupMessageEvent):
       * `msg: 消息体
     """
 
-    isUser = False
+    is_user = False
     user_id = event.get_user_id()
     user_info = sql_message.get_user_message(user_id)
     if user_info is None:
         msg = "修仙界没有道友的信息，请输入【我要修仙】加入！"
     else:
-        isUser = True
+        is_user = True
         msg = ''
 
-    return isUser, user_info, msg
+    return is_user, user_info, msg
 
 
 async def send_forward_msg(
@@ -318,3 +319,4 @@ def number_to(num):
     if level > len(units):
         level -= 1
     return '{}{}'.format(round(num, 1), units[level])
+

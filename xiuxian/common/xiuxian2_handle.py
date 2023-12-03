@@ -68,6 +68,9 @@ class XiuxianDateManage:
             logger.info(f"修仙数据库已连接！")
             self._check_data()
 
+    def get_connect(self):
+        return self.conn
+
     def close(self):
         self.conn.close()
         logger.info(f"修仙数据库关闭！")
@@ -317,7 +320,7 @@ class XiuxianDateManage:
         user_info = self.get_user_message(user_id)
         cur = self.conn.cursor()
         rank_speed = Rank().get_rank_speed(user_info.level)
-        root_speed = Root().get_root_speed()
+        root_speed = Root().get_root_speed(user_info.root_type)
         sql = f"UPDATE user_xiuxian SET power=round(exp*?*?,0) WHERE user_id=?"
         cur.execute(sql, (root_speed, rank_speed, user_id))
         self.conn.commit()
@@ -420,7 +423,7 @@ class XiuxianDateManage:
         获取用户操作CD
         :param user_id: QQ
         """
-        sql = f"SELECT * FROM user_cd  WHERE user_id=?"
+        sql = f"SELECT * FROM user_cd WHERE user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (user_id,))
         result = cur.fetchone()

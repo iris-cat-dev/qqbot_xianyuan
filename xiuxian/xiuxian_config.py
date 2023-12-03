@@ -1,10 +1,10 @@
 from .common import singleton
-from .common.game_data_manager import GameDate
+from .common.game_data_manager import GameData
 from .common.rank import RANK
 
 
 @singleton
-class GlobalGameData(GameDate):
+class GlobalGameData(GameData):
 
     def __init__(self):
         self.groups = []
