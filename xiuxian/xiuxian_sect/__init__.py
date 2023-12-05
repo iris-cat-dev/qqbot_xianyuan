@@ -12,7 +12,7 @@ from nonebot.log import logger
 from .sectconfig import get_config, SectConfig
 from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message, \
     get_input_cmd
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
 from ..common.rank import RANK, Rank
 from ..common.item_json import Items
 from ..common.read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
@@ -37,27 +37,27 @@ upatkpractice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP,
 my_sect = on_fullmatch("我的宗门", priority=5, permission=GROUP, block=True)
 create_sect = on_startswith("创建宗门", priority=5, permission=GROUP, block=True)
 join_sect = on_startswith("加入宗门", priority=5, permission=GROUP, block=True)
-sect_position_update = on_command("宗门职位变更", priority=5, permission=GROUP, block=True)
-sect_donate = on_command("宗门捐献", priority=5, permission=GROUP, block=True)
+sect_position_update = on_startswith("宗门职位变更", priority=5, permission=GROUP, block=True)
+sect_donate = on_startswith("宗门捐献", priority=5, permission=GROUP, block=True)
 sect_out = on_fullmatch("退出宗门", priority=5, permission=GROUP, block=True)
-sect_kick_out = on_command("踢出宗门", priority=5, permission=GROUP, block=True)
-sect_owner_change = on_command("宗主传位", priority=5, permission=GROUP, block=True)
+sect_kick_out = on_startswith("踢出宗门", priority=5, permission=GROUP, block=True)
+sect_owner_change = on_startswith("宗主传位", priority=5, permission=GROUP, block=True)
 sect_list = on_fullmatch("宗门列表", priority=5, permission=GROUP, block=True)
-sect_task = on_command("宗门任务接取", aliases={"我的宗门任务"}, priority=7, permission=GROUP, block=True)
+sect_task = on_startswith("宗门任务接取", priority=7, permission=GROUP, block=True)
 sect_task_complete = on_fullmatch("宗门任务完成", priority=7, permission=GROUP, block=True)
 sect_task_refresh = on_fullmatch("宗门任务刷新", priority=7, permission=GROUP, block=True)
-sect_mainbuff_get = on_command("宗门功法搜寻", aliases={"搜寻宗门功法"}, priority=6, permission=GROUP, block=True)
-sect_mainbuff_learn = on_command("学习宗门功法", priority=5, permission=GROUP, block=True)
-sect_secbuff_get = on_command("宗门神通搜寻", aliases={"搜寻宗门神通"}, priority=6, permission=GROUP, block=True)
-sect_secbuff_learn = on_command("学习宗门神通", priority=5, permission=GROUP, block=True)
-sect_buff_info = on_command("宗门功法查看", aliases={"查看宗门功法"}, priority=9, permission=GROUP, block=True)
-sect_users = on_command("宗门成员查看", aliases={"查看宗门成员"}, priority=8, permission=GROUP, block=True)
-sect_elixir_room_make = on_command("宗门丹房建设", aliases={"建设宗门丹房"}, priority=5, permission=GROUP, block=True)
-sect_elixir_get = on_command("宗门丹药领取", aliases={"领取宗门丹药领取"}, priority=5, permission=GROUP, block=True)
+sect_mainbuff_get = on_fullmatch("宗门功法搜寻", priority=6, permission=GROUP, block=True)
+sect_mainbuff_learn = on_startswith("学习宗门功法", priority=5, permission=GROUP, block=True)
+sect_secbuff_get = on_fullmatch("宗门神通搜寻", priority=6, permission=GROUP, block=True)
+sect_secbuff_learn = on_startswith("学习宗门神通", priority=5, permission=GROUP, block=True)
+sect_buff_info = on_fullmatch("宗门功法查询", priority=9, permission=GROUP, block=True)
+sect_users = on_fullmatch("宗门成员查询", priority=8, permission=GROUP, block=True)
+sect_elixir_room_make = on_fullmatch("宗门丹房建设", priority=5, permission=GROUP, block=True)
+sect_elixir_get = on_fullmatch("宗门丹药领取", priority=5, permission=GROUP, block=True)
 
 __sect_help__ = f"""
 指令：
-1、我的宗门:查看当前所处宗门信息
+1、我的宗门:查询当前所处宗门信息
 2、创建宗门:创建宗门，需求：{XiuConfig().sect_create_cost}灵石，需求境界{XiuConfig().sect_min_level}
 3、加入宗门:加入一个宗门
 4、宗门职位变更:宗主可以改变宗门成员的职位等级【0 1 2 3 4】分别对应【宗主 长老 亲传 内门 外门】外门弟子无法获得宗门修炼资源
@@ -66,14 +66,14 @@ __sect_help__ = f"""
 7、踢出宗门:踢出对应宗门成员,需要输入正确的qq号或at对方
 8、宗主传位:宗主可以传位宗门成员
 9、升级攻击修炼:升级道友的攻击修炼等级,每级修炼等级提升4%攻击力
-10、宗门列表:查看所有宗门列表
+10、宗门列表:查询所有宗门列表
 11、宗门任务接取、我的宗门任务:接取宗门任务，可以增加宗门建设度和资材，每日上限：{config["每日宗门任务次上限"]}次
 12、宗门任务完成:完成所接取的宗门任务，完成间隔时间：{config["宗门任务完成cd"]}秒
 13、宗门任务刷新:刷新当前所接取的宗门任务，刷新间隔时间：{config["宗门任务刷新cd"]}秒
 14、宗门功法、神通搜寻:宗主可消耗宗门资材和宗门灵石搜寻功法或者神通
 15、学习宗门功法、神通:宗门成员可消耗宗门资材来学习宗门功法或者神通，后接功法名称
-16、宗门功法查看:查看当前宗门已有的功法
-17、宗门成员查看、查看宗门成员:查看所在宗门的成员信息
+16、宗门功法查询:查询当前宗门已有的功法
+17、宗门成员查询、查询宗门成员:查询所在宗门的成员信息
 18、宗门丹房建设、建设宗门丹房:建设宗门丹房，可以让每个宗门成员每日领取丹药
 19、宗门丹药领取、领取宗门丹药领取:领取宗门丹药
 非指令：
@@ -123,7 +123,7 @@ async def sect_help_(bot: Bot, event: GroupMessageEvent):
 
 
 @sect_elixir_room_make.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def sect_elixir_room_make_(bot: Bot, event: GroupMessageEvent):
+async def sect_elixir_room_make_(_: Bot, event: GroupMessageEvent):
     _, user_info, msg = check_user(event)
 
     sect_id = user_info.sect_id
@@ -315,10 +315,10 @@ buffrankkey = {
 
 
 @sect_mainbuff_learn.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def sect_mainbuff_learn_(bot: Bot, event: GroupMessageEvent):
+async def sect_mainbuff_learn_(_: Bot, event: GroupMessageEvent):
     _, user_info, msg = check_user(event)
 
-    msg = args.extract_plain_text().strip()
+    name, msg = get_input_cmd(event, 6)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -334,12 +334,12 @@ async def sect_mainbuff_learn_(bot: Bot, event: GroupMessageEvent):
 
             sectmainbuffidlist = get_sect_mainbuff_id_list(sect_id)
 
-            if msg not in get_mainname_list(sectmainbuffidlist):
+            if name not in get_mainname_list(sectmainbuffidlist):
                 msg = f"本宗还没有该功法，请发送本宗有的功法进行学习！"
                 await xiuxian_send_message(sect_mainbuff_learn, msg)
 
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
-            mainbuffid = get_mainnameid(msg, sectmainbuffidlist)
+            mainbuffid = get_mainnameid(name, sectmainbuffidlist)
             if str(userbuffinfo.main_buff) == str(mainbuffid):
                 msg = f"道友请勿重复学习！"
                 await xiuxian_send_message(sect_mainbuff_learn, msg)
@@ -473,7 +473,7 @@ async def sect_secbuff_get_(bot: Bot, event: GroupMessageEvent):
 async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
     _, user_info, msg = check_user(event)
 
-    msg = args.extract_plain_text().strip()
+    name, msg = get_input_cmd(event, 6)
     sect_id = user_info.sect_id
     if sect_id:
         sect_position = user_info.sect_position
@@ -489,12 +489,12 @@ async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
 
             sectsecbuffidlist = get_sect_secbuff_id_list(sect_id)
 
-            if msg not in get_secname_list(sectsecbuffidlist):
+            if name not in get_secname_list(sectsecbuffidlist):
                 msg = f"本宗还没有该神通，请发送本宗有的神通进行学习！"
                 await xiuxian_send_message(sect_secbuff_learn, msg)
 
             userbuffinfo = UserBuffDate(user_info.user_id).BuffInfo
-            secbuffid = get_secnameid(msg, sectsecbuffidlist)
+            secbuffid = get_secnameid(name, sectsecbuffidlist)
             if str(userbuffinfo.sec_buff) == str(secbuffid):
                 msg = f"道友请勿重复学习！"
                 await xiuxian_send_message(sect_secbuff_learn, msg)
@@ -608,7 +608,7 @@ async def sect_list_(_: Bot, event: GroupMessageEvent):
 @sect_users.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_users_(bot: Bot, event: GroupMessageEvent):
     """
-    查看所在宗门成员信息
+    查询所在宗门成员信息
     """
     msg_list = []
     _, user_info, msg = check_user(event)
@@ -631,9 +631,8 @@ async def sect_users_(bot: Bot, event: GroupMessageEvent):
     else:
         msg_list.append("未曾踏入修仙世界，输入【我要修仙】加入我们，看破这世间虚妄!")
 
-    # TODO
-    # await send_forward_msg(bot, event, '宗门成员', bot.self_id, msg_list)
-    await xiuxian_send_message(sect_users, msg)
+    await xiuxian_send_group_img_message(event.group_id, msg_list)
+
 
 
 @sect_task.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -813,7 +812,7 @@ async def create_sect_(_: Bot, event: GroupMessageEvent):
 (3)创建者当前处于无宗门状态。道友暂未满足所有条件，请逐一核实后，再来寻我。
 """
     else:
-        sect_name = get_input_cmd(event, 4)
+        sect_name, msg = get_input_cmd(event, 4)
         if sect_name:
             # sect表新增
             sql_message.create_sect(user_id, sect_name)
@@ -946,22 +945,20 @@ async def sect_donate_(_: Bot, event: GroupMessageEvent):
         msg = "道友还未加入一方宗门。"
         await xiuxian_send_message(sect_donate, msg)
 
-    msg = args.extract_plain_text().strip()
-    donate_num = re.findall("\d+", msg)  # 捐献灵石数
-    if len(donate_num) > 0:
-        if int(donate_num[0]) > user_info.stone:
-            msg = f"道友的灵石数量小于欲捐献数量{int(donate_num[0])}，请检查"
-            await xiuxian_send_message(sect_donate, msg)
+    donate_num, msg = get_input_number(event)
+    if donate_num is None:
+        msg += "捐献的灵石数量解析异常，输入：【宗门捐献+数字】"
+        return await xiuxian_send_message(sect_donate, msg)
 
-        else:
-            sql_message.update_ls(user_id, int(donate_num[0]), 2)
-            sql_message.donate_update(user_info.sect_id, int(donate_num[0]))
-            sql_message.update_user_sect_contribution(user_id, user_info.sect_contribution + int(donate_num[0]))
-            msg = f"道友捐献灵石{int(donate_num[0])}枚，增加宗门建设度{int(donate_num[0])}，宗门贡献度增加：{int(donate_num[0])}点，蒸蒸日上！"
-            await xiuxian_send_message(sect_donate, msg)
+    if donate_num > user_info.stone:
+        msg = f"道友的灵石数量小于欲捐献数量{int(donate_num)}，请检查"
+        await xiuxian_send_message(sect_donate, msg)
 
     else:
-        msg = "捐献的灵石数量解析异常"
+        sql_message.update_ls(user_id, int(donate_num), 2)
+        sql_message.donate_update(user_info.sect_id, int(donate_num))
+        sql_message.update_user_sect_contribution(user_id, user_info.sect_contribution + int(donate_num))
+        msg = f"道友捐献灵石{int(donate_num)}枚，增加宗门建设度{int(donate_num)}，宗门贡献度增加：{int(donate_num)}点，蒸蒸日上！"
         await xiuxian_send_message(sect_donate, msg)
 
 
@@ -977,28 +974,32 @@ async def sect_position_update_(_: Bot, event: GroupMessageEvent):
     idx_position = int(position_zhanglao[0]) if len(position_zhanglao) == 1 else 1
     if user_info.sect_position > idx_position:
         msg = f"你的宗门职位为{jsondata.sect_config_data()[f'{user_info.sect_position}']['title']}，无权进行职位管理"
-        await xiuxian_send_message(sect_position_update, msg)
+        return await xiuxian_send_message(sect_position_update, msg)
 
-    give_qq = None  # 艾特的时候存到这里
-    msg = args.extract_plain_text().strip()
-    position_num = re.findall("\d+", msg)  # 职位品阶
+    give_qq, msg = get_input_at_qq(event)
+    if not give_qq:
+        msg += "输入错误：【宗门职位变更+@对方+数字】"
+        return await xiuxian_send_message(sect_position_update, msg)
 
-    for arg in args:
-        if arg.type == "at":
-            give_qq = get_input_at_qq(event)
+    position_num, msg = get_input_number(event)
+    if not position_num:
+        msg += "输入错误：【宗门职位变更+@对方+数字】"
+        return await xiuxian_send_message(sect_position_update, msg)
 
     if give_qq:
         if give_qq == user_id:
             msg = "无法对自己的职位进行管理。"
-            await xiuxian_send_message(sect_position_update, msg)
+            return await xiuxian_send_message(sect_position_update, msg)
 
         else:
-            if len(position_num) > 0 and position_num[0] in list(jsondata.sect_config_data().keys()):
+            if str(position_num) in list(jsondata.sect_config_data().keys()):
                 give_user = sql_message.get_user_message(give_qq)
                 if give_user.sect_id == user_info.sect_id and give_user.sect_position > user_info.sect_position:
-                    if int(position_num[0]) > user_info.sect_position:
-                        sql_message.update_usr_sect(give_user.user_id, give_user.sect_id, int(position_num[0]))
-                        msg = f"""传{jsondata.sect_config_data()[f'{user_info.sect_position}']['title']}{user_info.user_name}法旨:即日起{give_user.user_name}为本宗{jsondata.sect_config_data()[f'{int(position_num[0])}']['title']}"""
+                    if int(position_num) > user_info.sect_position:
+                        sql_message.update_usr_sect(give_user.user_id, give_user.sect_id, int(position_num))
+                        msg = (f"传【{jsondata.sect_config_data()[f'{user_info.sect_position}']['title']}】"
+                               f"【{user_info.user_name}】法旨:"
+                               f"即日起 【{give_user.user_name}】为本宗{jsondata.sect_config_data()[f'{int(position_num)}']['title']}")
                         await xiuxian_send_message(sect_position_update, msg)
 
                     else:
@@ -1008,7 +1009,7 @@ async def sect_position_update_(_: Bot, event: GroupMessageEvent):
                     msg = "请确保变更目标道友与你在同一宗门，且职位品阶在你之下。"
                     await xiuxian_send_message(sect_position_update, msg)
             else:
-                msg = "职位品阶数字解析异常，请输入宗门职位变更帮助，查看支持的数字解析配置"
+                msg = "职位品阶数字解析异常，请输入宗门职位变更帮助，查询支持的数字解析配置"
                 await xiuxian_send_message(sect_position_update, msg)
 
     else:
@@ -1025,12 +1026,14 @@ async def join_sect_(_: Bot, event: GroupMessageEvent):
 
     user_id = user_info.user_id
     if not user_info.sect_id:
-        sect_no = get_input_number(event)
+        sect_no, msg = get_input_number(event)
+        if sect_no is None:
+            msg += "输入 【加入宗门+编号】"
+            return await xiuxian_send_message(sect_donate, msg)
+
         sql_sects = sql_message.get_all_sect_id()
         sects_all = [tup[0] for tup in sql_sects]
-        if not sect_no.isdigit():
-            msg = f"申请加入的宗门编号解析异常，应全为数字!"
-        elif int(sect_no) not in sects_all:
+        if int(sect_no) not in sects_all:
             msg = f"申请加入的宗门编号似乎有误，未在宗门名录上发现!"
         else:
             owner_idx = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "外门弟子"]
@@ -1047,7 +1050,7 @@ async def join_sect_(_: Bot, event: GroupMessageEvent):
 @my_sect.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def my_sect_(_: Bot, event: GroupMessageEvent):
     """
-    查看所在宗门信息
+    查询所在宗门信息
     """
     _, user_info, msg = check_user(event)
 

@@ -1,10 +1,11 @@
 from pathlib import Path
 
-DATABASE = Path() / "data" / "xiuxian"
+DATABASE = Path() / "nonebot_plugin_xiuxian3" / "resource"
 
 
 class GameResource:
-    BACKGROUND_FILE = DATABASE / "image" / "background.png"
-    BOSS_IMG = DATABASE / "boss_img"
-    BANNER_FILE = DATABASE / "image" / "banner.png"
-    FONT_FILE = DATABASE / "font" / "sarasa-mono-sc-regular.ttf"
+    BACKGROUND_FILE = DATABASE / "img" / "background.png"
+    BANNER_FILE = DATABASE / "img" / "banner.png"
+    TEXT_PATH = DATABASE / "img" / "info_img"
+    FONT_FILE = DATABASE / "fonts" / "sarasa-mono-sc-regular.ttf"
+    FONT_ORIGIN_PATH = DATABASE / "fonts" / 'font.ttf'

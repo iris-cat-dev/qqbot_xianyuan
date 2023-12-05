@@ -139,6 +139,7 @@ def get_user_back_msg(user_id):
     user_backs = sql_message.get_back_msg(user_id)  # list(back)
     if user_backs is None:
         return l_msg
+
     for user_back in user_backs:
         if user_back.goods_type == "装备":
             l_equipment_msg = get_equipment_msg(l_equipment_msg, user_id, user_back.goods_id, user_back.goods_num)
@@ -157,6 +158,7 @@ def get_user_back_msg(user_id):
 
         elif user_back.goods_type == "药材":
             l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_id, user_back.goods_id, user_back.goods_num)
+
     if l_equipment_msg:
         l_msg.append("☆------我的装备------☆")
         for msg in l_equipment_msg:

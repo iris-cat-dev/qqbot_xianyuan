@@ -14,14 +14,14 @@ from .back_util import (
     get_use_jlq_msg, get_no_use_equipment_sql
 )
 from .backconfig import get_config, savef
-from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_cmd
 from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
 from ..common.read_buff import (
     get_weapon_info_msg, get_armor_info_msg,
     get_sec_msg, get_main_info_msg
 )
-from ..common.utils import  check_user
+from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 items = Items()
@@ -45,6 +45,7 @@ my_back = on_fullmatch('我的背包', priority=10, permission=GROUP, block=True
 use = on_startswith("使用", priority=15, permission=GROUP, block=True)
 no_use_zb = on_startswith("卸下", priority=5, permission=GROUP, block=True)
 back_help = on_fullmatch("背包帮助", priority=8, permission=GROUP, block=True)
+item_look_up = on_startswith("物品查询", priority=15, permission=GROUP, block=True)
 
 __back_help__ = f"""
 背包帮助信息:
@@ -208,6 +209,22 @@ async def use_(bot: Bot, event: GroupMessageEvent):
     else:
         msg = '该类型物品调试中，未开启！'
         await xiuxian_send_message(use, message=msg)
+
+
+@item_look_up.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def item_look_up_(bot: Bot, event: GroupMessageEvent):
+    """
+    查询物品
+    """
+    name, msg = get_input_cmd(event, 4)
+    item_data = items.get_data_by_item_name(name)
+    if not item_data:
+        msg = f"没有查询到该物品【{name}】"
+    else:
+        msg = (f'【{item_data["name"]}】\n'
+               f'类型：{item_data["type"]}\n'
+               f'效果：{item_data["desc"]}')
+    await xiuxian_send_message(use, message=msg)
 
 
 def get_auction_id_list():

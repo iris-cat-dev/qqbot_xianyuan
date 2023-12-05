@@ -1,6 +1,6 @@
 {
   "free_refresh_count": 3,
   "refresh_cost": 100000,
-  "give_up_cost": 100000,
+  "give_up_cost": 50000,
   "max_level" :"真仙境初期"
 }

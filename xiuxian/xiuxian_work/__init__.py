@@ -5,15 +5,15 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.log import logger
 
 from .work_data_source import WorkConfig, WorkPlayerData
-from .work_handle import work_make_list, check_refresh, format_work_msg, work_check_success
-from ..common.bot_utils import xiuxian_send_message, get_input_number
+from .work_handle import work_make_list, check_refresh, format_work_msg, work_check_success, format_work_list
+from ..common.bot_utils import xiuxian_send_message, get_input_number, xiuxian_send_group_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
 from ..common.rank import Rank
 from ..common.utils import check_user_type
 from ..common.xiuxian2_handle import OtherSet
-from ..xiuxian_config import XiuConfig
+from ..xiuxian_config import XiuConfig, GlobalGameData
 
 # 定时任务
 reset_refresh_scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -41,9 +41,19 @@ __work_help__ = f"""
 
 
 # 重置悬赏令刷新次数
-@reset_refresh_scheduler.scheduled_job("cron", hour=0, minute=0)
+@reset_refresh_scheduler.scheduled_job("cron", hour=9, minute=35)
 async def reset_refresh_scheduler_():
-    logger.info("用户悬赏令刷新次数重置成功")
+    user_list = sql_manager.get_user_list()
+    for user_id in user_list:
+        player_data = WorkPlayerData(user_id)
+        player_data.work_list = []
+        player_data.refresh_count = 0
+        player_data.save()
+
+    msg = "全部悬赏令已重置! "
+    for group_id in GlobalGameData().groups:
+        await xiuxian_send_group_message(group_id, msg)
+    logger.info(msg)
 
 
 @work_help.handle(parameterless=[Cooldown(at_sender=True)])
@@ -58,7 +68,7 @@ async def work_refresh_(_: Bot, event: GroupMessageEvent):
 
     player_data = WorkPlayerData(user_id)
     need_cost = work_config.refresh_cost
-    if work_config.free_refresh_count > player_data.refresh_count:
+    if player_data.refresh_count > work_config.free_refresh_count:
         if user_info.stone < need_cost:
             msg = f"道友的灵石不足以刷新，下次刷新消耗灵石：{need_cost}枚"
             return await xiuxian_send_message(work_refresh, message=msg)
@@ -66,24 +76,20 @@ async def work_refresh_(_: Bot, event: GroupMessageEvent):
             sql_manager.sub_money(user_id, need_cost)
 
     work_list = work_make_list(user_id)
-    n = 1
-    work_msg_f = f"☆------道友的个人悬赏令------☆\n"
-    for i in work_list:
-        work_msg_f += f"{n}、{format_work_msg(i)}"
-        n += 1
+    msg = format_work_list(work_list)
 
     free_num = work_config.free_refresh_count - player_data.refresh_count
     free_num = free_num - 1
     if free_num < 0:
-        work_msg_f += f"\n道友消耗灵石{need_cost}枚，成功刷新悬赏令"
+        msg += f"\n道友消耗灵石{need_cost}枚，成功刷新悬赏令"
         free_num = 0
-    work_msg_f += f"(今日可用免费刷新次数：{free_num}次，超过后每次刷新消耗灵石：{need_cost}枚)"
+    msg += f"(今日可用免费刷新次数：{free_num}次，超过后每次刷新消耗灵石：{need_cost}枚)"
 
     player_data.work_list = work_list
     player_data.refresh_count = player_data.refresh_count + 1
     player_data.save()
 
-    await xiuxian_send_message(work_refresh, message=work_msg_f)
+    await xiuxian_send_message(work_refresh, message=msg)
 
 
 @work_accept.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -96,7 +102,7 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
         return await xiuxian_send_message(work_accept, msg)
 
     max_level = work_config.max_level
-    if Rank().compare(user_info.level, max_level) == -1:
+    if Rank().compare(user_info.level, max_level) == 1:
         msg = f"道友的境界已过创业初期，悬赏令已经不能满足道友了！"
         return await xiuxian_send_message(work_accept, message=msg)
 
@@ -109,10 +115,11 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
     if is_type:
         player_data = WorkPlayerData(user_id)
         work_info = player_data.work_list[num - 1]
-        sql_manager.set_user_state(user_id, 2, work_info.name)
+        sql_manager.set_user_state(user_id, 2, work_info["name"])
         del player_data.work_list[num - 1]
+        player_data.current_work = work_info
         player_data.save()
-        msg = f"接取任务【{work_info.nam}】成功!"
+        msg = f'接取任务【{work_info["name"]}】成功!'
 
     await xiuxian_send_message(work_accept, message=msg)
 
@@ -129,13 +136,13 @@ async def work_complete_(_: Bot, event: GroupMessageEvent):
         user_cd = sql_manager.get_user_cd(user_id)
         work_time = datetime.strptime(user_cd.create_time, "%Y-%m-%d %H:%M:%S.%f")
         exp_time = (datetime.now() - work_time).total_seconds() // 60  # 时长计算
-        time2 = WorkPlayerData(user_id).work_list[user_cd.scheduled_time]["time"]
 
+        work_player_data = WorkPlayerData(user_id)
+        time2 = work_player_data.current_work["time"]
         if exp_time < time2:
             msg = f"进行中的悬赏令【{user_cd.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
         else:
-            is_success, big_success, work_data = work_check_success(user_id, user_cd.scheduled_time)
-
+            is_success, big_success, work_data = work_check_success(work_player_data.current_work)
             item_id = work_data["item_id"]
             give_exp = work_data["exp"]
 
@@ -165,6 +172,9 @@ async def work_complete_(_: Bot, event: GroupMessageEvent):
                         sql_manager.insert_backpack(user_id, item_id, item_info['name'], item_info['type'], 1)
                         msg += f"，额外获得奖励：{item_msg}!"
 
+            work_player_data.current_work = {}
+            work_player_data.save()
+
     else:
         msg = "没有查到你的悬赏令信息呢，请刷新！"
     await xiuxian_send_message(work_complete, message=msg)
@@ -181,9 +191,8 @@ async def work_stop_(_: Bot, event: GroupMessageEvent):
     is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
     if is_type:
         # TODO: check money
-        stone = work_config.give_up_cost()
+        stone = work_config.give_up_cost
         sql_manager.sub_money(user_id, stone)
-
         sql_manager.set_user_state(user_id, 0)
         msg = f"道友不讲诚信，被打了一顿，灵石减少{stone},悬赏令已终止！"
         await xiuxian_send_message(work_stop, message=msg)
@@ -206,7 +215,7 @@ async def work_lookup_(_: Bot, event: GroupMessageEvent):
     if user_cd.type == 2:
         work_time = datetime.strptime(user_cd.create_time, "%Y-%m-%d %H:%M:%S.%f")
         exp_time = (datetime.now() - work_time).total_seconds() // 60  # 时长计算
-        time2 = player_data.work_list[user_cd.scheduled_time]["time"]
+        time2 = player_data.current_work["time"]
         if exp_time < time2:
             msg = f"进行中的悬赏令【{user_cd.scheduled_time}】，预计{time2 - exp_time}分钟后可结束"
         else:
@@ -216,12 +225,7 @@ async def work_lookup_(_: Bot, event: GroupMessageEvent):
             player_data.work_list = work_make_list(user_id)
             player_data.save()
 
-        n = 1
-        work_msg_f = f"☆------道友的个人悬赏令------☆\n"
-        for i in player_data.work_list:
-            work_msg_f += f"{n}、{format_work_msg(i)}"
-            n += 1
-        msg = work_msg_f
+        msg = format_work_list(player_data.work_list)
 
     await xiuxian_send_message(work_lookup, message=msg)
 

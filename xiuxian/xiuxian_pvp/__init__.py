@@ -281,7 +281,7 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
 
 
 @rob_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def rob_stone_(bot: Bot, event: GroupMessageEvent):
+async def rob_stone_(_: Bot, event: GroupMessageEvent):
     """
     抢灵石
     """
@@ -342,8 +342,8 @@ async def rob_stone_(bot: Bot, event: GroupMessageEvent):
         player2['气血'] = user_2.hp
         player2['攻击'] = user_2.atk
         player2['真元'] = user_2.mp
-        player1['会心'] = int(0)
-        player1['爆伤'] = int(1.5 + 0)
+        player2['会心'] = int(0)
+        player2['爆伤'] = int(1.5 + 0)
         user_buff_data = UserBuffDate(user_2.user_id)
         user_armor_data = user_buff_data.get_user_armor_buff_data()
         if user_armor_data is not None:

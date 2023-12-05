@@ -30,9 +30,9 @@ class XiuConfig:
         self.sql_back = ["user_id", "goods_id", "goods_name", "goods_type", "goods_num", "create_time", "update_time",
                          "remake", "day_num", "all_num", "action_time", "state", "bind_num"]
         self.img = False
-        self.user_info_image = False
+        self.user_info_image = True
         self.level = list(RANK.keys())
-        self.user_info_cd = 60  # 我的存档冷却时间
+        self.user_info_cd = 120  # 我的修仙信息冷却时间
         self.level_up_cd = 60  # 突破CD(分钟)
         self.closing_exp = 30  # 闭关每分钟获取的修为
         self.sect_min_level = "元婴境圆满"

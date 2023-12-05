@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List
 
-READPATH = Path() / "data" / "xiuxian"
+READPATH = Path() / "nonebot_plugin_xiuxian3" / "data"
 SKILLPATHH = READPATH / "功法"
 WEAPONPATH = READPATH / "装备"
 ELIXIRPATH = READPATH / "丹药"
@@ -86,7 +86,7 @@ class Items:
     def set_item_data(self, dict_data, item_type):
         for k, v in dict_data.items():
             if item_type == '功法' or item_type == '神通':
-                v['rank'], v['level'] = v['level'], v['rank']
+                # v['rank'], v['level'] = v['level'], v['rank']
                 v['type'] = '技能'
             self.items[k] = v
             self.items[k].update({'item_type': item_type})
@@ -100,24 +100,24 @@ class Items:
 
     def get_random_id_list_by_rank_and_item_type(
             self,
-            fanil_rank: int,
+            final_rank: int,
             item_type: List = None
     ):
         """
         获取随机一个物品ID,可以指定物品类型,物品等级和用户等级相差40级以上会被抛弃
-        :param fanil_rank:用户的最终rank,最终rank由用户rank和rank增幅事件构成
+        :param final_rank:用户的最终rank,最终rank由用户rank和rank增幅事件构成
         :param item_type:type:list,物品类型，可以为空，枚举值：法器、防具、神通、功法、丹药
         :return 获得的ID列表,type:list
         """
         l_id = []
         for k, v in self.items.items():
             if item_type is not None:
-                if v['item_type'] in item_type and int(v['rank']) >= fanil_rank and int(v['rank']) - fanil_rank <= 40:
+                if v['item_type'] in item_type and int(v['rank']) >= final_rank and int(v['rank']) - final_rank <= 6:
                     l_id.append(k)
                 else:
                     continue
             else:  # 全部随机
-                if int(v['rank']) >= fanil_rank and int(v['rank']) - fanil_rank <= 40:
+                if int(v['rank']) >= final_rank and int(v['rank']) - final_rank <= 6:
                     l_id.append(k)
                 else:
                     continue

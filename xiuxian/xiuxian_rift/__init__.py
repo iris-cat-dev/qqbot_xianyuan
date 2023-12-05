@@ -15,7 +15,7 @@ from .riftconfig import get_config, savef
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
     get_boss_battle_info, get_treasure_info, STORY
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
-from ..common.param_checker import check_player, check_admin,Cooldown
+from ..common.param_checker import check_player, check_admin, Cooldown
 from ..common.utils import check_user, check_user_type
 from ..common.xiuxian2_handle import XiuxianDateManage
 
@@ -101,7 +101,7 @@ async def rift_help_(_: Bot, event: GroupMessageEvent):
     group_id = str(event.group_id)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
-        await xiuxian_send_message(create_rift, msg)
+        return await xiuxian_send_message(create_rift, msg)
 
     if group_id in group_rift:
         rift = group_rift[group_id]
@@ -109,7 +109,10 @@ async def rift_help_(_: Bot, event: GroupMessageEvent):
                f"秘境等级 {rift.rank}，"
                f"秘境可探索次数：{rift.count}次，"
                f"需要时间{rift.time}分钟")
-        await xiuxian_send_message(rift_help, msg)
+        return await xiuxian_send_message(rift_help, msg)
+
+    msg = '野外秘境尚未生成，请道友耐心等待!'
+    await xiuxian_send_message(explore_rift, msg)
 
 
 # 生成秘境

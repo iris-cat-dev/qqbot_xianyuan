@@ -94,6 +94,19 @@ class XiuxianSqlManager:
         else:
             return UserInfo(*result)
 
+    def get_user_list(self) -> list[int]:
+        """
+        获取用户列表
+        """
+        cur = self.connect.cursor()
+        sql = f"select user_id from user_xiuxian"
+        cur.execute(sql)
+        result = cur.fetchall()
+        if not result:
+            return []
+        else:
+            return [item[0] for item in result]
+
     def get_user_cd(self, user_id):
         """
         获取用户操作CD
@@ -109,7 +122,6 @@ class XiuxianSqlManager:
             cur.execute(sql, (user_id,))
             self.connect.commit()
             return None
-
 
     def add_money(self, user_id, price):
         """

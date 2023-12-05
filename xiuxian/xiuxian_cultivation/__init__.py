@@ -285,8 +285,8 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     user_id = user_info.user_id
     level = user_info.level
     use_exp = user_info.exp
-    hp_speed = 25
-    mp_speed = 50
+    hp_speed = 50
+    mp_speed = 25
 
     max_exp = int(OtherSet().set_closing_type(level)) * XiuConfig().closing_exp_upper_limit  # 获取下个境界需要的修为 * 1.5为闭关上限
     user_get_exp_max = int(max_exp) - use_exp

@@ -1,7 +1,7 @@
 import random
 
 
-def calculated( rate: dict) -> str:
+def calculated(rate: dict) -> str:
     """
     根据概率计算，轮盘型
     :rate:格式{"数据名":"获取几率"}
@@ -27,3 +27,28 @@ def calculated( rate: dict) -> str:
             break
 
     return list(rate.keys())[index_num]
+
+
+def get_random_item_type():
+    type_rate = {
+        "功法": {
+            "type_rate": 400,
+        },
+        "神通": {
+            "type_rate": 400,
+        },
+        "药材": {
+            "type_rate": 400,
+        }
+    }
+    temp_dict = {}
+    for i, v in type_rate.items():
+        try:
+            temp_dict[i] = v["type_rate"]
+        except:
+            continue
+    key = [calculated(temp_dict)]
+    return key
+
+if __name__ == "__main__":
+    print(get_random_item_type())

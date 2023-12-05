@@ -4,20 +4,18 @@ from nonebot.log import logger
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 from aiohttp import ClientSession
-from pathlib import Path
 from ..common.download import get_avatar_by_user_id_and_save
+from ..common.game_resource import GameResource
 from ..common.send_image_tool import convert_img
 
-TEXT_PATH = Path() / "data" / "xiuxian" / "info_img"
 
 first_color = (242, 250, 242)
 second_color = (57, 57, 57)
 
-FONT_ORIGIN_PATH = Path() / "data" / "xiuxian" / "font" / 'font.ttf'
 
 
 def font_origin(size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(str(FONT_ORIGIN_PATH), size=size)
+    return ImageFont.truetype(str(GameResource.FONT_ORIGIN_PATH), size=size)
 
 
 font_36 = font_origin(36)
@@ -29,30 +27,9 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     based_w = 1100
     based_h = 2250
     # 获取背景图
-    try:
-        img = Image.open(BytesIO(await get_anime_pic())).convert("RGBA")
-        # 居中裁剪背景
-        img_w, img_h = img.size
-        scale = based_w / img_w
-        scaled_h = int(img_h * scale)
-        if scaled_h < based_h:  # 缩放后图片不够高（横屏图）
-            # 重算缩放比
-            scale = based_h / img_h
-            img_w = int(img_w * scale)
-            crop_l = round((img_w / 2) - (based_w / 2))
-            img = img.resize((img_w, based_h)).crop((crop_l, 0, crop_l + based_w, based_h))
-        else:
-            img_h = scaled_h
-            crop_t = round((img_h / 2) - (based_h / 2))
-            img = img.resize((based_w, img_h)).crop((0, crop_t, based_w, crop_t + based_h))
-        img.resize((based_w, based_h), Image.ANTIALIAS)
-        # 贴一层黑色遮罩
-        img.paste(i := Image.new("RGBA", (based_w, based_h), (0, 0, 0, 168)), mask=i)
-    except:
-        logger.info("下载随机背景图失败，使用默认背景图")
-        img = Image.open(TEXT_PATH / 'back.png').resize((based_w, based_h)).convert("RGBA")
+    img = Image.open(GameResource.TEXT_PATH / 'back.png').resize((based_w, based_h)).convert("RGBA")
     # 获取用户头像圆框
-    user_status = Image.open(TEXT_PATH / 'user_state.png').resize((450, 450)).convert("RGBA")
+    user_status = Image.open(GameResource.TEXT_PATH / 'user_state.png').resize((450, 450)).convert("RGBA")
     temp = await get_avatar_by_user_id_and_save(user_id)
     user_avatar = await img_author(temp, user_status)
     r, g, b, a = user_status.split()
@@ -60,7 +37,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     img.paste(user_avatar, (100, 100), mask=a)
     # img_draw = ImageDraw.Draw(img)
     # h获取信息图片
-    line = Image.open(TEXT_PATH / 'line3.png').resize((400, 60)).convert("RGBA")
+    line = Image.open(GameResource.TEXT_PATH / 'line3.png').resize((400, 60)).convert("RGBA")
     line_draw = ImageDraw.Draw(line)
     word = f"QQ:{user_id}"
     w, h = await linewh(line, word)
@@ -70,18 +47,18 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
 
     DETAIL_baseinfo = {
         "灵根": DETAIL_MAP["灵根"],
-        "突破状态": DETAIL_MAP["突破状态"],
-        '主修功法': DETAIL_MAP['主修功法'],
-        '副修神通': DETAIL_MAP['副修神通'],
-        "攻击力": DETAIL_MAP["攻击力"],
+        "突破": DETAIL_MAP["突破"],
+        '功法': DETAIL_MAP['功法'],
+        '神通': DETAIL_MAP['神通'],
+        "攻击": DETAIL_MAP["攻击"],
         "法器": DETAIL_MAP["法器"],
         "防具": DETAIL_MAP["防具"]
     }
 
     DETAIL_right = {
+        '修为': DETAIL_MAP['修为'],
         '道号': DETAIL_MAP['道号'],
         '境界': DETAIL_MAP['境界'],
-        '修为': DETAIL_MAP['修为'],
         '灵石': DETAIL_MAP['灵石'],
         '战力': DETAIL_MAP['战力']
     }
@@ -91,7 +68,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
         tasks1.append(_draw_line(img, key, value, DETAIL_right))
     await asyncio.gather(*tasks1)
 
-    baseinfo = Image.open(TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
+    baseinfo = Image.open(GameResource.TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
     baseword = '【基本信息】'
     w, h = await linewh(baseinfo, baseword)
     baseinfo_draw = ImageDraw.Draw(baseinfo)
@@ -103,7 +80,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
         tasks2.append(_draw_base_info_line(img, key, value, DETAIL_baseinfo))
     await asyncio.gather(*tasks2)
 
-    sectinfo = Image.open(TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
+    sectinfo = Image.open(GameResource.TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
     sectword = '【宗门信息】'
     w, h = await linewh(sectinfo, sectword)
     sectinfo_draw = ImageDraw.Draw(sectinfo)
@@ -111,7 +88,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     img.paste(sectinfo, (100, 1442), sectinfo)
 
     DETAIL_sectinfo = {
-        '所在宗门': DETAIL_MAP['所在宗门'],
+        '宗门': DETAIL_MAP['宗门'],
         '宗门职位': DETAIL_MAP['宗门职位']
     }
     tasks3 = []
@@ -120,7 +97,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
     await asyncio.gather(*tasks3)
 
     paihang = Image.open(
-        TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
+        GameResource.TEXT_PATH / 'line2.png').resize((900, 100)).convert("RGBA")
     paihangword = '【排行信息】'
     w, h = await linewh(paihang, paihangword)
     paihang_draw = ImageDraw.Draw(paihang)
@@ -142,7 +119,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
 
 
 async def _draw_line(img: Image.Image, key, value, DETAIL_MAP):
-    line = Image.open(TEXT_PATH / 'line3.png').resize((450, 68))
+    line = Image.open(GameResource.TEXT_PATH / 'line3.png').resize((450, 68))
     line_draw = ImageDraw.Draw(line)
     word = f"{key}:{value}"
     w, h = await linewh(line, word)
@@ -152,7 +129,7 @@ async def _draw_line(img: Image.Image, key, value, DETAIL_MAP):
 
 
 async def _draw_base_info_line(img: Image.Image, key, value, DETAIL_MAP):
-    line = Image.open(TEXT_PATH / 'line4.png').resize((900, 100))
+    line = Image.open(GameResource.TEXT_PATH / 'line4.png').resize((900, 100))
     line_draw = ImageDraw.Draw(line)
     word = f"{key}:{value}"
     w, h = await linewh(line, word)
@@ -162,7 +139,7 @@ async def _draw_base_info_line(img: Image.Image, key, value, DETAIL_MAP):
 
 
 async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
-    line = Image.open(TEXT_PATH / 'line4.png').resize((900, 100))
+    line = Image.open(GameResource.TEXT_PATH / 'line4.png').resize((900, 100))
     line_draw = ImageDraw.Draw(line)
     word = f"{key}:{value}"
     w, h = await linewh(line, word)
@@ -172,7 +149,7 @@ async def _draw_sect_info_line(img: Image.Image, key, value, DETAIL_MAP):
 
 
 async def _draw_ph_info_line(img: Image.Image, key, value, DETAIL_MAP):
-    line = Image.open(TEXT_PATH / 'line4.png').resize((900, 100))
+    line = Image.open(GameResource.TEXT_PATH / 'line4.png').resize((900, 100))
     line_draw = ImageDraw.Draw(line)
     word = f"{key}：{value}"
     w, h = await linewh(line, word)

@@ -1,25 +1,20 @@
-set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),
-                         block=True)
+from datetime import datetime
+
+from nonebot import logger
+
+from nonebot_plugin_xiuxian3.xiuxian.common.bot_utils import xiuxian_send_message
+from nonebot_plugin_xiuxian3.xiuxian.common.xiuxian2_handle import OtherSet
+
+set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),     block=True)
 creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP and SUPERUSER, block=True)
 offer_auction = on_command("交友", priority=5, permission=GROUP, block=True)
-
 
 
 __back_help__ = f"""
 背包帮助信息:
 指令：
-1、我的背包:查看自身背包前98个物品的信息
-2、使用+物品名字：使用物品,丹药可批量使用
-3、卸下+装备名字：卸载目标装备
-4、坊市购买+物品编号:购买坊市内的物品
-5、坊市查看、查看坊市:查询坊市在售物品
-6、坊市上架:坊市上架 物品 金额 数量，上架背包内的物品,最低金额50w
-7、系统坊市上架:系统坊市上架 物品 金额 数量，上架任意存在的物品，超管权限
-8、坊市下架+物品编号：下架坊市内的物品，管理员和群主可以下架任意编号的物品！
 9、群交流会开启、关闭:开启交友行功能，管理员指令，注意：会在机器人所在的全部已开启此功能的群内通报交友消息
 10、交友+金额：对本次交友会的物品进行交友
-11、炼金+物品名字：将物品炼化为灵石,支持批量炼金和绑定丹药炼金
-13、查看修仙界物品:支持类型【功法|神通|丹药|合成丹药|法器|防具】
 非指令：
 1、定时生成交友会,每天{auction_time_config['hours']}点每整点生成一场交友会
 """.strip()
@@ -82,45 +77,18 @@ async def set_auction_by_scheduler_():
         if auction['user_id'] == 0:
             msg = "很可惜，本次交友会流拍了！"
             auction = {}
-            for group_id in groups:
-                bot = await assign_bot_group(group_id=group_id)
-                try:
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(msg)
-                        await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-                    else:
-                        await bot.send_group_msg(group_id=int(group_id), message=msg)
-                except ActionFailed:  # 发送群消息失败
-                    continue
+            await xiuxian_send_message(creat_auction, msg)
             return
         now_price = int(auction['now_price'])
         user_info = sql_message.get_user_message(auction['user_id'])
         user_stone = user_info.stone
         if user_stone < now_price:
             msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1!"
-            for group_id in groups:
-                bot = await assign_bot_group(group_id=group_id)
-                try:
-                    if XiuConfig().img:
-                        pic = await get_msg_pic(msg)
-                        await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-                    else:
-                        await bot.send_group_msg(group_id=int(group_id), message=msg)
-                except ActionFailed:  # 发送群消息失败
-                    continue
+            await xiuxian_send_message(creat_auction, msg)
             return
         msg = "本次交友会结束！"
         msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}!"
-        for group_id in groups:
-            bot = await assign_bot_group(group_id=group_id)
-            try:
-                if XiuConfig().img:
-                    pic = await get_msg_pic(msg)
-                    await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-                else:
-                    await bot.send_group_msg(group_id=int(group_id), message=msg)
-            except ActionFailed:  # 发送群消息失败
-                continue
+        await xiuxian_send_message(creat_auction, msg)
 
         sql_message.send_back(user_info.user_id, auction['id'], auction['name'], auction['type'], 1)
         sql_message.update_ls(user_info.user_id, int(auction['now_price']), 2)
@@ -135,34 +103,20 @@ async def creat_auction_(bot: Bot, event: GroupMessageEvent):
     bot = await assign_bot_group(group_id=group_id)
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     global auction
     if auction != {}:
         msg = f'本群已存在一场交友会，请等待交友会结束！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
+
     auction_id = None
     try:
         auction_id_list = get_auction_id_list()
         auction_id = random.choice(auction_id_list)
     except LookupError:
         msg = "获取不到交友物品的信息，请检查配置文件！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     auction_info = items.get_data_by_item_id(auction_id)
     start_price = get_auction_price_by_id(auction_id)['start_price']
@@ -224,12 +178,7 @@ async def creat_auction_(bot: Bot, event: GroupMessageEvent):
     user_stone = user_info.stone
     if user_stone < now_price:
         msg = f"交友会结算！竞拍者灵石小于交友，判定为捣乱，捣乱次数+1!"
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     msg = "本次交友会结束！"
     msg += f"恭喜来自群{auction['group_id']}的{user_info.user_name}道友成功交友获得：{auction['type']}-{auction['name']}!"
@@ -257,62 +206,33 @@ async def offer_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Com
     bot = await assign_bot_group(group_id=group_id)
     if group_id not in groups:
         msg = '本群尚未开启交友会功能，请联系管理员开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     isUser, user_info, msg = check_user(event)
     if not isUser:
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     global auction
     if auction == {}:
         msg = f'本群不存在交友会，请等待交友会开启！'
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     price = args.extract_plain_text().strip()
     try:
         price = int(price)
     except ValueError:
         msg = f"请发送正确的灵石数量"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     now_price = auction['now_price']
     min_price = int(now_price * 0.05)  # 最低加价5%
     if price <= 0 or price <= auction['now_price'] or price > user_info.stone:
-        msg = f"走开走开，别捣乱！小心清空你灵石捏！"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        msg = f"走开走开，别捣乱！"
+        await xiuxian_send_message(creat_auction, msg)
+
     if price - now_price < min_price:
         msg = f"交友不得少于当前竞拍价的5%，目前最少加价为：{min_price}灵石，目前竞拍价为：{now_price}!"
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
     global auction_offer_flag, auction_offer_time_count, auction_offer_all_count
     auction_offer_flag = True  # 有人交友
@@ -345,12 +265,7 @@ async def offer_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Com
         await offer_auction.finish()
     else:
         msg = error_msg
-        if XiuConfig().img:
-            pic = await get_msg_pic(msg)
-            await bot.send_group_msg(group_id=int(group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(group_id), message=msg)
-        await creat_auction.finish()
+        await xiuxian_send_message(creat_auction, msg)
 
 
 @set_auction.handle(parameterless=[Cooldown(at_sender=True)])
@@ -363,50 +278,26 @@ async def set_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Comma
     if mode == '开启':
         if is_in_group:
             msg = f'本群已开启群交流会，请勿重复开启!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await set_auction.finish()
+            await xiuxian_send_message(set_auction, msg)
+
         else:
             config['open'].append(group_id)
             savef(config)
             msg = "已开启群交流会"
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await set_auction.finish()
+            await xiuxian_send_message(set_auction, msg)
 
     elif mode == '关闭':
         if is_in_group:
             config['open'].remove(group_id)
             savef(config)
             msg = f'已关闭本群交流会!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await set_auction.finish()
+            await xiuxian_send_message(set_auction, msg)
         else:
             msg = f'本群未开启群交流会!'
-            if XiuConfig().img:
-                pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-                await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-            else:
-                await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-            await set_auction.finish()
+            await xiuxian_send_message(set_auction, msg)
 
     else:
         msg = __back_help__
-        if XiuConfig().img:
-            pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-            await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-        else:
-            await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-        await set_auction.finish()
+        await xiuxian_send_message(set_auction, msg)
 
 

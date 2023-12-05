@@ -1,13 +1,27 @@
-import json
-import os
+import random
 
 from .work_data_source import WorkPlayerData, RewardConfig, WorkConfig
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.xiuxian2_handle import *
 from ..common.item_json import Items
+from ..common.rank import Rank
+from ..common.rate_calculater import calculated
 
 item = Items()
 sql_manager = XiuxianSqlManager()
+
+
+def format_work_list(work_list):
+    n = 1
+    work_msg_f = f"☆------道友的个人悬赏令------☆\n"
+
+    if len(work_list) == 0:
+        work_msg_f += "空"
+        return work_msg_f
+
+    for i in work_list:
+        work_msg_f += f"{n}、{format_work_msg(i)}"
+        n += 1
+    return work_msg_f
 
 
 def format_work_msg(work_):
@@ -24,7 +38,7 @@ def format_work_msg(work_):
 def check_refresh(user_id):
     user_cd = sql_manager.get_user_cd(user_id)
     if not WorkPlayerData(user_id).has_work() and user_cd.type == 2:
-        sql_manager.do_work(user_id, 0)
+        sql_manager.set_user_state(user_id, 0)
         msg = f"悬赏令已更新，已重置道友的状态！"
         return True, msg
     return False, ""
@@ -43,22 +57,8 @@ def work_make_list(user_id):
     work_list = [work1, work2, work3]
     return work_list
 
-    # work_list_str = []
-    # for work in work_list:
-    #
-    #     if v[3] == 0:
-    #         item_msg = '!'
-    #     else:
-    #         item_info = Items().get_data_by_item_id(v[3])
-    #         item_msg = f"，可能额外获得：{item_info['level']}:{item_info['name']}!"
-    #     work_list_str.append([k, v[0], v[1], v[2], item_msg])
-    #
-    # return work_list_str
 
-
-def work_check_success(user_id, work_name):
-    player_data = WorkPlayerData(user_id)
-    work_data = player_data.work_list[work_name]
+def work_check_success(work_data):
     if random.randint(1, 100) <= work_data["rate"]:
         big_success = False
         if work_data["rate"] >= 100:
@@ -110,7 +110,7 @@ def get_random_item_type():
         "神通": {
             "type_rate": 400,
         },
-        "药材": {
+        "丹药": {
             "type_rate": 400,
         }
     }
@@ -120,7 +120,7 @@ def get_random_item_type():
             temp_dict[i] = v["type_rate"]
         except:
             continue
-    key = [OtherSet().calculated(temp_dict)]
+    key = [calculated(temp_dict)]
     return key
 
 

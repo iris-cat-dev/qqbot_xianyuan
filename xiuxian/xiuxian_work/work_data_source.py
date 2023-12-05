@@ -46,8 +46,10 @@ class WorkPlayerData(PlayerData):
 
     def __init__(self, user_id: int):
         self.work_list = []
+        self.current_work = {}
         self.refresh_count = 0
         super().__init__(user_id, "work")
 
     def has_work(self):
         return len(self.work_list) > 0
+

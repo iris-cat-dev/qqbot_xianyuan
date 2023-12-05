@@ -2,6 +2,7 @@ from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
+from ..common.game_data_manager import PlayerData
 from ..common.param_checker import Cooldown
 from ..common.utils import number_to
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -30,12 +31,21 @@ async def ranking_list_(_: Bot, __: GroupMessageEvent):
 
 @ranking_list_ls.handle(parameterless=[Cooldown(at_sender=True)])
 async def ranking_list_ls_(_: Bot, __: GroupMessageEvent):
-    a_rank = sql_message.stone_top()
+    rank_list = sql_message.stone_top()
+
+    stone_list = []
+    for item in rank_list:
+        blank_stone = PlayerData(item[0], "bankinfo").savestone
+        total_stone = blank_stone + item[2]
+        stone_list.append((item[1], total_stone, blank_stone, item[2]))
+
+    stone_list.sort(key=lambda x: x[1], reverse=True)
     msg = f"✨位面灵石排行榜TOP10✨\n"
     num = 0
-    for i in a_rank:
+    for i in stone_list:
         num += 1
-        msg += f"第{num}位  {i[0]}  灵石：{number_to(i[1])}枚\n"
+        msg += (f"第{num}位【{i[0]}】灵石：{number_to(i[1])}枚\n"
+                f"灵庄：{number_to(i[2])} 身上：{number_to(i[3])}\n")
     await xiuxian_send_message(ranking_list_ls, msg)
 
 

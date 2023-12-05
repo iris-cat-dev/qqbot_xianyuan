@@ -3,7 +3,7 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSe
 
 from .draw_user_info import draw_user_info_img
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
@@ -22,7 +22,7 @@ rank = Rank()
 
 
 @xiuxian_message.handle(parameterless=[Cooldown(cd_time=XiuConfig().user_info_cd, at_sender=True), check_player()])
-async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
+async def xiuxian_message_(_: Bot, event: GroupMessageEvent):
     """
     我的修仙信息
     """
@@ -30,8 +30,8 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     user_info = sql_message.get_user_real_info(user_id)
     user_name = user_info.user_name
     user_num = user_info.id
-    rank = sql_message.get_exp_rank(user_id)
-    user_rank = int(rank[0])
+    rank_ = sql_message.get_exp_rank(user_id)
+    user_rank = int(rank_[0])
     stone = sql_message.get_stone_rank(user_id)
     user_stone = int(stone[0])
     if user_name:
@@ -39,7 +39,7 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     else:
         user_name = "无名氏(发送改名+道号更新)"
 
-    level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
+    root_speed = root.get_root_speed(user_info.root_type)  # 灵根倍率
     realm_rate = Rank().get_rank_speed(user_info.level)  # 境界倍率
     sect_id = user_info.sect_id
     if sect_id:
@@ -88,14 +88,14 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
         '境界': f'{user_info.level}',
         '修为': f'{number_to(user_info.exp)}',
         '灵石': f'{user_info.stone}',
-        '战力': f'{number_to(int(user_info.exp * level_rate * realm_rate))}',
-        '灵根': f'{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)',
-        '突破状态': f'{exp_meg}概率：{level_rate + int(user_info.level_up_rate)}%',
-        '攻击力': f'{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级',
-        '所在宗门': sectmsg,
+        '战力': f'{number_to(int(user_info.exp * root_speed * realm_rate))}',
+        '灵根': f'{user_info.root}({user_info.root_type}+{int(root_speed * 100)}%)',
+        '突破': f'{exp_meg}概率：{level_rate + int(user_info.level_up_rate)}%',
+        '攻击': f'{number_to(user_info.atk)}(攻修等级{user_info.atkpractice}级)',
+        '宗门': sectmsg,
         '宗门职位': sectzw,
-        '主修功法': main_buff_name,
-        '副修神通': sec_buff_name,
+        '功法': main_buff_name,
+        '神通': sec_buff_name,
         "法器": weapon_name,
         "防具": armor_name,
         '注册位数': f'道友是踏入修仙世界的第{int(user_num)}人',
@@ -105,35 +105,6 @@ async def xiuxian_message_(bot: Bot, event: GroupMessageEvent):
     if XiuConfig().user_info_image:
         img_res = await draw_user_info_img(user_id, DETAIL_MAP)
         await xiuxian_send_img_message(xiuxian_message, img_res)
-
-    else:
-        try:
-            msg = f"""{user_name}道友的信息
-灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
-当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
-当前灵石：{number_to(user_info.stone)}
-当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
-当前主修功法为：{user_main_buff_date['name']}({user_main_buff_date['level']})
-当前副修神通为：{user_sec_buff_date['name']}({user_sec_buff_date['level']})
-你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
-你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
-你是踏入修仙世界的第{int(user_num)}人
-你的修为排在第{int(user_rank)}位
-你的灵石排在第{int(user_stone)}位"""
-            await xiuxian_send_message(xiuxian_message, message=msg)
-
-        except TypeError:
-            msg = f"""{user_name}道友的信息
-灵根为：{user_info.root}({user_info.root_type}+{int(level_rate * 100)}%)
-当前境界：{user_info.level}(境界+{int(realm_rate * 100)}%)
-当前灵石：{number_to(user_info.stone)}
-当前修为：{number_to(user_info.exp)}(修炼效率+{int((level_rate * realm_rate) * 100)}%)
-你的战力为：{number_to(int(user_info.exp * level_rate * realm_rate))}
-你的攻击力为{number_to(user_info.atk)}，攻修等级{user_info.atkpractice}级
-你是踏入修仙世界的第{int(user_num)}人
-你的修为排在第{int(user_rank)}位
-你的灵石排在第{int(user_stone)}位"""
-            await xiuxian_send_message(xiuxian_message, message=msg)
 
 
 @mind_state.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -179,8 +150,8 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
 
     msg = f"""道号: {user_info.user_name}
-气血: {number_to(user_info.hp)}/{number_to(int((user_info.exp / 2) * (1 + main_hp_buff + impart_hp_per)))}
-真元: {int((user_info.mp / user_info.exp) * 100)}%
+气血: {number_to(user_info.hp)}/{number_to(int((user_info.exp) * (1 + main_hp_buff + impart_hp_per)))}
+真元: {int((user_info.mp / user_info.exp / 2) * 100)}%
 攻击: {number_to(user_info.atk)}
 攻击修炼: {user_info.atkpractice}级(提升攻击力{user_info.atkpractice * 4}%)
 修炼效率: {int(((level_rate * realm_rate) * (1 + main_buff_rate_buff)) * 100)}%

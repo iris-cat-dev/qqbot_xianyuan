@@ -640,7 +640,7 @@ class XiuxianDateManage:
         return result
 
     def stone_top(self):
-        sql = f"SELECT user_name,stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY stone DESC LIMIT 10"
+        sql = f"SELECT user_id, user_name, stone FROM user_xiuxian WHERE user_name is NOT NULL ORDER BY stone DESC LIMIT 10"
         cur = self.conn.cursor()
         cur.execute(sql, )
         result = cur.fetchall()
@@ -794,7 +794,7 @@ class XiuxianDateManage:
 
     def update_user_hp(self, user_id):
         """重置用户状态信息"""
-        sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10 where user_id=?"
+        sql = f"UPDATE user_xiuxian SET mp=exp/2,hp=exp,atk=exp/10 where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (user_id,))
         self.conn.commit()
@@ -802,12 +802,12 @@ class XiuxianDateManage:
     def restate(self, user_id=None):
         """restate重置所有用户状态或重置对应人状态"""
         if user_id is None:
-            sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10"
+            sql = f"UPDATE user_xiuxian SET mp=exp/2,hp=exp,atk=exp/10"
             cur = self.conn.cursor()
             cur.execute(sql, )
             self.conn.commit()
         else:
-            sql = f"UPDATE user_xiuxian SET hp=exp/2,mp=exp,atk=exp/10 where user_id=?"
+            sql = f"UPDATE user_xiuxian SET mp=exp/2,hp=exp,atk=exp/10 where user_id=?"
             cur = self.conn.cursor()
             cur.execute(sql, (user_id,))
             self.conn.commit()
