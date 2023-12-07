@@ -8,9 +8,9 @@ from nonebot import on_fullmatch, Bot, on_startswith
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_admin, check_player,Cooldown, CooldownIsolateLevel
 from ..common.read_buff import get_sec_msg, get_main_info_msg, get_armor_info_msg, get_weapon_info_msg
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage, items
 
 shop_list = on_fullmatch("坊市查询", priority=8, permission=GROUP, block=True)
@@ -29,7 +29,7 @@ PATH = Path(__file__).parent
 FILEPATH = PATH / 'shop.json'
 
 sql_message = XiuxianDateManage()
-
+sql_manager = XiuxianSqlManager()
 
 def read_shop():
     with open(FILEPATH, "r", encoding="UTF-8") as f:
@@ -121,7 +121,7 @@ async def shop_buy_(bot: Bot, event: GroupMessageEvent):
     购物
     """
     async with buy_lock:
-        _, user_info, msg = check_user(event)
+        user_info = sql_manager.get_user_info(event.user_id)
 
         user_id = user_info.user_id
         group_id = str(event.group_id)
@@ -249,7 +249,7 @@ async def shop_added_(bot: Bot, event: GroupMessageEvent):
     """
     上架坊市
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     message = str(event.message)
@@ -422,8 +422,7 @@ async def shop_off_(bot: Bot, event: GroupMessageEvent):
     """
     下架商品
     """
-
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     group_id = str(event.group_id)
@@ -557,8 +556,6 @@ async def shop_off_all_(bot: Bot, event: GroupMessageEvent):
     """
     坊市清空
     """
-    _, user_info, msg = check_user(event)
-
     group_id = str(event.group_id)
     shop_data = get_shop_data(group_id)
     if shop_data[group_id] == {}:
@@ -577,8 +574,8 @@ async def shop_off_all_(bot: Bot, event: GroupMessageEvent):
                                   shop_data[group_id][str(x)]['goods_name'],
                                   shop_data[group_id][str(x)]['goods_type'], shop_data[group_id][str(x)]['number'])
             msg += f"成功下架{shop_data[group_id][str(x)]['user_id']}的物品：{shop_data[group_id][str(x)]['goods_name']},数量{shop_data[group_id][str(x)]['number']}!\n"
+            del shop_data[group_id][str(x)]
 
-    del shop_data[group_id][str(x)]
     shop_data[group_id] = reset_dict_num(shop_data[group_id])
     save_shop(shop_data)
     list_msg.append({"type": "node", "data": {"name": f"执行清空坊市ing", "uin": bot.self_id, "content": msg}})

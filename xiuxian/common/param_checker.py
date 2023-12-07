@@ -11,12 +11,14 @@ from nonebot.internal.params import Depends
 from nonebot.rule import Rule
 
 from .bot_utils import xiuxian_send_message
-from .utils import check_user
+from .game_sql_manager import XiuxianSqlManager
 from ..xiuxian_config import GlobalGameData
 
 limit_all = require("nonebot_plugin_apscheduler").scheduler
 limit_all_data: Dict[str, Any] = {}
 limit_num = 5
+
+sql_manager = XiuxianSqlManager()
 
 def check_player() -> None:
     """
@@ -24,9 +26,9 @@ def check_player() -> None:
     """
 
     async def dependency(_: Bot, matcher: Matcher, event: GroupMessageEvent):
-        # bot, send_group_id = await assign_bot(bot=bot, event=event)
-        is_user, user_info, msg = check_user(event)
-        if is_user is False:
+        user_info = sql_manager.get_user_info(event.user_id)
+        if not user_info:
+            msg = "修仙界没有道友的信息，请输入【我要修仙】加入！"
             await xiuxian_send_message(matcher, msg)
 
     return Depends(dependency)

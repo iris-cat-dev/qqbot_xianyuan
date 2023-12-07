@@ -2,11 +2,7 @@ import random
 from datetime import datetime
 
 from nonebot import require, on_fullmatch, on_startswith, get_driver
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    GroupMessageEvent
-)
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 
 from .jsondata import save_rift_data, read_rift_data
@@ -15,12 +11,14 @@ from .riftconfig import get_config, savef
 from .riftmake import Rift, get_rift_type, get_story_type, NONEMSG, get_battle_type, get_dxsj_info, \
     get_boss_battle_info, get_treasure_info, STORY
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, check_admin, Cooldown
-from ..common.utils import check_user, check_user_type
+from ..common.player_manager import check_user_state
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 config = get_config()
 sql_message = XiuxianDateManage()  # sql类
+sql_manager = XiuxianSqlManager()
 cache_help = {}
 group_rift = {}  # dict
 groups = config['open']  # list
@@ -141,10 +139,10 @@ async def create_rift_(_: Bot, event: GroupMessageEvent):
 # 探索秘境
 @explore_rift.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def _(_: Bot, event: GroupMessageEvent):
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
-    is_type, msg = check_user_type(user_id, 0)  # 需要无状态的用户
+    is_type, msg = check_user_state(user_id, 0)  # 需要无状态的用户
     if not is_type:
         await xiuxian_send_message(explore_rift, msg)
     else:
@@ -186,15 +184,14 @@ async def _(_: Bot, event: GroupMessageEvent):
 # 结算秘境
 @complete_rift.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def complete_rift_(bot: Bot, event: GroupMessageEvent):
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = event.user_id
-    _, user_info, _ = check_user(event)
-
     group_id = str(event.group_id)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
         await xiuxian_send_message(complete_rift, msg)
 
-    is_type, msg = check_user_type(user_id, 3)  # 需要在秘境的用户
+    is_type, msg = check_user_state(user_id, 3)  # 需要在秘境的用户
     if not is_type:
         await xiuxian_send_message(complete_rift, msg)
     else:
@@ -251,13 +248,13 @@ async def complete_rift_(bot: Bot, event: GroupMessageEvent):
 # 终止探索秘境
 @break_rift.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def break_rift_(_: Bot, event: GroupMessageEvent):
-    user_id = event.get_user_id()
+    user_id = event.user_id
     group_id = str(event.group_id)
     if group_id not in groups:
         msg = '本群尚未开启秘境，请联系管理员开启群秘境'
         await xiuxian_send_message(break_rift, msg)
 
-    is_type, msg = check_user_type(user_id, 3)  # 需要在秘境的用户
+    is_type, msg = check_user_state(user_id, 3)  # 需要在秘境的用户
     if not is_type:
         await xiuxian_send_message(break_rift, msg)
     else:

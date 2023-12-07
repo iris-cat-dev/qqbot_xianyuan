@@ -10,13 +10,15 @@ from nonebot.log import logger
 
 from .bankconfig import get_config
 from ..common.bot_utils import xiuxian_send_message
-from ..common.param_checker import check_player,Cooldown
-from ..common.utils import check_user
+from ..common.game_sql_manager import XiuxianSqlManager
+from ..common.param_checker import check_player, Cooldown
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 config = get_config()
 BANKLEVEL = config["BANKLEVEL"]
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
+
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 
 bank_put = on_startswith("灵庄存灵石", priority=5, block=True)
@@ -62,8 +64,8 @@ async def bank_put_(_: Bot, event: GroupMessageEvent):
     """
     灵庄存灵石+数量
     """
-    user_id = event.get_user_id()
-    _, user_info, _ = check_user(event)
+    user_id = event.user_id
+    user_info = sql_manager.get_user_info(event.user_id)
 
     msg = str(event.message)
     stone_num = re.findall("\d+", msg)  # 灵石数
@@ -105,7 +107,7 @@ async def bank_get_(_: Bot, event: GroupMessageEvent):
     灵庄取灵石+数量
     """
     user_id = event.get_user_id()
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     msg = str(event.message)
     stone_num = re.findall("\d+", msg)  # 灵石数
@@ -139,7 +141,7 @@ async def bank_update_(_: Bot, event: GroupMessageEvent):
     灵庄会员升级
     """
     user_id = event.get_user_id()
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     bankinfo = get_blank_info(user_id)
 
     userlevel = bankinfo["banklevel"]
@@ -167,7 +169,7 @@ async def bank_put_(_: Bot, event: GroupMessageEvent):
     灵庄信息
     """
     user_id = event.get_user_id()
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     bankinfo = get_blank_info(user_id)
 
     msg = f'''道友的灵庄信息：

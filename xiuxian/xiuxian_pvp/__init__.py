@@ -4,9 +4,9 @@ from nonebot import on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player,Cooldown
 from ..common.read_buff import UserBuffDate
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet, leave_harm_time
 from ..xiuxian_config import XiuConfig
 
@@ -16,7 +16,7 @@ steal_stone = on_startswith("偷灵石", priority=4, permission=GROUP, block=Tru
 rob_stone = on_startswith("打劫", priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
-
+sql_manager = XiuxianSqlManager()
 
 # qc = on_fullmatch("切磋", priority=6, permission=GROUP, block=True)
 #
@@ -106,7 +106,7 @@ async def give_stone_(bot: Bot, event: GroupMessageEvent):
     """
     送灵石
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     user_stone_num = user_info.stone
@@ -149,7 +149,7 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
     """
     偷灵石
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     steal_user = None
@@ -285,7 +285,7 @@ async def rob_stone_(_: Bot, event: GroupMessageEvent):
     """
     抢灵石
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
 
     give_qq, msg = get_input_at_qq(event)

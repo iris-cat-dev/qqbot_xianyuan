@@ -1,4 +1,4 @@
-from ..common import singleton
+from ..common import singleton, player_singleton
 from ..common.game_data_manager import GameConfig, PlayerData
 
 
@@ -42,6 +42,7 @@ class WorkConfig(GameConfig):
         return [self.work1, self.work2, self.work3]
 
 
+@player_singleton
 class WorkPlayerData(PlayerData):
 
     def __init__(self, user_id: int):
@@ -52,4 +53,3 @@ class WorkPlayerData(PlayerData):
 
     def has_work(self):
         return len(self.work_list) > 0
-

@@ -62,9 +62,10 @@ class PlayerData:
 
 class GameConfig:
 
-    def __init__(self, name):
+    def __init__(self, name: str = None):
         self._data_source = {}
-        self._load_data(name)
+        if name is not None:
+            self._load_data(name)
 
     def load_data(self, name):
         return _read_json(CONFIG_ROOT / f"{name}.json")

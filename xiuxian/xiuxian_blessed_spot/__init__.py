@@ -5,9 +5,9 @@ from nonebot import on_fullmatch, on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player,Cooldown
 from ..common.read_buff import save_player_info, get_player_info, UserBuffDate, read_player_info
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 blessed_spot_creat = on_fullmatch("洞天福地购买", priority=10, permission=GROUP, block=True)
@@ -16,6 +16,7 @@ blessed_spot_rename = on_startswith("洞天福地改名", priority=7, permission
 blessed_help = on_fullmatch("洞天福地帮助", priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 
 BLESSEDSPOT_COST = 500000
 
@@ -40,7 +41,7 @@ async def blessed_spot_creat_(bot: Bot, event: GroupMessageEvent):
     """
     洞天福地购买
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
 
     if int(user_info.blessed_spot_flag) != 0:
@@ -66,8 +67,7 @@ async def blessed_spot_info_(_: Bot, event: GroupMessageEvent):
     """
     洞天福地信息
     """
-    _, user_info, _ = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
@@ -94,7 +94,7 @@ async def blessed_spot_rename_(_: Bot, event: GroupMessageEvent):
     """
     洞天福地改名
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"

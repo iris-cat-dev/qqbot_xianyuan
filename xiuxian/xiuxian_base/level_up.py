@@ -5,9 +5,9 @@ from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player,Cooldown
 from ..common.rank import Rank
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_backpack.back_util import backpack_check_item
 from ..xiuxian_config import XiuConfig
@@ -18,6 +18,7 @@ level_up_zj = on_fullmatch("直接突破", priority=7, permission=GROUP, block=T
 user_level_up_rate = on_fullmatch('我的突破概率', priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 rank = Rank()
 
 
@@ -55,7 +56,7 @@ async def level_up_(_: Bot, event: GroupMessageEvent):
     """
     突破
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     result, msg = check_cd(user_info)
     if result:
         return await xiuxian_send_message(level_up_zj, message=msg)
@@ -87,7 +88,7 @@ async def level_up_zj_(_: Bot, event: GroupMessageEvent):
     """
     直接 突破
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     result, msg = check_cd(user_info)
     if result:
@@ -138,7 +139,7 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
     """
     渡厄 突破
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     result, msg = check_cd(user_info)
     if result:

@@ -4,11 +4,7 @@ import re
 from pathlib import Path
 
 from nonebot import on_fullmatch, on_startswith, get_driver
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    GroupMessageEvent
-)
+from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 
@@ -16,12 +12,13 @@ from .bossconfig import get_config, savef
 from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
-from ..common.param_checker import check_player, check_admin,Cooldown
-from ..common.rank import RANK, MAX_RANK
+from ..common.game_sql_manager import XiuxianSqlManager
+from ..common.param_checker import check_player, check_admin, Cooldown
 from ..common.item_json import Items
 from ..common.player_fight import Boss_fight
+from ..common.rank import Rank
 from ..common.read_buff import UserBuffDate
-from ..common.utils import number_to, check_user
+from ..common.utils import number_to
 from ..common.xiuxian2_handle import XiuxianDateManage, leave_harm_time
 from ..xiuxian_config import XiuConfig
 
@@ -32,6 +29,7 @@ group_boss = {}
 groups = config['open']
 battle_flag = {}
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
 set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
@@ -41,6 +39,7 @@ battle = on_startswith("讨伐世界boss", priority=6, permission=GROUP, block=T
 boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_admin(), block=True)
 boss_integral_info = on_fullmatch("世界积分查询", priority=10, permission=GROUP, block=True)
 boss_integral_use = on_startswith("世界积分兑换", priority=6, permission=GROUP, block=True)
+boss_integral_lookup = on_fullmatch("我的世界积分", priority=10, permission=GROUP, block=True)
 
 boss_time = config["Boss生成时间参数"]
 
@@ -58,6 +57,7 @@ __boss_help__ = f"""
 """.strip()
 
 DRIVER = get_driver()
+
 
 @DRIVER.on_startup
 async def read_boss_():
@@ -194,7 +194,7 @@ async def boss_delete_(_: Bot, event: GroupMessageEvent):
 
 @battle.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def battle_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     group_id = str(event.group_id)
 
@@ -250,7 +250,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     userinfo = XiuxianDateManage().get_user_real_info(user_id)
     user_weapon_data = UserBuffDate(userinfo.user_id).get_user_weapon_data()
 
-    boss_atk =  0
+    boss_atk = 0
 
     if user_weapon_data != None:
         player['会心'] = int(user_weapon_data['crit_buff'] * 100)
@@ -264,22 +264,22 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     player['真元'] = userinfo.mp
     player['exp'] = userinfo.exp
 
+    rank = Rank()
     boss_info = group_boss[group_id][boss_num - 1]
-    if boss_info['jj'] == "祭道之上":
-        boss_rank = RANK[(boss_info['jj'])]
-    else:
-        boss_rank = RANK[(boss_info['jj'] + '中期')]
-
-    user_rank = RANK[userinfo.level]
+    boss_rank = rank.to_level(boss_info['jj'] + "中期")
+    user_rank = rank.to_level(userinfo.level)
     boss_old_hp = boss_info['气血']  # 打之前的血量
     more_msg = ''
     battle_flag[group_id] = True
     result, victor, boss_info_new, get_stone = await Boss_fight(player, boss_info, bot_id=bot.self_id)
-    boss_integral_rate = 30 + (MAX_RANK - boss_rank) * 2
+    boss_integral_rate = 30 + (rank.MAX_RANK - boss_rank) * 2
 
     if victor == "Boss赢了":
         group_boss[group_id][boss_num - 1] = boss_info_new
-        XiuxianDateManage().update_ls(user_id, get_stone, 1)
+
+        sql_message.update_ls(user_id, get_stone, 1)
+        sql_message.update_exp(user_id, get_stone)
+
         # 新增boss战斗积分点数
         boss_now_hp = boss_info_new['气血']  # 打之后的血量
         boss_all_hp = boss_info['总血量']  # 总血量
@@ -287,16 +287,15 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         if boss_integral < 2:  # 摸一下不给
             boss_integral = 2
 
-        if boss_rank - user_rank >= 6:  # 超过太多不给
-            boss_integral = 1
-            more_msg = "道友的境界超过boss太多了,不齿！"
-
         user_boss_fight_info = get_user_boss_fight_info(user_id)
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
 
-        msg = (f"道友不敌{boss_info['name']}，重伤逃遁，血量({boss_now_hp}/{boss_all_hp})，"
-               f"临逃前收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点")
+        msg = (f"道友不敌【{boss_info['name']}】，重伤逃遁，剩余血量({boss_now_hp}/{boss_all_hp})\n"
+               f"临逃前收获奖励：\n"
+               f"灵石:{get_stone}枚\n"
+               f"修为:{get_stone // 2}点\n"
+               f"世界积分:{boss_integral}点")
 
         battle_flag[group_id] = False
 
@@ -304,8 +303,6 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         # 新增boss战斗积分点数
         boss_all_hp = boss_info['总血量']  # 总血量
         boss_integral = int((boss_old_hp / boss_all_hp) * boss_integral_rate)
-        if boss_integral < 2:  # 摸一下不给
-            boss_integral = 2
 
         if boss_rank - user_rank >= 6:  # 超过太多不给
             boss_integral = 1
@@ -313,12 +310,23 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
         group_boss[group_id].remove(group_boss[group_id][boss_num - 1])
         battle_flag[group_id] = False
-        XiuxianDateManage().update_ls(user_id, get_stone, 1)
+
+        sql_message.update_ls(user_id, get_stone, 1)
+        sql_message.update_exp(user_id, get_stone)
+
         user_boss_fight_info = get_user_boss_fight_info(user_id)
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
 
-        msg = f"恭喜道友击败{boss_info['name']}，收获灵石{get_stone}枚，{more_msg}获得世界积分：{boss_integral}点"
+        # item_info = items.get_data_by_item_id(item_id)
+        # item_msg = f"{item_info['level']}:{item_info['name']}"
+        # sql_manager.insert_backpack(user_id, item_id, item_info['name'], item_info['type'], 1)
+
+        msg = (f"恭喜道友击败【{boss_info['name']}】，{more_msg}"
+               f"获得奖励：\n"
+               f"灵石:{get_stone}枚\n"
+               f"修为:{get_stone // 2}点\n"
+               f"世界积分:{boss_integral}点")
 
     # try:
     #     await send_forward_msg_list(bot, event, result)
@@ -487,6 +495,18 @@ async def boss_integral_info_(bot: Bot, event: GroupMessageEvent):
     msg = ""
     for item in l_msg:
         msg += item + "\n"
+    await xiuxian_send_message(boss_integral_info, message=msg)
+
+
+@boss_integral_lookup.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def boss_integral_lookup_info_(bot: Bot, event: GroupMessageEvent):
+    user_id = event.get_user_id()
+    if not is_in_groups(event):  # 不在配置表内
+        msg = f'本群尚未开启世界Boss,请联系管理员开启!'
+        await xiuxian_send_message(boss_integral_info, message=msg)
+
+    user_boss_fight_info = get_user_boss_fight_info(user_id)
+    msg = f"道友目前拥有的世界积分：{user_boss_fight_info['boss_integral']}点"
     await xiuxian_send_message(boss_integral_info, message=msg)
 
 

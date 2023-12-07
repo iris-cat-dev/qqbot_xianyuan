@@ -1,11 +1,7 @@
 import re
 
-from nonebot import require, on_fullmatch, on_startswith
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    GROUP,
-    GroupMessageEvent
-)
+from nonebot import require, on_fullmatch, on_startswith, Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 from nonebot.log import logger
 
 from .back_util import (
@@ -15,13 +11,13 @@ from .back_util import (
 )
 from .backconfig import get_config, savef
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_cmd
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
 from ..common.read_buff import (
     get_weapon_info_msg, get_armor_info_msg,
     get_sec_msg, get_main_info_msg
 )
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 items = Items()
@@ -35,7 +31,9 @@ AUCTIONOFFERSLEEPTIME = 10  # 每次交友增加交友剩余的时间（秒）
 auction_offer_time_count = 0  # 计算剩余时间
 auction_offer_all_count = 0  # 控制线程等待时间
 auction_time_config = config['交友会定时参数']  #
+
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 
 # 定时任务
 set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -93,7 +91,7 @@ async def no_use_zb_(_: Bot, event: GroupMessageEvent):
     """
     卸载物品（只支持装备）
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     arg = str(event.message)[2:]
@@ -142,8 +140,7 @@ async def use_(bot: Bot, event: GroupMessageEvent):
     """
     使用物品
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     message = str(event.message)
     arg = message[2:]  #

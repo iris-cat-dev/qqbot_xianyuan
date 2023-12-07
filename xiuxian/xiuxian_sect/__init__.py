@@ -12,11 +12,12 @@ from nonebot.log import logger
 from .sectconfig import get_config, SectConfig
 from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message, \
     get_input_cmd
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
 from ..common.rank import RANK, Rank
 from ..common.item_json import Items
 from ..common.read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
-from ..common.utils import check_user, number_to
+from ..common.utils import number_to
 from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 
@@ -27,6 +28,7 @@ cache_help = {}
 userstask = {}
 jsondata = SectConfig()
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 
 # 定时任务
 materialsupdate = require("nonebot_plugin_apscheduler").scheduler
@@ -124,7 +126,7 @@ async def sect_help_(bot: Bot, event: GroupMessageEvent):
 
 @sect_elixir_room_make.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_elixir_room_make_(_: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     sect_id = user_info.sect_id
     if sect_id:
@@ -251,7 +253,7 @@ async def sect_elixir_get_(bot: Bot, event: GroupMessageEvent):
 
 @sect_buff_info.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_buff_info_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     sect_id = user_info.sect_id
     if sect_id:
@@ -293,7 +295,11 @@ async def sect_buff_info_(bot: Bot, event: GroupMessageEvent):
                     {"type": "node", "data": {"name": f"道友{user_info.user_name}的宗门神通信息", "uin": bot.self_id,
                                               "content": secmsg}})
 
-            # await send_forward_msg_list(bot, event, list_tp)
+            msg_list = []
+            for item in list_tp:
+                msg_list.append(item["data"]["content"])
+
+            await xiuxian_send_group_img_message(event.group_id, msg_list)
 
     else:
         msg = f"道友尚未加入宗门！"
@@ -316,7 +322,7 @@ buffrankkey = {
 
 @sect_mainbuff_learn.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_mainbuff_learn_(_: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     name, msg = get_input_cmd(event, 6)
     sect_id = user_info.sect_id
@@ -367,8 +373,8 @@ async def sect_mainbuff_learn_(_: Bot, event: GroupMessageEvent):
 
 
 @sect_mainbuff_get.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def sect_mainbuff_get_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+async def sect_mainbuff_get_(_: Bot, event: GroupMessageEvent):
+    user_info = sql_manager.get_user_info(event.user_id)
 
     sect_id = user_info.sect_id
     if sect_id:
@@ -420,7 +426,7 @@ async def sect_mainbuff_get_(bot: Bot, event: GroupMessageEvent):
 
 @sect_secbuff_get.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_secbuff_get_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     sect_id = user_info.sect_id
     if sect_id:
@@ -471,7 +477,7 @@ async def sect_secbuff_get_(bot: Bot, event: GroupMessageEvent):
 
 @sect_secbuff_learn.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     name, msg = get_input_cmd(event, 6)
     sect_id = user_info.sect_id
@@ -509,7 +515,7 @@ async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
             if sect_info.sect_materials >= materialscost:
                 sql_message.update_sect_materials(sect_id, materialscost, 2)
                 sql_message.updata_user_sec_buff(user_info.user_id, secbuffid)
-                secmsg = get_sec_msg(secbuff)
+                msg = get_sec_msg(secbuff)
                 await xiuxian_send_message(sect_secbuff_learn, msg)
 
             else:
@@ -523,7 +529,7 @@ async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
 
 @upatkpractice.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def upatkpractice_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     sect_id = user_info.sect_id
@@ -568,7 +574,7 @@ async def upatkpractice_(bot: Bot, event: GroupMessageEvent):
 
 @sect_task_refresh.handle(parameterless=[Cooldown(cd_time=config['宗门任务刷新cd'], at_sender=True), check_player()])
 async def sect_task_refresh_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     sect_id = user_info.sect_id
@@ -611,7 +617,7 @@ async def sect_users_(bot: Bot, event: GroupMessageEvent):
     查询所在宗门成员信息
     """
     msg_list = []
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     if user_info:
         sect_id = user_info.sect_id
@@ -634,10 +640,9 @@ async def sect_users_(bot: Bot, event: GroupMessageEvent):
     await xiuxian_send_group_img_message(event.group_id, msg_list)
 
 
-
 @sect_task.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_task_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     sect_id = user_info.sect_id
@@ -662,10 +667,12 @@ async def sect_task_(bot: Bot, event: GroupMessageEvent):
 
 @sect_task_complete.handle(parameterless=[Cooldown(config['宗门任务完成cd'], at_sender=True)])
 async def sect_task_complete_(_: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     sect_id = user_info.sect_id
+
+    msg = ""
     if sect_id:
         if not isUserTask(user_id):
             msg = f"道友当前没有接取宗门任务，道友浪费了一次出门机会哦！"
@@ -752,8 +759,7 @@ async def sect_owner_change_(_: Bot, event: GroupMessageEvent):
     """
     宗主传位
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if not user_info.sect_id:
         msg = "道友还未加入一方宗门。"
@@ -797,7 +803,7 @@ async def create_sect_(_: Bot, event: GroupMessageEvent):
     """
     创建宗门，对灵石、修为等级有要求，且需要当前状态无宗门
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     # 首先判断是否满足创建宗门的三大条件
     level = user_info.level
@@ -835,8 +841,7 @@ async def sect_kick_out_(_: Bot, event: GroupMessageEvent):
     """
     踢出宗门
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if not user_info.sect_id:
         msg = "道友还未加入一方宗门。"
@@ -893,8 +898,7 @@ async def sect_out_(_: Bot, event: GroupMessageEvent):
     """
     退出宗门
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if not user_info.sect_id:
         msg = "道友还未加入一方宗门。"
@@ -938,8 +942,7 @@ async def sect_donate_(_: Bot, event: GroupMessageEvent):
     """
     宗门捐献
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if not user_info.sect_id:
         msg = "道友还未加入一方宗门。"
@@ -967,7 +970,7 @@ async def sect_position_update_(_: Bot, event: GroupMessageEvent):
     """
     宗门职位变更，首先确认操作者的职位是长老及以上（宗主可以变更宗主及以下，长老可以变更长老以下），然后读取变更等级及艾特目标
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
 
     position_zhanglao = [k for k, v in jsondata.sect_config_data().items() if v.get("title", "") == "长老"]
@@ -1022,8 +1025,7 @@ async def join_sect_(_: Bot, event: GroupMessageEvent):
     """
     加入宗门,后跟宗门ID,要求加入者当前状态无宗门,入门默认为外门弟子
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if not user_info.sect_id:
         sect_no, msg = get_input_number(event)
@@ -1052,8 +1054,7 @@ async def my_sect_(_: Bot, event: GroupMessageEvent):
     """
     查询所在宗门信息
     """
-    _, user_info, msg = check_user(event)
-
+    user_info = sql_manager.get_user_info(event.user_id)
     elixir_room_level_up_config = config['宗门丹房参数']['elixir_room_level']
     sect_id = user_info.sect_id
     sect_position = user_info.sect_position

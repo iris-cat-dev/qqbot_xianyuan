@@ -6,13 +6,14 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from .mix_elixir_config import MIXELIXIRCONFIG
 from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix, make_dict
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_cmd
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import Cooldown, check_player
 from ..common.read_buff import get_player_info, save_player_info
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 items = Items()
 cache_help = {}
 
@@ -51,7 +52,7 @@ async def mix_elixir_sqdj_up_(bot: Bot, event: GroupMessageEvent):
     """
     收取等级升级
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
         msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
@@ -81,7 +82,7 @@ async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
     """
     丹药控火升级
     """
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     DYKHCONFIG = MIXELIXIRCONFIG['丹药控火']
@@ -104,10 +105,8 @@ async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
 
 
 @my_mix_elixir_info.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def my_mix_elixir_info_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
-
-    user_id = user_info.user_id
+async def my_mix_elixir_info_(_: Bot, event: GroupMessageEvent):
+    user_id = event.user_id
     mix_elixir_info = get_player_info(user_id, 'mix_elixir_info')
     l_msg = [f"☆------道友的炼丹信息------☆"]
     msg = f"药材收取等级：{mix_elixir_info['收取等级']}\n"
@@ -143,7 +142,7 @@ user_ldl_flag = {}
 @mix_elixir.handle(parameterless=[Cooldown(cd_time=10, at_sender=True), check_player()])
 async def mix_elixir_(_: Bot, event: GroupMessageEvent):
     global user_ldl_dict, user_ldl_flag
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     user_back = sql_message.get_back_msg(user_id)

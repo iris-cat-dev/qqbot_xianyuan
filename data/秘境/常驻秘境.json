@@ -1,26 +1,26 @@
 {
   "龙陵墓穴": {
-    "type_rate": 200,
+    "type": "normal",
     "rank": 1,
-    "count": 20,
+    "scene": 3,
     "time": 60
   },
   "大漠禁区": {
-    "type_rate": 100,
+    "type": "normal",
     "rank": 2,
-    "count": 15,
+    "scene": 4,
     "time": 90
   },
   "东海遗迹": {
-    "type_rate": 50,
+    "type": "normal",
     "rank": 3,
-    "count": 15,
+    "scene": 5,
     "time": 120
   },
   "终焉雪山": {
-    "type_rate": 50,
+    "type": "normal",
     "rank": 4,
-    "count": 15,
+    "scene": 6,
     "time": 150
   }
 }

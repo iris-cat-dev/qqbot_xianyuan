@@ -2,8 +2,9 @@ from datetime import datetime
 
 from nonebot import logger
 
-from nonebot_plugin_xiuxian3.xiuxian.common.bot_utils import xiuxian_send_message
-from nonebot_plugin_xiuxian3.xiuxian.common.xiuxian2_handle import OtherSet
+from ..common.bot_utils import xiuxian_send_message
+from ..common.param_checker import Cooldown
+from ..common.xiuxian2_handle import OtherSet
 
 set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),     block=True)
 creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP and SUPERUSER, block=True)
@@ -269,8 +270,8 @@ async def offer_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Com
 
 
 @set_auction.handle(parameterless=[Cooldown(at_sender=True)])
-async def set_auction_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-    bot, send_group_id = await assign_bot(bot=bot, event=event)
+async def set_auction_(bot: Bot, event: GroupMessageEvent):
+  
     mode = args.extract_plain_text().strip()
     group_id = str(event.group_id)
     is_in_group = is_in_groups(event)  # True在，False不在

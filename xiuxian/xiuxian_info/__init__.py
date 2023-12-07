@@ -3,11 +3,13 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent, MessageSe
 
 from .draw_user_info import draw_user_info_img
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
+from ..common.player_manager import get_cultivation_rate
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
-from ..common.utils import check_user, number_to
+from ..common.utils import number_to
 from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
 from ..xiuxian_config import XiuConfig
 from ..xiuxian_sect import SectConfig
@@ -15,8 +17,11 @@ from ..xiuxian_sect import SectConfig
 xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GROUP, block=True)
 mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=True)
 xiuxian_stone = on_fullmatch("我的灵石", priority=4, permission=GROUP, block=True)
+cultivation_rate = on_fullmatch("我的修炼效率", priority=4, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
+
 root = Root()
 rank = Rank()
 
@@ -112,13 +117,13 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     """
     我的状态信息
     """
-    isUser, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
 
     if user_info.hp is None or user_info.hp == 0 or user_info.hp == 0:
         sql_message.update_user_hp(user_id)
-    user_info = sql_message.get_user_real_info(user_id)
 
+    user_info = sql_message.get_user_real_info(user_id)
     level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
     realm_rate = rank.get_rank_speed(user_info.level)  # 境界倍率
 
@@ -148,13 +153,14 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
 
     level_up_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
+    cultivation_rate_info = get_cultivation_rate(event.user_id)
 
     msg = f"""道号: {user_info.user_name}
 气血: {number_to(user_info.hp)}/{number_to(int((user_info.exp) * (1 + main_hp_buff + impart_hp_per)))}
-真元: {int((user_info.mp / user_info.exp / 2) * 100)}%
+真元: {int(user_info.mp / (user_info.exp / 2) * 100)}%
 攻击: {number_to(user_info.atk)}
 攻击修炼: {user_info.atkpractice}级(提升攻击力{user_info.atkpractice * 4}%)
-修炼效率: {int(((level_rate * realm_rate) * (1 + main_buff_rate_buff)) * 100)}%
+修炼效率: {int(cultivation_rate_info["total"] * 100)}%
 会心: {crit_buff + int(impart_know_per * 100)}%
 减伤率: {def_buff}%
 boss战增益: {int(boss_atk * 100)}%
@@ -165,10 +171,24 @@ boss战增益: {int(boss_atk * 100)}%
 
 
 @xiuxian_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def xiuxian_stone_(bot: Bot, event: GroupMessageEvent):
+async def xiuxian_stone_(_: Bot, event: GroupMessageEvent):
     """
     我的灵石信息
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     msg = f"道友当前身上灵石：{user_info.stone}"
+    await xiuxian_send_message(xiuxian_stone, msg)
+
+
+@cultivation_rate.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def xiuxian_stone_(_: Bot, event: GroupMessageEvent):
+    """
+    我的修炼速度
+    """
+    info = get_cultivation_rate(event.user_id)
+    msg = (f"道友当前修炼速度：{int(info['total'] * 100)}%\n"
+           f"灵根: +{int(info['root_rate'] * 100)}%\n"
+           f"境界: +{int(info['level_rate'] * 100)}%\n"
+           f"功法: +{int(info['main_buff_rate'] * 100)}%\n"
+           f"洞天福地: +{int(info['blessed_spot_rate'] * 100)}%")
     await xiuxian_send_message(xiuxian_stone, msg)

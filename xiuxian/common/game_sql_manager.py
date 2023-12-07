@@ -132,6 +132,15 @@ class XiuxianSqlManager:
         cur.execute(sql, (price, user_id))
         self.connect.commit()
 
+    def set_sign_in(self, user_id, value):
+        """
+        设置签到
+        """
+        cur = self.connect.cursor()
+        sql = f"UPDATE user_xiuxian SET is_sign=? WHERE user_id=?"
+        cur.execute(sql, (value, user_id))
+        self.connect.commit()
+
     def sub_money(self, user_id, price):
         """
         减少灵石

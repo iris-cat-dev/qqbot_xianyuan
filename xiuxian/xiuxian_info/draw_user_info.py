@@ -1,13 +1,12 @@
-import json
 import asyncio
-from nonebot.log import logger
-from io import BytesIO
+import json
+
 from PIL import Image, ImageDraw, ImageFont
 from aiohttp import ClientSession
+
 from ..common.download import get_avatar_by_user_id_and_save
 from ..common.game_resource import GameResource
 from ..common.send_image_tool import convert_img
-
 
 first_color = (242, 250, 242)
 second_color = (57, 57, 57)

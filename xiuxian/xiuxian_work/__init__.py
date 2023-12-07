@@ -10,8 +10,8 @@ from ..common.bot_utils import xiuxian_send_message, get_input_number, xiuxian_s
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
+from ..common.player_manager import check_user_state
 from ..common.rank import Rank
-from ..common.utils import check_user_type
 from ..common.xiuxian2_handle import OtherSet
 from ..xiuxian_config import XiuConfig, GlobalGameData
 
@@ -111,7 +111,7 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
         msg = f"道友的修为已经到达上限，悬赏令已无法在获得经验！"
         return await xiuxian_send_message(work_accept, message=msg)
 
-    is_type, msg = check_user_type(user_id, 0)  # 需要无状态的用户
+    is_type, msg = check_user_state(user_id, 0)  # 需要无状态的用户
     if is_type:
         player_data = WorkPlayerData(user_id)
         work_info = player_data.work_list[num - 1]
@@ -131,7 +131,7 @@ async def work_complete_(_: Bot, event: GroupMessageEvent):
     if is_refresh:
         return await xiuxian_send_message(work_complete, message=msg)
 
-    is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
+    is_type, msg = check_user_state(user_id, 2)  # 需要在悬赏令中的用户
     if is_type:
         user_cd = sql_manager.get_user_cd(user_id)
         work_time = datetime.strptime(user_cd.create_time, "%Y-%m-%d %H:%M:%S.%f")
@@ -188,7 +188,7 @@ async def work_stop_(_: Bot, event: GroupMessageEvent):
     if is_refresh:
         return await xiuxian_send_message(work_stop, message=msg)
 
-    is_type, msg = check_user_type(user_id, 2)  # 需要在悬赏令中的用户
+    is_type, msg = check_user_state(user_id, 2)  # 需要在悬赏令中的用户
     if is_type:
         # TODO: check money
         stone = work_config.give_up_cost
@@ -225,7 +225,12 @@ async def work_lookup_(_: Bot, event: GroupMessageEvent):
             player_data.work_list = work_make_list(user_id)
             player_data.save()
 
+        free_num = work_config.free_refresh_count - player_data.refresh_count
+        if free_num < 0:
+            free_num = 0
+        need_cost = work_config.refresh_cost
         msg = format_work_list(player_data.work_list)
+        msg += f"(今日可用免费刷新次数：{free_num}次，超过后每次刷新消耗灵石：{need_cost}枚)"
 
     await xiuxian_send_message(work_lookup, message=msg)
 

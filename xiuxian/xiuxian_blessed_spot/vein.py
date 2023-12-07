@@ -4,10 +4,10 @@ from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
 from ..common.item_json import Items
 from ..common.read_buff import save_player_info, read_player_info
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 vein_get = on_fullmatch("灵矿收取", priority=8, permission=GROUP, block=True)
@@ -36,6 +36,8 @@ VEIN_LEVEL_UP_CONFIG = {
     }
 }
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
+
 items = Items()
 VEIN_GET_CONFIG = {
     "time_cost": 1,  # 单位小时
@@ -71,7 +73,7 @@ async def vein_add_(_: Bot, event: GroupMessageEvent):
     """
     灵矿升级
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     has_bs, msg = check_has_blessed_spot(user_info)
     if has_bs is False:
@@ -103,7 +105,7 @@ async def vein_get_(_: Bot, event: GroupMessageEvent):
     """
     灵矿收取
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
     user_id = user_info.user_id
     has_bs, msg = check_has_blessed_spot(user_info)
     if has_bs is False:

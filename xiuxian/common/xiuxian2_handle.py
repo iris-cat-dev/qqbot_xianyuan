@@ -286,6 +286,7 @@ class XiuxianDateManage:
             return '修仙界没有你的足迹，输入 我要修仙 加入修仙世界吧！'
         elif result[0] == 0:
             ls = random.randint(XiuConfig().sign_in_lingshi_lower_limit, XiuConfig().sign_in_lingshi_upper_limit)
+            ls += ls
             sql2 = f"UPDATE user_xiuxian SET is_sign=1,stone=stone+? WHERE user_id=?"
             cur.execute(sql2, (ls, user_id))
             self.conn.commit()
@@ -1142,13 +1143,7 @@ class OtherSet(XiuConfig):
         return (day * 24 * 60 * 60) + sec
 
     def get_power_rate(self, mind, other):
-        power_rate = mind / (other + mind)
-        if power_rate >= 0.8:
-            return "道友偷窃小辈实属天道所不齿！"
-        elif power_rate <= 0.05:
-            return "道友请不要不自量力！"
-        else:
-            return int(power_rate * 100)
+        return 50
 
     def player_fight(self, player1: dict, player2: dict):
         """
@@ -1210,8 +1205,8 @@ class OtherSet(XiuConfig):
 
     def send_hp_mp(self, user_id, hp, mp):
         user_msg = XiuxianDateManage().get_user_message(user_id)
-        max_hp = int(user_msg.exp / 2)
-        max_mp = int(user_msg.exp)
+        max_hp = int(user_msg.exp)
+        max_mp = int(user_msg.exp / 2)
 
         msg = []
         hp_mp = []

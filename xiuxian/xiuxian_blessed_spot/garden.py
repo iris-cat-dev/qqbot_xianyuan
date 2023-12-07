@@ -5,11 +5,11 @@ from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player,Cooldown
 from ..common.rank import RANK
 from ..common.item_json import Items
 from ..common.read_buff import get_player_info, save_player_info
-from ..common.utils import check_user
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 garden_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)
@@ -39,6 +39,7 @@ GETCONFIG = {
 }
 
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 items = Items()
 
 
@@ -61,7 +62,7 @@ async def garden_up_(bot: Bot, event: GroupMessageEvent):
     """
     灵田升级
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:
@@ -90,7 +91,7 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
     """
     灵田收取
     """
-    _, user_info, _ = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     if int(user_info.blessed_spot_flag) == 0:

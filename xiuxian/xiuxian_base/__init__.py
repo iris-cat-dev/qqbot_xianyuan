@@ -7,13 +7,15 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 
 from ..common.bot_utils import xiuxian_send_message, get_input_cmd
-from ..common.param_checker import check_player,Cooldown
+from ..common.game_sql_manager import XiuxianSqlManager
+from ..common.param_checker import check_player, Cooldown
+from ..common.rank import Rank
 from ..common.root import Root
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 from .level_up import level_up, level_up_zj, level_up_dr
 from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
-from ..xiuxian_config import GlobalGameData
+from ..xiuxian_config import GlobalGameData, XiuConfig
 
 open_xiuxian = on_startswith("群修仙", priority=5, block=True)
 run_xiuxian = on_fullmatch("我要修仙", priority=8, block=True)
@@ -24,7 +26,9 @@ rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 sql_message = XiuxianDateManage()
+sql_manager = XiuxianSqlManager()
 root = Root()
+
 
 @scheduler.scheduled_job("cron", hour=0, minute=0)
 async def xiuxian_check_in_reset():
@@ -35,14 +39,12 @@ async def xiuxian_check_in_reset():
     logger.info("每日修仙签到重置成功！")
 
 
-
-
 @run_xiuxian.handle(parameterless=[Cooldown(at_sender=True)])
 async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
     """
     加入修仙
     """
-    user_id = event.get_user_id()
+    user_id = event.user_id
     # 获取为用户名
     user_name = (
         event.sender.card if event.sender.card else event.sender.nickname
@@ -62,7 +64,16 @@ async def sign_in_(_: Bot, event: GroupMessageEvent):
     """
     修仙签到
     """
-    msg = sql_message.get_sign(event.get_user_id())
+    user_info = sql_manager.get_user_info(event.user_id)
+    stone = random.randint(XiuConfig().sign_in_stone_lower_limit, XiuConfig().sign_in_stone_upper_limit)
+    level_num = Rank().to_level_desc(user_info.level)
+    stone = level_num * XiuConfig().sign_in_stone_lower_limit + stone
+    sql_manager.add_money(stone)
+    sql_manager.set_sign_in(user_info.user_id, 1)
+    if user_info.is_sign == 1:
+        msg = '贪心的人是不会有好运的！'
+    else:
+        msg = f'签到成功，获取{stone}块灵石!'
     await xiuxian_send_message(check_in, msg)
 
 
