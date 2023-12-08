@@ -12,7 +12,6 @@ from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
 from ..common.player_manager import check_user_state
 from ..common.rank import Rank
-from ..common.xiuxian2_handle import OtherSet
 from ..xiuxian_config import XiuConfig, GlobalGameData
 
 # 定时任务
@@ -20,6 +19,7 @@ reset_refresh_scheduler = require("nonebot_plugin_apscheduler").scheduler
 sql_manager = XiuxianSqlManager()
 work_config = WorkConfig()
 items = Items()
+rank = Rank()
 
 work_lookup = on_fullmatch("悬赏令", priority=15, block=True)
 work_help = on_fullmatch("悬赏令帮助", priority=15, block=True)
@@ -102,11 +102,11 @@ async def work_accept_(_: Bot, event: GroupMessageEvent):
         return await xiuxian_send_message(work_accept, msg)
 
     max_level = work_config.max_level
-    if Rank().compare(user_info.level, max_level) == 1:
+    if rank.compare(user_info.level, max_level) == 1:
         msg = f"道友的境界已过创业初期，悬赏令已经不能满足道友了！"
         return await xiuxian_send_message(work_accept, message=msg)
 
-    if int(user_info.exp) >= int(OtherSet().set_closing_type(max_level)) * XiuConfig().closing_exp_upper_limit:
+    if int(user_info.exp) >= int(rank.get_next_rank_exp(max_level)) * XiuConfig().closing_exp_upper_limit:
         # 获取下个境界需要的修为 * 1.5为闭关上限
         msg = f"道友的修为已经到达上限，悬赏令已无法在获得经验！"
         return await xiuxian_send_message(work_accept, message=msg)

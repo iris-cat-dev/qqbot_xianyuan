@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 from pathlib import Path
 
@@ -13,18 +14,17 @@ from .makeboss import createboss, createboss_root
 from .old_boss_info import old_boss_info
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player, check_admin, Cooldown
 from ..common.item_json import Items
+from ..common.param_checker import check_player, check_admin, Cooldown
 from ..common.player_fight import Boss_fight
+from ..common.player_manager import leave_harm_time
 from ..common.rank import Rank
 from ..common.read_buff import UserBuffDate
 from ..common.utils import number_to
-from ..common.xiuxian2_handle import XiuxianDateManage, leave_harm_time
-from ..xiuxian_config import XiuConfig
+from ..common.xiuxian2_handle import XiuxianDateManage, items
 
 config = get_config()
 cache_help = {}
-del_boss_id = XiuConfig().del_boss_id
 group_boss = {}
 groups = config['open']
 battle_flag = {}
@@ -318,20 +318,18 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         user_boss_fight_info['boss_integral'] += boss_integral
         save_user_boss_fight_info(user_id, user_boss_fight_info)
 
-        # item_info = items.get_data_by_item_id(item_id)
-        # item_msg = f"{item_info['level']}:{item_info['name']}"
-        # sql_manager.insert_backpack(user_id, item_id, item_info['name'], item_info['type'], 1)
+        goods_id_list = [1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108, 1109]
+        item_id = random.choice(goods_id_list)
+        item_info = items.get_data_by_item_id(item_id)
+        item_msg = f"【{item_info['level']}:{item_info['name']}】"
+        sql_manager.insert_backpack(user_id, item_id, item_info['name'], item_info['type'], 1)
 
         msg = (f"恭喜道友击败【{boss_info['name']}】，{more_msg}"
                f"获得奖励：\n"
                f"灵石:{get_stone}枚\n"
                f"修为:{get_stone // 2}点\n"
-               f"世界积分:{boss_integral}点")
-
-    # try:
-    #     await send_forward_msg_list(bot, event, result)
-    # except ActionFailed:
-    #     msg += "Boss战消息发送错,可能被风控!"
+               f"世界积分:{boss_integral}点\n"
+               f"获得物品:{item_msg}")
 
     msg_list = []
     for item in result:

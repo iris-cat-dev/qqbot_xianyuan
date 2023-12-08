@@ -64,10 +64,10 @@ async def two_exp_(bot: Bot, event: GroupMessageEvent):
                 await xiuxian_send_message(two_exp, message=msg)
 
             max_exp_1 = (
-                    int(OtherSet().set_closing_type(user_1.level)) * XiuConfig().closing_exp_upper_limit
+                    int(rank.get_next_rank_exp(user_1.level)) * XiuConfig().closing_exp_upper_limit
             )  # 获取下个境界需要的修为 * 1.5为闭关上限
             max_exp_2 = (
-                    int(OtherSet().set_closing_type(user_2.level)) * XiuConfig().closing_exp_upper_limit
+                    int(rank.get_next_rank_exp(user_2.level)) * XiuConfig().closing_exp_upper_limit
             )
             user_get_exp_max_1 = int(max_exp_1) - user_1.exp
             user_get_exp_max_2 = int(max_exp_2) - user_2.exp

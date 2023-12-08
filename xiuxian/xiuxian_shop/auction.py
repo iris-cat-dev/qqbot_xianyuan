@@ -4,7 +4,7 @@ from nonebot import logger
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import Cooldown
-from ..common.xiuxian2_handle import OtherSet
+from ..common.utils import date_diff
 
 set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),     block=True)
 creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP and SUPERUSER, block=True)
@@ -243,7 +243,7 @@ async def offer_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Com
     auction['now_price'] = price
     auction['group_id'] = group_id
     now_time = datetime.now()
-    dif_time = OtherSet().date_diff(now_time, auction['start_time'])
+    dif_time = date_diff(now_time, auction['start_time'])
     msg = (
         f"来自群{group_id}的{user_info.user_name}道友交友：{price}枚灵石！"
         f"竞拍时间增加：{AUCTIONOFFERSLEEPTIME}秒，竞拍剩余时间：{int(AUCTIONSLEEPTIME - dif_time + AUCTIONOFFERSLEEPTIME * auction_offer_time_count)}秒"

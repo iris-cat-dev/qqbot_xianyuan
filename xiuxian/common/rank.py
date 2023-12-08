@@ -114,6 +114,13 @@ class Rank(GameConfig):
     def get_rank_exp(self, name) -> int:
         return self._data_source[name]["exp"]
 
+    def get_next_rank_exp(self, name) -> int:
+        if self.is_max(name):
+            return 0
+
+        need_rank = self.get_rank_info(name, 1)
+        return need_rank["exp"]
+
     def get_rank_speed(self, name) -> int:
         return self._data_source[name]["speed"]
 

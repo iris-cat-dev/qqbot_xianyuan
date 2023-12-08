@@ -18,7 +18,7 @@ from ..common.rank import RANK, Rank
 from ..common.item_json import Items
 from ..common.read_buff import BuffJsonDate, get_main_info_msg, UserBuffDate, get_sec_msg
 from ..common.utils import number_to
-from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import XiuConfig
 
 items = Items()
@@ -176,7 +176,7 @@ async def sect_elixir_room_make_(_: Bot, event: GroupMessageEvent):
 
 @sect_elixir_get.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def sect_elixir_get_(bot: Bot, event: GroupMessageEvent):
-    _, user_info, msg = check_user(event)
+    user_info = sql_manager.get_user_info(event.user_id)
 
     sect_id = user_info.sect_id
     if sect_id:
@@ -696,8 +696,10 @@ async def sect_task_complete_(_: Bot, event: GroupMessageEvent):
             max_exp = jsondata.sect_config_data()[str(max_exp_limit)]["max_exp"]
             if get_exp >= max_exp:
                 get_exp = max_exp
-            max_exp_next = int((int(OtherSet().set_closing_type(
-                user_info.level)) * XiuConfig().closing_exp_upper_limit))  # 获取下个境界需要的修为 * 1.5为闭关上限
+
+            max_exp_next = int((Rank().get_next_rank_exp(
+                user_info.level) * XiuConfig().closing_exp_upper_limit))  # 获取下个境界需要的修为 * 1.5为闭关上限
+
             if int(get_exp + user_info.exp) > max_exp_next:
                 get_exp = 1
                 msg = "检测到修为将要到达上限！"
@@ -732,7 +734,7 @@ async def sect_task_complete_(_: Bot, event: GroupMessageEvent):
             max_exp = jsondata.sect_config_data()[str(max_exp_limit)]["max_exp"]
             if get_exp >= max_exp:
                 get_exp = max_exp
-            max_exp_next = int((int(OtherSet().set_closing_type(
+            max_exp_next = int((int(Rank().get_next_rank_exp(
                 user_info.level)) * XiuConfig().closing_exp_upper_limit))  # 获取下个境界需要的修为 * 1.5为闭关上限
             if int(get_exp + user_info.exp) > max_exp_next:
                 get_exp = 1

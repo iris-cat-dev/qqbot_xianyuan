@@ -6,9 +6,10 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
 from ..common.rank import Rank
-from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.utils import date_diff
+from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_backpack.back_util import backpack_check_item
 from ..xiuxian_config import XiuConfig
 
@@ -27,7 +28,7 @@ def check_cd(user_info):
     if level_cd:
         # 校验是否存在 cd
         time_now = datetime.now()
-        cd = OtherSet().date_diff(time_now, level_cd)  # 获取 second
+        cd = date_diff(time_now, level_cd)  # 获取 second
         if cd < XiuConfig().level_up_cd * 60:
             # 如果 cd 小于配置的 cd，返回等待时间
             msg = "目前无法突破，还需要{}分钟".format(XiuConfig().level_up_cd - (cd // 60))

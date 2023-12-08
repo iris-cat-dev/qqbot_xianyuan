@@ -6,8 +6,12 @@ from pathlib import Path
 from nonebot import logger
 
 from . import singleton
+from .rank import Rank
+from .root import Root
 from .xiuxian2_handle import XiuxianDateManage
 
+rank = Rank()
+root = Root()
 DATABASE = Path() / "data" / "xiuxian"
 
 UserInfo = namedtuple("UserData", [
@@ -158,6 +162,28 @@ class XiuxianSqlManager:
         cur = self.connect.cursor()
         cur.execute(sql, (int(exp), user_id))
         self.connect.commit()
+        self.update_power(user_id)
+
+    def update_power(self, user_id) -> None:
+        """
+        更新战力
+        """
+        user_info = self.get_user_info(user_id)
+        cur = self.connect.cursor()
+        rank_speed = rank.get_rank_speed(user_info.level)
+        root_speed = root.get_root_speed(user_info.root_type)
+        sql = f"UPDATE user_xiuxian SET power=round(exp*?*?,0) WHERE user_id=?"
+        cur.execute(sql, (root_speed, rank_speed, user_id))
+        self.connect.commit()
+
+    def update_user_attribute(self, user_id, hp, mp, atk):
+        """
+        更新用户HP,MP,ATK信息
+        """
+        sql = f"UPDATE user_xiuxian SET hp=?,mp=?,atk=? where user_id=?"
+        cur = self.connect.cursor()
+        cur.execute(sql, (hp, mp, atk, user_id))
+        self.connect.commit()
 
     def set_user_state(self, user_id, the_type, sc_time=None):
         """
@@ -171,6 +197,7 @@ class XiuxianSqlManager:
             now_time = 0
         else:
             now_time = datetime.datetime.now()
+
         sql = f"UPDATE user_cd SET type=?,create_time=?,scheduled_time=? where user_id=?"
         cur = self.connect.cursor()
         cur.execute(sql, (the_type, now_time, sc_time, user_id))

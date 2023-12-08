@@ -2,6 +2,7 @@ from .game_sql_manager import XiuxianSqlManager
 from .rank import Rank
 from .read_buff import UserBuffDate
 from .root import Root
+from ..xiuxian_config import XiuConfig
 
 sql_manager = XiuxianSqlManager()
 
@@ -63,3 +64,21 @@ def check_user_state(user_id, need_type):
             msg = "道友正在发呆！呆呆呆呆呆呆～"
 
     return is_type, msg
+
+
+def leave_harm_time(user_id):
+    hp_speed = 25
+    user_info = sql_manager.get_user_info(user_id)  # 获取用户信息
+    level = user_info.level
+    level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
+    realm_rate = Rank().get_rank_speed(level)  # 境界倍率
+    user_buff_data = UserBuffDate(user_id)
+    mainbuffdata = UserBuffDate(user_id).get_user_main_buff_data()
+    mainbuffratebuff = mainbuffdata['ratebuff'] if mainbuffdata != None else 0  # 功法修炼倍率
+    try:
+        time = int(((user_info.exp / 10) - user_info.hp) / ((XiuConfig().closing_exp * level_rate * realm_rate * (
+                1 + mainbuffratebuff)) * hp_speed))
+    except:
+        time = "无穷大"
+    return time
+

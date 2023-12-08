@@ -5,9 +5,11 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
+from ..common.player_fight import player_fight
+from ..common.player_manager import leave_harm_time
 from ..common.read_buff import UserBuffDate
-from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet, leave_harm_time
+from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import XiuConfig
 
 give_stone = on_startswith("送灵石", priority=5, permission=GROUP, block=True)
@@ -176,7 +178,7 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
 
     if steal_user:
         steal_success = random.randint(0, 100)
-        result = OtherSet().get_power_rate(user_info.power, steal_user.power)
+        result = 50
         if isinstance(result, int):
             if int(steal_success) > result:
                 sql_message.update_ls(user_id, cost_stone_num, 2)  # 减少手续费
@@ -352,7 +354,7 @@ async def rob_stone_(_: Bot, event: GroupMessageEvent):
             def_buff = 0
         player2['防御'] = def_buff
 
-        result, victor = OtherSet().player_fight(player1, player2)
+        result, victor = player_fight(player1, player2)
         await xiuxian_send_group_img_message(event.group_id, result)
 
         if victor == player1['道号']:

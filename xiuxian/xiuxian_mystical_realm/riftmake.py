@@ -1,7 +1,7 @@
 import random
 from .riftconfig import get_config
 from ..common.rank import RANK
-from ..common.xiuxian2_handle import OtherSet
+from ..common.rate_calculater import calculated
 from .jsondata import read_f
 from ..common.read_buff import UserBuffDate
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -233,7 +233,7 @@ def get_dict_type_rate(data_dict):
             temp_dict[i] = v["type_rate"]
         except:
             continue
-    key = OtherSet().calculated(temp_dict)
+    key = calculated(temp_dict)
     return key
 
 

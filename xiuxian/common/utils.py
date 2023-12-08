@@ -1,3 +1,5 @@
+import datetime
+
 
 def number_to(num):
     '''
@@ -19,3 +21,23 @@ def number_to(num):
     if level > len(units):
         level -= 1
     return '{}{}'.format(round(num, 1), units[level])
+
+
+def date_diff(new_time , old_time):
+    """
+    计算日期差
+    """
+    if isinstance(new_time, datetime.datetime):
+        pass
+    else:
+        new_time = datetime.datetime.strptime(new_time, '%Y-%m-%d %H:%M:%S.%f')
+
+    if isinstance(old_time, datetime.datetime):
+        pass
+    else:
+        old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
+
+    day = (new_time - old_time).days
+    sec = (new_time - old_time).seconds
+
+    return (day * 24 * 60 * 60) + sec

@@ -10,7 +10,7 @@ from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
 from ..common.utils import number_to
-from ..common.xiuxian2_handle import XiuxianDateManage, OtherSet
+from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import XiuConfig
 from ..xiuxian_sect import SectConfig
 
@@ -56,16 +56,14 @@ async def xiuxian_message_(_: Bot, event: GroupMessageEvent):
         sectzw = '无'
 
     # 判断突破的修为
-    list_all = len(OtherSet().level) - 1
-    now_index = OtherSet().level.index(user_info.level)
-    if list_all == now_index:
+    if rank.is_max(user_info.level):
         exp_meg = "位面至高"
     else:
-        is_update_level = OtherSet().level[now_index + 1]
+        is_update_level = rank.get_rank_info(user_info.level, 1)
         need_exp = Rank().get_rank_exp(is_update_level)
         get_exp = need_exp - user_info.exp
         if get_exp > 0:
-            exp_meg = "还需{}修为可突破！".format(number_to(get_exp))
+            exp_meg = f"还需{number_to(get_exp)}修为可突破！"
         else:
             exp_meg = "可突破！"
 
