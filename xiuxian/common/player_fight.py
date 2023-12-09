@@ -135,7 +135,8 @@ def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
                                                                                                   user1_skill_date)
                 if player1_turn_cost == 0:  # 没有持续性技能生效
                     player1_js = player1_f_js  # 没有持续性技能生效,减伤恢复
-                    if isEnableUserSikll(player1, user1_hp_cost, user1_mp_cost, player1_turn_cost, skill_rate):  # 满足技能要求，#此处为技能的第一次释放
+                    if isEnableUserSikll(player1, user1_hp_cost, user1_mp_cost, player1_turn_cost,
+                                         skill_rate):  # 满足技能要求，#此处为技能的第一次释放
                         skill_msg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date)
                         if user1_skill_type == 1:  # 直接伤害类技能
                             play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
@@ -261,8 +262,8 @@ def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
 
                     elif user1_skill_type == 4:  # 封印类技能
                         player1_turn_cost = player1_turn_cost - 1
-                        skill_msg = get_persistent_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
-                                                             player1_turn_cost)
+                        skill_msg = get_sealing_skill_msg(player1['道号'], user1_skill_date['name'], user1_skill_sh,
+                                                          player1_turn_cost)
                         play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
                         isCrit, player1_sh = get_turnatk(player1)  # 判定是否暴击
                         if isCrit:
@@ -458,8 +459,8 @@ def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
 
                     elif user2_skill_type == 4:  # 封印类技能
                         player2_turn_cost = player2_turn_cost - 1
-                        skill_msg = get_persistent_skill_msg(player2['道号'], user2_skill_date['name'], user2_skill_sh,
-                                                             player2_turn_cost)
+                        skill_msg = get_sealing_skill_msg(player2['道号'], user2_skill_date['name'], user2_skill_sh,
+                                                          player2_turn_cost)
                         play_list.append(get_msg_dict(player2, player2_init_hp, skill_msg))
 
                         isCrit, player2_sh = get_turnatk(player2)  # 判定是否暴击
@@ -890,9 +891,11 @@ def calculate_skill_cost(player, hpcost, mpcost):
 
 
 def get_persistent_skill_msg(username, skillname, sh, turn):
-    if sh:
-        return f"{username}的封印技能：{skillname}，剩余回合：{turn}!"
     return f"{username}的持续性技能：{skillname}，造成{sh}伤害，剩余回合：{turn}!"
+
+
+def get_sealing_skill_msg(username, skillname, sh, turn):
+    return f"{username}的封印技能：{skillname}，剩余回合：{turn}!"
 
 
 def get_skill_sh_data(player, secbuffdata):
@@ -913,9 +916,9 @@ def get_skill_sh_data(player, secbuffdata):
             turnmsg = f"，休息{secbuffdata['turncost']}回合！"
 
         if isCrit:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}并且发生了会心一击，造成{atkmsg[:-1]}{turnmsg}"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】并且发生了会心一击，造成{atkmsg[:-1]}{turnmsg}"
         else:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}造成{atkmsg[:-1]}{turnmsg}"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】造成{atkmsg[:-1]}{turnmsg}"
 
         return skillmsg, skillsh, turncost
 
@@ -925,9 +928,9 @@ def get_skill_sh_data(player, secbuffdata):
         skillsh = int(secbuffdata['atkvalue'] * player['攻击'])  # 改动
         atkmsg = ''
         if isCrit:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}并且发生了会心一击，造成{skillsh}点伤害，持续{turncost}回合！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】并且发生了会心一击，造成{skillsh}点伤害，持续{turncost}回合！"
         else:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}造成{skillsh}点伤害，持续{turncost}回合！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】造成{skillsh}点伤害，持续{turncost}回合！"
 
         return skillmsg, skillsh, turncost
 
@@ -936,9 +939,9 @@ def get_skill_sh_data(player, secbuffdata):
         skillsh = secbuffdata['buffvalue']
         atkmsg = ''
         if secbuffdata['bufftype'] == 1:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}攻击力增加{skillsh}倍，持续{turncost}回合！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】攻击力增加{skillsh}倍，持续{turncost}回合！"
         elif secbuffdata['bufftype'] == 2:
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}获得{skillsh * 100}%的减伤，持续{turncost}回合！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】获得{skillsh * 100}%的减伤，持续{turncost}回合！"
 
         return skillmsg, skillsh, turncost
 
@@ -946,9 +949,9 @@ def get_skill_sh_data(player, secbuffdata):
         turncost = secbuffdata['turncost']
         if random.randint(0, 100) <= secbuffdata['success']:  # 命中
             skillsh = True
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，使对手动弹不得,{secbuffdata['desc']}持续{turncost}回合！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，使对手动弹不得, 【{secbuffdata['message'][0]}】持续{turncost}回合！"
         else:  # 未命中
             skillsh = False
-            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，{secbuffdata['desc']}但是被对手躲避！"
+            skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】但是被对手躲避！"
 
         return skillmsg, skillsh, turncost

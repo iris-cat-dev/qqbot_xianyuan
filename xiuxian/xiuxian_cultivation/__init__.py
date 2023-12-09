@@ -9,7 +9,7 @@ from ..common.param_checker import check_player, Cooldown
 from ..common.player_manager import get_cultivation_rate, check_user_state, get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.root import Root
-from ..common.utils import date_diff
+from ..common.utils import date_diff, number_to
 from ..xiuxian_config import XiuConfig
 
 sql_manager = XiuxianSqlManager()
@@ -95,14 +95,14 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
         sql_manager.sub_money(user_id, cost_stone)
         msg += f"，消耗灵石{cost_stone}枚"
 
-    result_msg = send_hp_mp(user_info, int(exp * hp_speed), int(exp * mp_speed)) # 先回血
+    result_msg = send_hp_mp(user_info, int(exp * hp_speed), int(exp * mp_speed))  # 先回血
     sql_manager.set_user_state(user_id, 0)
     if exp >= user_get_exp_max:
         # 用户获取的修为到达上限
         exp = user_get_exp_max
         msg += ",本次闭关到达上限"
     sql_manager.add_exp(user_id, exp)
-    msg += f"，增加修为：{exp}，{result_msg}"
+    msg += f"\n增加修为：{exp} {result_msg}"
     await xiuxian_send_message(out_closing, message=msg)
 
 
@@ -114,22 +114,23 @@ def send_hp_mp(user_info, hp, mp):
     if user_info.hp < max_hp:
         if user_info.hp + hp < max_hp:
             new_hp = user_info.hp + hp
-            msg = f'回复气血：{hp}'
+            msg = f"\n回复气血：{hp}\n目前气血:{number_to(user_info.hp)}/{number_to(max_hp)}"
         else:
             new_hp = max_hp
-            msg = '气血已回满！'
+            msg = f"\n气血已回满!\n目前气血:{number_to(user_info.hp)}"
     else:
         new_hp = user_info.hp
 
     if user_info.mp < max_mp:
         if user_info.mp + mp < max_mp:
             new_mp = user_info.mp + mp
-            msg += f'回复真元：{mp}'
+            msg += f"\n回复真元：{mp}\n目前真元:{number_to(user_info.mp)}/{number_to(max_mp)}"
         else:
             new_mp = max_mp
-            msg += "真元已回满！"
+            msg += f"\n真元已回满!\n目前真元:{number_to(user_info.mp)}"
     else:
         new_mp = user_info.mp
+
 
     mew_attack = user_info.exp // 10
     sql_manager.update_user_attribute(user_info.user_id, new_hp, new_mp, mew_attack)

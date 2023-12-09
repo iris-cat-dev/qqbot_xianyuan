@@ -268,7 +268,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
     rank = Rank()
     boss_info = group_boss[group_id][boss_num - 1]
     boss_rank = rank.to_level_index(boss_info['jj'] + "中期")
-    user_rank = rank.to_level(userinfo.level)
+    user_rank = rank.to_level_index(userinfo.level)
     boss_old_hp = boss_info['气血']  # 打之前的血量
     more_msg = ''
     battle_flag[group_id] = True
@@ -305,7 +305,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         boss_all_hp = boss_info['总血量']  # 总血量
         boss_integral = int((boss_old_hp / boss_all_hp) * boss_integral_rate)
 
-        if boss_rank - user_rank >= 6:  # 超过太多不给
+        if user_rank - boss_rank >= 6:  # 超过太多不给
             boss_integral = 1
             more_msg = "道友的境界超过boss太多了,不齿！"
 

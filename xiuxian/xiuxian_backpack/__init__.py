@@ -221,6 +221,10 @@ async def item_look_up_(bot: Bot, event: GroupMessageEvent):
         msg = (f'【{item_data["name"]}】\n'
                f'类型：{item_data["type"]}\n'
                f'效果：{item_data["desc"]}')
+
+    if "message" in item_data:
+        msg += f'\n：{item_data["message"][0]}'
+
     await xiuxian_send_message(use, message=msg)
 
 

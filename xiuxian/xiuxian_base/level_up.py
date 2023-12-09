@@ -125,12 +125,9 @@ async def level_up_zj_(_: Bot, event: GroupMessageEvent):
         now_exp = int(user_info.exp * (percentage / 100))
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
 
-        total_hp = now_exp
-        total_mp = now_exp // 2
-
-        now_hp = user_info.hp - (now_exp / 2) if (user_info.hp - (now_exp / 2)) > 0 else 1
-        now_mp = user_info.mp - now_exp if (user_info.mp - now_exp) > 0 else 1
-        sql_message.update_user_hp_mp(user_id, now_hp, now_mp)  # 修为掉了，血量、真元也要掉
+        total_hp = min(now_exp, user_info.hp)
+        total_mp = min(now_exp // 2, user_info.mp)
+        sql_message.update_user_hp_mp(user_id, total_hp, total_mp)  # 修为掉了，血量、真元也要掉
 
         update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
             level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
