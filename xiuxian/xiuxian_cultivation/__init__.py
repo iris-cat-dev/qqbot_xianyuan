@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
-from ..common.player_manager import get_cultivation_rate, check_user_state
+from ..common.player_manager import get_cultivation_rate, check_user_state, get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.utils import date_diff
@@ -63,8 +63,9 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     user_level = user_info.level
     user_exp = user_info.exp
 
-    hp_speed = game_config.closing_hp
-    mp_speed = game_config.closing_mp
+    rank_speed = rank.get_rank_speed(user_level)
+    hp_speed = game_config.closing_hp * rank_speed
+    mp_speed = game_config.closing_mp * rank_speed
     max_exp = rank.get_next_rank_exp(user_level) * game_config.closing_exp_upper_limit  # 获取下个境界需要的修为 * 1.5为闭关上限
     user_get_exp_max = int(max_exp) - user_exp
     if user_get_exp_max < 0:
@@ -92,23 +93,22 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
             exp = exp + user_stone
             cost_stone = user_stone
         sql_manager.sub_money(user_id, cost_stone)
-        msg += f"消耗灵石{cost_stone}枚"
+        msg += f"，消耗灵石{cost_stone}枚"
 
+    result_msg = send_hp_mp(user_info, int(exp * hp_speed), int(exp * mp_speed)) # 先回血
+    sql_manager.set_user_state(user_id, 0)
     if exp >= user_get_exp_max:
         # 用户获取的修为到达上限
         exp = user_get_exp_max
         msg += ",本次闭关到达上限"
-
-    sql_manager.set_user_state(user_id, 0)
     sql_manager.add_exp(user_id, exp)
-    result_msg = send_hp_mp(user_id, int(exp * hp_speed), int(exp * mp_speed))
-    msg = f"，增加修为：{exp}，{result_msg}"
+    msg += f"，增加修为：{exp}，{result_msg}"
     await xiuxian_send_message(out_closing, message=msg)
 
 
 def send_hp_mp(user_info, hp, mp):
-    max_hp = int(user_info.exp)
-    max_mp = int(user_info.exp / 2)
+    max_hp = get_total_hp(user_info.user_id)
+    max_mp = get_total_mp(user_info.user_id)
 
     msg = ""
     if user_info.hp < max_hp:
@@ -124,10 +124,10 @@ def send_hp_mp(user_info, hp, mp):
     if user_info.mp < max_mp:
         if user_info.mp + mp < max_mp:
             new_mp = user_info.mp + mp
-            msg = f'回复真元：{mp}'
+            msg += f'回复真元：{mp}'
         else:
             new_mp = max_mp
-            msg = "真元已回满！"
+            msg += "真元已回满！"
     else:
         new_mp = user_info.mp
 

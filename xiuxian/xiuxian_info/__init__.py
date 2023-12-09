@@ -5,7 +5,7 @@ from .draw_user_info import draw_user_info_img
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
-from ..common.player_manager import get_cultivation_rate
+from ..common.player_manager import get_cultivation_rate, get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
@@ -59,8 +59,7 @@ async def xiuxian_message_(_: Bot, event: GroupMessageEvent):
     if rank.is_max(user_info.level):
         exp_meg = "位面至高"
     else:
-        is_update_level = rank.get_rank_info(user_info.level, 1)
-        need_exp = Rank().get_rank_exp(is_update_level)
+        need_exp = rank.get_rank_info(user_info.level, 1)["exp"]
         get_exp = need_exp - user_info.exp
         if get_exp > 0:
             exp_meg = f"还需{number_to(get_exp)}修为可突破！"
@@ -122,11 +121,7 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
         sql_message.update_user_hp(user_id)
 
     user_info = sql_message.get_user_real_info(user_id)
-    level_rate = root.get_root_speed(user_info.root_type)  # 灵根倍率
-    realm_rate = rank.get_rank_speed(user_info.level)  # 境界倍率
-
     user_buff_data = UserBuffDate(user_id)
-    main_buff_data = user_buff_data.get_user_main_buff_data()
     user_weapon_data = user_buff_data.get_user_weapon_data()
     if user_weapon_data is not None:
         crit_buff = int(user_weapon_data['crit_buff'] * 100)
@@ -139,30 +134,22 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
     else:
         def_buff = 0
 
-    main_buff_rate_buff = main_buff_data['ratebuff'] if main_buff_data is not None else 0
-    main_hp_buff = main_buff_data['hpbuff'] if main_buff_data is not None else 0
-    main_mp_buff = main_buff_data['mpbuff'] if main_buff_data is not None else 0
-    impart_data = None
-    impart_hp_per = impart_data.impart_hp_per if impart_data is not None else 0
-    impart_mp_per = impart_data.impart_mp_per if impart_data is not None else 0
-    impart_know_per = impart_data.impart_know_per if impart_data is not None else 0
-    impart_burst_per = impart_data.impart_burst_per if impart_data is not None else 0
-    boss_atk = impart_data.boss_atk if impart_data is not None else 0
-
     level_up_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成
     cultivation_rate_info = get_cultivation_rate(event.user_id)
 
+    total_hp = get_total_hp(user_id)
+    total_mp = get_total_mp(user_id)
+
     msg = f"""道号: {user_info.user_name}
-气血: {number_to(user_info.hp)}/{number_to(int((user_info.exp) * (1 + main_hp_buff + impart_hp_per)))}
-真元: {int(user_info.mp / (user_info.exp / 2) * 100)}%
+气血: {number_to(user_info.hp)}/{number_to(total_hp)}
+真元: {int(user_info.mp / total_mp * 100)}%
 攻击: {number_to(user_info.atk)}
 攻击修炼: {user_info.atkpractice}级(提升攻击力{user_info.atkpractice * 4}%)
 修炼效率: {int(cultivation_rate_info["total"] * 100)}%
-会心: {crit_buff + int(impart_know_per * 100)}%
+会心: {crit_buff}%
 减伤率: {def_buff}%
-boss战增益: {int(boss_atk * 100)}%
-会心伤害增益: {int((1.5 + impart_burst_per) * 100)}%
+会心伤害增益: {int(1.5 * 100)}%
 突破概率：{level_up_rate + user_level_uprate}%
 """
     await xiuxian_send_message(mind_state, message=msg)

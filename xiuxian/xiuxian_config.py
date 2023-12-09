@@ -25,8 +25,8 @@ class XiuConfig:
         self.level_up_probability = 0.5  # 突破失败增加当前境界突破概率的比例
 
         self.closing_exp = 30  # 闭关每分钟获取的修为
-        self.closing_hp = 50  # 闭关每分钟获取的HP
-        self.closing_mp = 25  # 闭关每分钟获取的MP
+        self.closing_hp = 12  # 闭关每分钟 HP 恢复的倍率
+        self.closing_mp = 6  # 闭关每分钟 HP 恢复的倍率
         self.closing_exp_upper_limit = 1.5  # 闭关获取修为上限（例如：1.5 下个境界的修为数*1.5）
 
         self.sect_min_level = "元婴境圆满"

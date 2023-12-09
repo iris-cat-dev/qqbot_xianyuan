@@ -1,3 +1,8 @@
+# 现在是修仙 3.0 
+
+下面是旧版信息：
+
+==========================
 <div align="center">
   <img src="https://s2.loli.net/2022/06/16/opBDE8Swad5rU3n.png" width="180" height="180" alt="NoneBotPluginLogo">
   <br>

@@ -1,3 +1,5 @@
+import math
+
 from . import singleton
 from .game_data_manager import GameConfig
 
@@ -64,7 +66,8 @@ RANK = {
 @singleton
 class Rank(GameConfig):
     RANK_LIST = list(RANK.keys())
-    MAX_RANK = len(RANK_LIST)
+    MAX_RANK = 1
+    MIN_RANK = 56
 
     def __init__(self):
         super().__init__("境界")
@@ -72,8 +75,8 @@ class Rank(GameConfig):
     def to_level(self, name: str) -> int:
         return RANK[name]
 
-    def to_level_desc(self, name: str) -> int:
-        return self.MAX_RANK - RANK[name]
+    def to_level_index(self, name: str) -> int:
+        return self.MIN_RANK - RANK[name]
 
     def to_big_rank(self, name) -> str:
         """

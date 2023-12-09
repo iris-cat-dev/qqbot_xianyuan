@@ -7,6 +7,7 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
+from ..common.player_manager import get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.utils import date_diff
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -122,8 +123,11 @@ async def level_up_zj_(_: Bot, event: GroupMessageEvent):
         # 失败惩罚，随机扣减修为
         percentage = random.randint(XiuConfig().level_punishment_floor, XiuConfig().level_punishment_limit)
         now_exp = int(user_info.exp * (percentage / 100))
-
         sql_message.update_j_exp(user_id, now_exp)  # 更新用户修为
+
+        total_hp = now_exp
+        total_mp = now_exp // 2
+
         now_hp = user_info.hp - (now_exp / 2) if (user_info.hp - (now_exp / 2)) > 0 else 1
         now_mp = user_info.mp - now_exp if (user_info.mp - now_exp) > 0 else 1
         sql_message.update_user_hp_mp(user_id, now_hp, now_mp)  # 修为掉了，血量、真元也要掉

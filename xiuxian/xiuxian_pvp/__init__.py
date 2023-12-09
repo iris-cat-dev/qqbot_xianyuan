@@ -5,8 +5,8 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player, Cooldown
-from ..common.player_fight import player_fight
+from ..common.param_checker import check_player, Cooldown, check_admin
+from ..common.player_fight import player_fight, player_fight_with_skill
 from ..common.player_manager import leave_harm_time
 from ..common.read_buff import UserBuffDate
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -14,93 +14,69 @@ from ..xiuxian_config import XiuConfig
 
 give_stone = on_startswith("送灵石", priority=5, permission=GROUP, block=True)
 steal_stone = on_startswith("偷灵石", priority=4, permission=GROUP, block=True)
-# gm_command = on_command("神秘力量", permission=SUPERUSER, priority=10, block=True)
+gm_command = on_startswith("神秘力量", permission=GROUP, priority=10, rule=check_admin(), block=True)
 rob_stone = on_startswith("打劫", priority=5, permission=GROUP, block=True)
+qc = on_startswith("切磋", priority=6, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 
-# qc = on_fullmatch("切磋", priority=6, permission=GROUP, block=True)
-#
-# @qc.handle(parameterless=[Cooldown(cd_time=300, at_sender=True)])
-# async def qc_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-#     """
-#     切磋，不会掉血
-#     """
-#     bot, send_group_id = await assign_bot(bot=bot, event=event)
-#     isUser, user_info, msg = check_user(event)
-#     if not isUser:
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#         await qc.finish()
-#     user_id = user_info.user_id
-#
-#     give_qq = None  # 艾特的时候存到这里
-#     for arg in args:
-#         if arg.type == "at":
-#             give_qq = arg.data.get("qq", "")
-#     if give_qq:
-#         if give_qq == str(user_id):
-#             msg = "道友不会左右互搏之术！"
-#             if XiuConfig().img:
-#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#             else:
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#             await qc.finish()
-#
-#         player1 = {"user_id": None, "道号": None, "气血": None,
-#                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
-#         player2 = {"user_id": None, "道号": None, "气血": None,
-#                    "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
-#         user1 = sql_message.get_user_real_info(user_id)
-#
-#         user1_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
-#         if user1_weapon_data is not None:
-#             player1['会心'] = int(user1_weapon_data['crit_buff'] * 100)
-#         else:
-#             player1['会心'] = 1
-#
-#         user2 = sql_message.get_user_real_info(give_qq)
-#         user2_weapon_data = UserBuffDate(user2.user_id).get_user_weapon_data()
-#         if user2_weapon_data is not None:
-#             player2['会心'] = int(user2_weapon_data['crit_buff'] * 100)
-#         else:
-#             player2['会心'] = 1
-#         player1['user_id'] = user1.user_id
-#         player1['道号'] = user1.user_name
-#         player1['气血'] = user1.hp
-#         player1['攻击'] = user1.atk
-#         player1['真元'] = user1.mp
-#         player1['exp'] = user1.exp
-#
-#         player2['user_id'] = user2.user_id
-#         player2['道号'] = user2.user_name
-#         player2['气血'] = user2.hp
-#         player2['攻击'] = user2.atk
-#         player2['真元'] = user2.mp
-#         player2['exp'] = user2.exp
-#
-#         result, victor = Player_fight(player1, player2, 1, bot.self_id)
-#         await send_forward_msg_list(bot, event, result)
-#         msg = f"获胜的是{victor}"
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#         await qc.finish()
-#     else:
-#         msg = "没有对方的信息！"
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#         await qc.finish()
+
+@qc.handle(parameterless=[Cooldown(cd_time=60, at_sender=True), check_player()])
+async def qc_(bot: Bot, event: GroupMessageEvent):
+    """
+    切磋，不会掉血
+    """
+    user_id = event.user_id
+    give_qq, msg = get_input_at_qq(event)
+    if not give_qq:
+        msg += '【切磋+@对方qq】'
+        await xiuxian_send_message(give_stone, message=msg)
+
+    if give_qq == str(user_id):
+        msg = "道友不会左右互搏之术！"
+        return await xiuxian_send_message(give_stone, message=msg)
+
+    player1 = {"user_id": None, "道号": None, "气血": None,
+               "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+    player2 = {"user_id": None, "道号": None, "气血": None,
+               "攻击": None, "真元": None, '会心': None, '防御': 0, 'exp': 0}
+    user1 = sql_message.get_user_real_info(user_id)
+
+    user1_weapon_data = UserBuffDate(user_id).get_user_weapon_data()
+    if user1_weapon_data is not None:
+        player1['会心'] = int(user1_weapon_data['crit_buff'] * 100)
+    else:
+        player1['会心'] = 1
+
+    user2 = sql_message.get_user_real_info(give_qq)
+    user2_weapon_data = UserBuffDate(user2.user_id).get_user_weapon_data()
+    if user2_weapon_data is not None:
+        player2['会心'] = int(user2_weapon_data['crit_buff'] * 100)
+    else:
+        player2['会心'] = 1
+    player1['user_id'] = user1.user_id
+    player1['道号'] = user1.user_name
+    player1['气血'] = user1.hp
+    player1['攻击'] = user1.atk
+    player1['真元'] = user1.mp
+    player1['exp'] = user1.exp
+
+    player2['user_id'] = user2.user_id
+    player2['道号'] = user2.user_name
+    player2['气血'] = user2.hp
+    player2['攻击'] = user2.atk
+    player2['真元'] = user2.mp
+    player2['exp'] = user2.exp
+
+    result, victor = player_fight_with_skill(player1, player2, 1, bot.self_id)
+    msg_list = []
+    for item in result:
+        msg_list.append(item["data"]["content"])
+    await xiuxian_send_group_img_message(event.group_id, msg_list)
+
+    msg = f"获胜的是{victor}"
+    return await xiuxian_send_message(give_stone, message=msg)
 
 
 @give_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -144,6 +120,34 @@ async def give_stone_(bot: Bot, event: GroupMessageEvent):
         else:
             msg = "对方未踏入修仙界，不可赠送！"
             await xiuxian_send_message(give_stone, message=msg)
+
+
+@gm_command.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def give_stone_(bot: Bot, event: GroupMessageEvent):
+    """
+    送灵石
+    """
+    user_info = sql_manager.get_user_info(event.user_id)
+    user_stone_num = user_info.stone
+
+    give_qq, msg = get_input_at_qq(event)
+    if not give_qq:
+        msg += "输入：【神秘力量+@对方+数量】 "
+        return await xiuxian_send_message(gm_command, message=msg)
+
+    give_stone_num, msg = get_input_number(event)
+    if not give_stone_num:
+        msg += "请输入正确的灵石数量！"
+        return await xiuxian_send_message(gm_command, message=msg)
+
+    give_user = sql_message.get_user_message(give_qq)
+    if give_user:
+        sql_message.update_ls(give_qq, give_stone_num, 1)  # 增加用户灵石
+        msg = f"出现了神秘力量，{give_user.user_name}道友，获得{give_stone_num}枚灵石！"
+        await xiuxian_send_message(give_stone, message=msg)
+    else:
+        msg = "对方未踏入修仙界，不可赠送！"
+        await xiuxian_send_message(give_stone, message=msg)
 
 
 @steal_stone.handle(parameterless=[Cooldown(XiuConfig().tou_cd, at_sender=True)])

@@ -35,7 +35,11 @@ async def ranking_list_ls_(_: Bot, __: GroupMessageEvent):
 
     stone_list = []
     for item in rank_list:
-        blank_stone = PlayerData(item[0], "bankinfo").savestone
+        bankinfo = PlayerData(item[0], "bankinfo")
+        if "savestone" in bankinfo.__dict__:
+            blank_stone = bankinfo.savestone
+        else:
+            blank_stone = 0
         total_stone = blank_stone + item[2]
         stone_list.append((item[1], total_stone, blank_stone, item[2]))
 

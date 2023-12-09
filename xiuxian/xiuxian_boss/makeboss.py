@@ -49,6 +49,7 @@ def createboss():
     return bossinfo
 
 
+
 def get_boss_exp(boss_jj):
     bossexp = random.choice(JINGJIEEXP[boss_jj])
     bossinfo = {
@@ -68,6 +69,14 @@ JINGJIEEXP_root = {  # 数值为中期和圆满的平均值
     "化神境": [352000, 284000, 416000],
     "炼虚境": [832000, 896000, 960000]
 }
+
+
+def create_boss_by_name(level):
+    bossinfo = get_boss_exp(level)
+    bossinfo['name'] = random.choice(config["Boss名字"])
+    bossinfo['jj'] = level
+    bossinfo['stone'] = random.choice(config["Boss灵石"][level])
+    return bossinfo
 
 
 def createboss_root():

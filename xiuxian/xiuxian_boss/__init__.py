@@ -10,9 +10,10 @@ from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 
 from .bossconfig import get_config, savef
-from .makeboss import createboss, createboss_root
+from .makeboss import createboss, createboss_root, create_boss_by_name
 from .old_boss_info import old_boss_info
-from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message, xiuxian_send_group_img_message, \
+    get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import check_player, check_admin, Cooldown
@@ -33,7 +34,7 @@ sql_manager = XiuxianSqlManager()
 
 boss_help = on_fullmatch("世界boss帮助", priority=5, block=True)
 set_group_boss = on_startswith("世界boss", priority=13, rule=check_admin(), block=True)
-create = on_fullmatch("生成世界boss", priority=5, rule=check_admin(), block=True)
+create = on_startswith("生成世界boss", priority=5, rule=check_admin(), block=True)
 boss_info = on_fullmatch("世界boss查询", priority=6, permission=GROUP, block=True)
 battle = on_startswith("讨伐世界boss", priority=6, permission=GROUP, block=True)
 boss_delete = on_startswith("天罚世界boss", priority=7, rule=check_admin(), block=True)
@@ -266,13 +267,13 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
     rank = Rank()
     boss_info = group_boss[group_id][boss_num - 1]
-    boss_rank = rank.to_level(boss_info['jj'] + "中期")
+    boss_rank = rank.to_level_index(boss_info['jj'] + "中期")
     user_rank = rank.to_level(userinfo.level)
     boss_old_hp = boss_info['气血']  # 打之前的血量
     more_msg = ''
     battle_flag[group_id] = True
     result, victor, boss_info_new, get_stone = await Boss_fight(player, boss_info, bot_id=bot.self_id)
-    boss_integral_rate = 30 + (rank.MAX_RANK - boss_rank) * 2
+    boss_integral_rate = 30 + boss_rank * 2
 
     if victor == "Boss赢了":
         group_boss[group_id][boss_num - 1] = boss_info_new
@@ -345,7 +346,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
     is_in_group = is_in_groups(event)
     if not is_in_group:  # 不在配置表内
         msg = f'本群尚未开启世界Boss,请联系管理员开启!'
-        await xiuxian_send_message(create, message=msg)
+        await xiuxian_send_message(boss_info, message=msg)
 
     boss_list = None
     try:
@@ -355,7 +356,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
 
     if not boss_list:
         msg = f'本群尚未生成世界Boss,请等待世界boss刷新!'
-        await xiuxian_send_message(create, message=msg)
+        await xiuxian_send_message(boss_info, message=msg)
 
     message = str(event.message)
     boss_num = re.findall("\d+", message)  # boss编号
@@ -366,7 +367,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
         index = len(group_boss[group_id])
         if not (0 < boss_num <= index):
             msg = f'请输入正确的世界Boss编号!'
-            await xiuxian_send_message(create, message=msg)
+            await xiuxian_send_message(boss_info, message=msg)
         is_fetch_one_boss = True
 
     boss_msg = ""
@@ -398,13 +399,18 @@ async def create_(_: Bot, event: GroupMessageEvent):
     """
     生成世界boss
     """
+    level_name, msg = get_input_cmd(event, 8)
     group_id = str(event.group_id)
     is_in_group = is_in_groups(event)
     if not is_in_group:  # 不在配置表内
         msg = f'本群尚未开启世界Boss,请联系管理员开启!'
         await xiuxian_send_message(create, message=msg)
 
-    boss_info = createboss_root()
+    if not level_name:
+        boss_info = createboss_root()
+    else:
+        boss_info = create_boss_by_name(level_name)
+
     if group_id not in group_boss:
         group_boss[group_id] = []
 
@@ -413,6 +419,8 @@ async def create_(_: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(create, message=msg)
 
     group_boss[group_id].append(boss_info)
+    old_boss_info.save_boss(group_boss)
+
     msg = f"已生成{boss_info['jj']}Boss:{boss_info['name']},诸位道友请击败Boss获得奖励吧!"
     await xiuxian_send_message(create, message=msg)
 

@@ -32,6 +32,25 @@ def get_cultivation_rate(user_id: int):
         "blessed_spot_rate": blessed_spot_rate
     }
 
+
+def get_total_hp(user_id: int):
+    user_info = sql_manager.get_user_info(user_id)
+
+    user_buff_data = UserBuffDate(user_id)
+    main_buff_data = user_buff_data.get_user_main_buff_data()
+    main_buff_rate = main_buff_data['hpbuff'] if main_buff_data is not None else 0
+    return int(user_info.exp * (1 + main_buff_rate))
+
+
+def get_total_mp(user_id: int):
+    user_info = sql_manager.get_user_info(user_id)
+
+    user_buff_data = UserBuffDate(user_id)
+    main_buff_data = user_buff_data.get_user_main_buff_data()
+    main_buff_rate = main_buff_data['mpbuff'] if main_buff_data is not None else 0
+    return int(user_info.exp // 2 * (1 + main_buff_rate))
+
+
 def check_user_state(user_id, need_type):
     """
     :说明: `check_user_type`
@@ -81,4 +100,3 @@ def leave_harm_time(user_id):
     except:
         time = "无穷大"
     return time
-

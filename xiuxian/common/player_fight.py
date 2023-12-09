@@ -64,7 +64,7 @@ def player_fight(player1: dict, player2: dict):
     return play_list, suc
 
 
-def Player_fight(player1: dict, player2: dict, type_in, bot_id):
+def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
     """
     回合制战斗
     type_in : 1-切磋，不消耗气血、真元
@@ -135,8 +135,7 @@ def Player_fight(player1: dict, player2: dict, type_in, bot_id):
                                                                                                   user1_skill_date)
                 if player1_turn_cost == 0:  # 没有持续性技能生效
                     player1_js = player1_f_js  # 没有持续性技能生效,减伤恢复
-                    if isEnableUserSikll(player1, user1_hp_cost, user1_mp_cost, player1_turn_cost,
-                                         skill_rate):  # 满足技能要求，#此处为技能的第一次释放
+                    if isEnableUserSikll(player1, user1_hp_cost, user1_mp_cost, player1_turn_cost, skill_rate):  # 满足技能要求，#此处为技能的第一次释放
                         skill_msg, user1_skill_sh, player1_turn_cost = get_skill_sh_data(player1, user1_skill_date)
                         if user1_skill_type == 1:  # 直接伤害类技能
                             play_list.append(get_msg_dict(player1, player1_init_hp, skill_msg))
