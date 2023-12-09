@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
 from ..common.read_buff import save_player_info, get_player_info, UserBuffDate, read_player_info
 from ..common.xiuxian2_handle import XiuxianDateManage
 
@@ -85,7 +85,8 @@ async def blessed_spot_info_(_: Bot, event: GroupMessageEvent):
     msg += f"名字：{blessed_spot_name}\n"
     msg += f"修炼速度：增加{int(user_buff_data.blessed_spot) * 100}%\n"
     msg += f"灵田数量：{mix_elixir_info['灵田数量']}\n"
-    msg += f"灵矿数量：{vein_info['num']}"
+    if vein_info is not None:
+        msg += f"灵矿数量：{vein_info['num']}"
     await xiuxian_send_message(blessed_spot_info, message=msg)
 
 

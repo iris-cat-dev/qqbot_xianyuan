@@ -108,10 +108,8 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
                          2)
         if time_deff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2):
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level], ['药材'])
-            # 加入传承
-            impart_data = None
-            impart_reap_per = impart_data.impart_reap_per if impart_data is not None else 0
-            num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级'] + impart_reap_per
+
+            num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级']
             msg = ''
             if not yaocai_id_list:
                 sql_message.send_back(user_info.user_id, 3001, '恒心草', '药材', num)  # 没有合适的，保底

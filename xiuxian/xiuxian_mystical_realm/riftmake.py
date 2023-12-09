@@ -300,7 +300,7 @@ def get_armor(user_info, rift_rank=0):
 
 def get_main_info(user_level, rift_rank):
     """获取功法的信息"""
-    user_rank = USERRANK[user_level]  # type=int，用户等级
+    user_rank = RANK[user_level]  # type=int，用户等级
     main_buff_type = get_skill_by_rank(user_level, rift_rank)  # 天地玄黄
     main_buff_id_list = skill_data[main_buff_type]['gf_list']
     init_rate = 60  # 初始概率为60

@@ -1,4 +1,6 @@
 import random
+
+from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.xiuxian2_handle import XiuxianDateManage
 from .bossconfig import get_config
 
@@ -27,19 +29,22 @@ JINGJIEEXP = {  # 数值为中期和圆满的平均值
 
 jinjie_list = [k for k, v in JINGJIEEXP.items()]
 sql_message = XiuxianDateManage()  # sql类
+sql_manager = XiuxianSqlManager()
 
 
 def createboss():
-    top_user_info = sql_message.get_top1_user()
-    top_user_level = top_user_info.level
-    
-    if top_user_level == "江湖好手":
-        top_user_level = "练气境"
-    
-    if top_user_level == "祭道之上":
-        level = top_user_level[:4]
+    user_list = sql_manager.get_user_list()
+    user_id = random.choice(user_list)
+    user_info = sql_manager.get_user_info(user_id)
+    user_level = user_info.level
+
+    if user_level == "江湖好手":
+        user_level = "练气境"
+
+    if user_level == "祭道之上":
+        level = user_level[:4]
     else:
-        level = top_user_level[:3]
+        level = user_level[:3]
     boss_jj = random.choice(jinjie_list[:jinjie_list.index(level) + 1])
 
     bossinfo = get_boss_exp(boss_jj)
@@ -47,7 +52,6 @@ def createboss():
     bossinfo['jj'] = boss_jj
     bossinfo['stone'] = random.choice(config["Boss灵石"][boss_jj])
     return bossinfo
-
 
 
 def get_boss_exp(boss_jj):
