@@ -51,7 +51,7 @@ async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
     )
     root_name, root_type = root.get_random_root()  # 获取灵根，灵根类型
     root_speed = root.get_root_speed(root_type)  # 灵根倍率
-    power = 100 * float(root_speed)  # 战力=境界的 power 字段 * 灵根的 rate 字段
+    power = 100 * root_speed  # 战力=境界的 power 字段 * 灵根的 rate 字段
     create_time = str(datetime.now())
     msg = sql_message.create_user(
         user_id, root_name, root_type, int(power), create_time, user_name

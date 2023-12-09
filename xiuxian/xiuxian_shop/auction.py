@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from nonebot import logger
+from nonebot import logger, on_startswith, Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import Cooldown
 from ..common.utils import date_diff
 
-set_auction = on_command("群交流会", priority=4, permission=GROUP and (SUPERUSER | GROUP_ADMIN | GROUP_OWNER),     block=True)
-creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP and SUPERUSER, block=True)
-offer_auction = on_command("交友", priority=5, permission=GROUP, block=True)
-
+set_auction = on_startswith("群排名会", priority=4, permission=GROUP, block=True)
+creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP, block=True)
+offer_auction = on_startswith("出价", priority=5, permission=GROUP, block=True)
 
 __back_help__ = f"""
 背包帮助信息:
@@ -19,6 +19,7 @@ __back_help__ = f"""
 非指令：
 1、定时生成交友会,每天{auction_time_config['hours']}点每整点生成一场交友会
 """.strip()
+
 
 # 定时任务生成交友会
 @set_auction_by_scheduler.scheduled_job("cron", hour=auction_time_config['hours'])
@@ -270,8 +271,7 @@ async def offer_auction_(bot: Bot, event: GroupMessageEvent, args: Message = Com
 
 
 @set_auction.handle(parameterless=[Cooldown(at_sender=True)])
-async def set_auction_(bot: Bot, event: GroupMessageEvent):
-  
+async def set_auction_(_: Bot, event: GroupMessageEvent):
     mode = args.extract_plain_text().strip()
     group_id = str(event.group_id)
     is_in_group = is_in_groups(event)  # True在，False不在
@@ -300,5 +300,3 @@ async def set_auction_(bot: Bot, event: GroupMessageEvent):
     else:
         msg = __back_help__
         await xiuxian_send_message(set_auction, msg)
-
-

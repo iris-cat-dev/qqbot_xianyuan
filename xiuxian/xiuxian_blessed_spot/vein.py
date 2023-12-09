@@ -3,6 +3,7 @@ from datetime import datetime
 from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
+from . import check_has_blessed_spot
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
@@ -56,12 +57,6 @@ __vein_help__ = f"""
 """.strip()
 
 
-def check_has_blessed_spot(user_info):
-    if int(user_info.blessed_spot_flag) == 0:
-        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        return False, msg
-    return True, ""
-
 
 @vein_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def boss_help_(_: Bot, __: GroupMessageEvent):
@@ -73,9 +68,9 @@ async def vein_add_(_: Bot, event: GroupMessageEvent):
     """
     灵矿升级
     """
-    user_info = sql_manager.get_user_info(event.user_id)
-    user_id = user_info.user_id
-    has_bs, msg = check_has_blessed_spot(user_info)
+    user_id = event.user_id
+    user_info = sql_manager.get_user_info(user_id)
+    has_bs, msg = check_has_blessed_spot(user_id)
     if has_bs is False:
         await xiuxian_send_message(vein_add, message=msg)
 
@@ -105,11 +100,10 @@ async def vein_get_(_: Bot, event: GroupMessageEvent):
     """
     灵矿收取
     """
-    user_info = sql_manager.get_user_info(event.user_id)
-    user_id = user_info.user_id
-    has_bs, msg = check_has_blessed_spot(user_info)
+    user_id = event.user_id
+    has_bs, msg = check_has_blessed_spot(user_id)
     if has_bs is False:
-        await xiuxian_send_message(vein_up, message=msg)
+        await xiuxian_send_message(vein_get, message=msg)
 
     vein_info = read_player_info(user_id, "vein")
     last_time = vein_info['收取时间']
