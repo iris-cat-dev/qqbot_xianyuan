@@ -117,7 +117,7 @@ def send_hp_mp(user_info, hp, mp):
             msg = f"\n回复气血：{hp}\n目前气血：{number_to(new_hp)}/{number_to(max_hp)}"
         else:
             new_hp = max_hp
-            msg = f"\n气血已回满!\n目前气血：{number_to(user_info.hp)}"
+            msg = f"\n气血已回满!\n目前气血：{number_to(max_hp)}"
     else:
         new_hp = user_info.hp
 
@@ -127,7 +127,7 @@ def send_hp_mp(user_info, hp, mp):
             msg += f"\n回复真元：{mp}\n目前真元：{number_to(new_mp)}/{number_to(max_mp)}"
         else:
             new_mp = max_mp
-            msg += f"\n真元已回满!\n目前真元：{number_to(user_info.mp)}"
+            msg += f"\n真元已回满!\n目前真元：{number_to(max_mp)}"
     else:
         new_mp = user_info.mp
 

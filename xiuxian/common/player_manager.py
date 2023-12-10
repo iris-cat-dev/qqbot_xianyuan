@@ -33,22 +33,53 @@ def get_cultivation_rate(user_id: int):
     }
 
 
-def get_total_hp(user_id: int):
+def get_total_hp(user_id: int)->int:
     user_info = sql_manager.get_user_info(user_id)
-
     user_buff_data = UserBuffDate(user_id)
     main_buff_data = user_buff_data.get_user_main_buff_data()
     main_buff_rate = main_buff_data['hpbuff'] if main_buff_data is not None else 0
     return int(user_info.exp * (1 + main_buff_rate))
 
 
-def get_total_mp(user_id: int):
+def get_total_mp(user_id: int)->int:
     user_info = sql_manager.get_user_info(user_id)
-
     user_buff_data = UserBuffDate(user_id)
     main_buff_data = user_buff_data.get_user_main_buff_data()
     main_buff_rate = main_buff_data['mpbuff'] if main_buff_data is not None else 0
     return int(user_info.exp // 2 * (1 + main_buff_rate))
+
+
+def get_total_attack(user_id: int) -> int:
+    user_info = sql_manager.get_user_info(user_id)
+    user_buff = UserBuffDate(user_info.user_id)
+    user_weapon_data = user_buff.get_user_weapon_data()
+    if user_weapon_data is not None:
+        weapon_attack = user_weapon_data["atk_buff"]
+    else:
+        weapon_attack = 0
+    buff_info = user_buff.BuffInfo
+    atk_practice = user_info.atkpractice * 4 / 100
+    return int(user_info.atk * (1 + atk_practice + weapon_attack) + buff_info.atk_buff)
+
+
+def get_total_defense(user_id: int):
+    user_info = sql_manager.get_user_info(user_id)
+    user_armor_data = UserBuffDate(user_info.user_id).get_user_armor_buff_data()
+    if user_armor_data is not None:
+        armor_defense = user_armor_data["def_buff"]
+    else:
+        armor_defense = 0
+    return armor_defense
+
+
+def get_total_critical(user_id: int):
+    user_buff = UserBuffDate(user_id)
+    user_weapon_data = user_buff.get_user_weapon_data()
+    if user_weapon_data is not None:
+        crit_buff = int(user_weapon_data['crit_buff'] * 100)
+    else:
+        crit_buff = 1
+    return crit_buff
 
 
 def check_user_state(user_id, need_type):

@@ -1,5 +1,6 @@
 import random
 
+from .player_manager import get_total_hp, get_total_attack, get_total_critical, get_total_defense, get_total_mp
 from .rank import RANK
 from .xiuxian2_handle import XiuxianDateManage
 from .read_buff import UserBuffDate
@@ -534,23 +535,15 @@ def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
     return play_list, suc
 
 
-async def Boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
+async def boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
     """
-    回合制战斗
-    type_in : 1-切磋，不消耗气血、真元
-              2-战斗，消耗气血、真元
+    Boss 回合制战斗
     数据示例：
     {"user_id": None,"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None, 'exp':None}
     """
     user1_buff_date = UserBuffDate(player1['user_id'])  # 1号的buff信息
-    user1_main_buff_data = user1_buff_date.get_user_main_buff_data()
-    user1_hp_buff = user1_main_buff_data['hpbuff'] if user1_main_buff_data is not None else 0
-    user1_mp_buff = user1_main_buff_data['mpbuff'] if user1_main_buff_data is not None else 0
-
-    impart_hp_per = 0
-    impart_mp_per = 0
-    user1_hp_buff = user1_hp_buff + impart_hp_per
-    user1_mp_buff = user1_mp_buff + impart_mp_per
+    user1_hp_buff = 0
+    user1_mp_buff = 0
 
     # 有技能，则开启技能模式
 
@@ -955,3 +948,43 @@ def get_skill_sh_data(player, secbuffdata):
             skillmsg = f"{player['道号']}发动技能：{secbuffdata['name']}，消耗气血{int(secbuffdata['hpcost'] * player['气血']) if secbuffdata['hpcost'] != 0 else 0}点、真元{int(secbuffdata['mpcost'] * player['exp']) if secbuffdata['mpcost'] != 0 else 0}点，【{secbuffdata['message'][0]}】但是被对手躲避！"
 
         return skillmsg, skillsh, turncost
+
+
+def user_info_to_player_info(user_info):
+    user_id = user_info.user_id
+    return {
+        "user_id": user_info.user_id,
+        "exp": user_info.exp,
+        "道号": user_info.user_name,
+        "气血": get_total_hp(user_id),
+        "真元": get_total_mp(user_id),
+        "攻击": get_total_attack(user_id),
+        "防御": get_total_defense(user_id),
+        "会心": get_total_critical(user_id),
+    }
+
+
+def boss_info_to_player_info(boss_info):
+    return {
+        "name": boss_info["name"],
+        "jj": boss_info["rank"],
+        "气血": boss_info["hp"],
+        "总血量": boss_info["max_hp"],
+        "真元": boss_info["mp"],
+        "攻击": boss_info["atk"],
+        "stone": boss_info["stone"],
+        "减伤": 1,
+        "会心": 30
+    }
+
+
+def player_info_to_boss_info(player_info):
+    return {
+        'hp': player_info["气血"],
+        'max_hp': player_info["总血量"],
+        'mp': player_info["真元"],
+        'atk': player_info["攻击"],
+        'name': player_info["name"],
+        'rank': player_info["jj"],
+        "stone": player_info["stone"],
+    }

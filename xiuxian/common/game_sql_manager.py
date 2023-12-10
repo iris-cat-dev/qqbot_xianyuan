@@ -111,6 +111,32 @@ class XiuxianSqlManager:
         else:
             return [item[0] for item in result]
 
+    def get_top1_user(self):
+        """
+        获取修为第一的用户
+        """
+        cur = self.connect.cursor()
+        sql = f"select * from user_xiuxian ORDER BY exp DESC LIMIT 1"
+        cur.execute(sql)
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserInfo(*result)
+
+    def get_last_user(self):
+        """
+        获取修为最后的用户
+        """
+        cur = self.connect.cursor()
+        sql = f"select * from user_xiuxian ORDER BY exp LIMIT 1"
+        cur.execute(sql)
+        result = cur.fetchone()
+        if not result:
+            return None
+        else:
+            return UserInfo(*result)
+
     def get_user_cd(self, user_id):
         """
         获取用户操作CD

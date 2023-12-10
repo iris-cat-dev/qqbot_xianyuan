@@ -5,7 +5,7 @@ from ..common.rate_calculater import calculated
 from .jsondata import read_f
 from ..common.read_buff import UserBuffDate
 from ..common.xiuxian2_handle import XiuxianDateManage
-from ..common.player_fight import Boss_fight
+from ..common.player_fight import boss_fight
 from ..common.item_json import Items
 
 sql_message = XiuxianDateManage()
@@ -120,7 +120,7 @@ async def get_boss_battle_info(user_info, rift_rank, bot_id):
         'stone': 1
     }
 
-    result, victor, bossinfo_new, stone = await Boss_fight(player, boss_info, bot_id=bot_id)  # 未开启，1不写入，2写入
+    result, victor, bossinfo_new, stone = await boss_fight(player, boss_info, bot_id=bot_id)  # 未开启，1不写入，2写入
 
     if victor == "群友赢了":  # 获胜
         user_rank = 50 - RANK[user_info.level]  # 50-用户当前等级

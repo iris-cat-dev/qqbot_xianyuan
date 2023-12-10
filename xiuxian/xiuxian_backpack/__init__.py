@@ -43,7 +43,7 @@ my_back = on_fullmatch('我的背包', priority=10, permission=GROUP, block=True
 use = on_startswith("使用", priority=15, permission=GROUP, block=True)
 no_use_zb = on_startswith("卸下", priority=5, permission=GROUP, block=True)
 back_help = on_fullmatch("背包帮助", priority=8, permission=GROUP, block=True)
-item_look_up = on_startswith("物品查询", priority=15, permission=GROUP, block=True)
+item_look_up = on_startswith("查询", priority=15, permission=GROUP, block=True)
 
 __back_help__ = f"""
 背包帮助信息:
@@ -213,7 +213,7 @@ async def item_look_up_(bot: Bot, event: GroupMessageEvent):
     """
     查询物品
     """
-    name, msg = get_input_cmd(event, 4)
+    name, msg = get_input_cmd(event, 2)
     item_data = items.get_data_by_item_name(name)
     if not item_data:
         msg = f"没有查询到该物品【{name}】"

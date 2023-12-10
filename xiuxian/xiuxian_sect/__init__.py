@@ -217,8 +217,7 @@ async def sect_elixir_get_(bot: Bot, event: GroupMessageEvent):
                 give_num = sect_now_room_config['give_level']['give_num'] - 1
                 rank_up = sect_now_room_config['give_level']['rank_up']
                 give_dict = {}
-                give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(
-                    fanil_rank=RANK[user_info.level] - rank_up, item_type=['丹药'])
+                give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level] - rank_up, item_type=['丹药'])
                 if not give_elixir_id_list:  # 没有合适的ID，全部给渡厄丹
                     msg = f"道友成功领取到丹药：渡厄丹 2 枚！"
                     sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 2, bind_flag=1)  # 送1个渡厄丹

@@ -43,7 +43,7 @@ class GameData:
 
 class PlayerData:
 
-    def __init__(self, user_id, name):
+    def __init__(self, user_id: int, name: str):
         self.name = name
         self.user_id = str(user_id)
         self._load_data(name)
