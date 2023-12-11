@@ -6,66 +6,7 @@ from .xiuxian2_handle import XiuxianDateManage
 from .read_buff import UserBuffDate
 
 
-def player_fight(player1: dict, player2: dict):
-    """
-    回合制战斗
-    type_in : 1 为完整返回战斗过程（未加）
-    2：只返回战斗结果
-    数据示例：
-    {"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None}
-    """
-    msg1 = "{}发起攻击，造成了{}伤害\n"
-    msg2 = "{}发起攻击，造成了{}伤害\n"
-
-    play_list = []
-    suc = None
-    if player1['气血'] <= 0:
-        player1['气血'] = 1
-    if player2['气血'] <= 0:
-        player2['气血'] = 1
-    while True:
-        player1_gj = int(round(random.uniform(0.95, 1.05), 2) * player1['攻击'])
-        if random.randint(0, 100) <= player1['会心']:
-            player1_gj = int(player1_gj * player1['爆伤'])
-            msg1 = "{}发起会心一击，造成了{}伤害\n"
-
-        player2_gj = int(round(random.uniform(0.95, 1.05), 2) * player2['攻击'])
-        if random.randint(0, 100) <= player2['会心']:
-            player2_gj = int(player2_gj * player2['爆伤'])
-            msg2 = "{}发起会心一击，造成了{}伤害\n"
-
-        play1_sh: int = int(player1_gj * (1 - player2['防御']))
-        play2_sh: int = int(player2_gj * (1 - player1['防御']))
-
-        play_list.append(msg1.format(player1['道号'], play1_sh))
-        player2['气血'] = player2['气血'] - play1_sh
-        play_list.append(f"{player2['道号']}剩余血量{player2['气血']}")
-        XiuxianDateManage().update_user_hp_mp(player2['user_id'], player2['气血'], player2['真元'])
-
-        if player2['气血'] <= 0:
-            play_list.append("{}胜利".format(player1['道号']))
-            suc = f"{player1['道号']}"
-            XiuxianDateManage().update_user_hp_mp(player2['user_id'], 1, player2['真元'])
-            break
-
-        play_list.append(msg2.format(player2['道号'], play2_sh))
-        player1['气血'] = player1['气血'] - play2_sh
-        play_list.append(f"{player1['道号']}剩余血量{player1['气血']}\n")
-        XiuxianDateManage().update_user_hp_mp(player1['user_id'], player1['气血'], player1['真元'])
-
-        if player1['气血'] <= 0:
-            play_list.append("{}胜利".format(player2['道号']))
-            suc = f"{player2['道号']}"
-            XiuxianDateManage().update_user_hp_mp(player1['user_id'], 1, player1['真元'])
-            break
-        if player1['气血'] <= 0 or player2['气血'] <= 0:
-            play_list.append("逻辑错误！！！")
-            break
-
-    return play_list, suc
-
-
-def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
+def player_fight(player1: dict, player2: dict, type_in, bot_id):
     """
     回合制战斗
     type_in : 1-切磋，不消耗气血、真元
@@ -74,26 +15,11 @@ def player_fight_with_skill(player1: dict, player2: dict, type_in, bot_id):
     {"user_id": None,"道号": None, "气血": None, "攻击": None, "真元": None, '会心':None, 'exp':None}
     """
     user1_buff_date = UserBuffDate(player1['user_id'])  # 1号的buff信息
-    user1_main_buff_data = user1_buff_date.get_user_main_buff_data()
-    user1_hp_buff = user1_main_buff_data['hpbuff'] if user1_main_buff_data is not None else 0
-    user1_mp_buff = user1_main_buff_data['mpbuff'] if user1_main_buff_data is not None else 0
-
-    user_1_impart_data = None
-    user_1_impart_hp = user_1_impart_data.impart_hp_per if user_1_impart_data is not None else 0
-    user_1_impart_mp = user_1_impart_data.impart_mp_per if user_1_impart_data is not None else 0
-    user1_hp_buff = user1_hp_buff + user_1_impart_hp
-    user1_mp_buff = user1_mp_buff + user_1_impart_mp
-
     user2_buff_date = UserBuffDate(player2['user_id'])  # 2号的buff信息
-    user2_main_buff_data = user2_buff_date.get_user_main_buff_data()
-    user2_hp_buff = user2_main_buff_data['hpbuff'] if user2_main_buff_data is not None else 0
-    user2_mp_buff = user2_main_buff_data['mpbuff'] if user2_main_buff_data is not None else 0
-
-    user_2_impart_data = None
-    user_2_impart_hp = user_1_impart_data.impart_hp_per if user_2_impart_data is not None else 0
-    user_2_impart_mp = user_1_impart_data.impart_mp_per if user_2_impart_data is not None else 0
-    user1_hp_buff = user1_hp_buff + user_2_impart_hp
-    user1_mp_buff = user1_mp_buff + user_2_impart_mp
+    user1_hp_buff = 0
+    user1_mp_buff = 0
+    user2_hp_buff = 0
+    user2_mp_buff = 0
 
     player1_skil_open = False
     player2_skil_open = False
@@ -576,14 +502,12 @@ async def boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
         boss["减伤"] = 1  # boss减伤率
     user1_skill_sh = 0
 
-    user1buffturn = True
-    bossbuffturn = True
 
     get_stone = 0
     sh = 0
     qx = boss['气血']
     boss_now_stone = boss['stone']
-    boss_js = boss['减伤']
+    boss_js = boss["减伤"]
     if boss_js < 1:
         boss_js_data = {"type": "node", "data": {"name": f"{boss['name']}",
                                                  "uin": int(bot_id),

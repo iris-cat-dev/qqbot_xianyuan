@@ -207,7 +207,7 @@ async def xiuxian_send_group_img_message(group_id, msg_list: list):
 def get_input_at_qq(event: MessageEvent) -> (int, str):
     try:
         give_qq = event.original_message[1].data.get("qq", "")
-        return give_qq, ""
+        return int(give_qq), ""
     except:
         return None, "指令输入错误，"
 

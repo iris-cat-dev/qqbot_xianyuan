@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown, check_admin
-from ..common.player_fight import player_fight, player_fight_with_skill
+from ..common.player_fight import player_fight
 from ..common.player_manager import leave_harm_time
 from ..common.read_buff import UserBuffDate
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -69,7 +69,7 @@ async def qc_(bot: Bot, event: GroupMessageEvent):
     player2['真元'] = user2.mp
     player2['exp'] = user2.exp
 
-    result, victor = player_fight_with_skill(player1, player2, 1, bot.self_id)
+    result, victor = player_fight(player1, player2, 1, bot.self_id)
     msg_list = []
     for item in result:
         msg_list.append(item["data"]["content"])
@@ -158,27 +158,24 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
     user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
-    steal_user = None
-    steal_user_stone = None
     user_stone_num = user_info.stone
 
     cost_stone_num = XiuConfig().tou
     if int(cost_stone_num) > int(user_stone_num):
         msg = f'“没钱还想请我们动手！”,道友因为灵石不足{cost_stone_num}请不动盗门长老被打飞！'
-        await xiuxian_send_message(give_stone, message=msg)
+        return await xiuxian_send_message(give_stone, message=msg)
 
     steal_qq, msg = get_input_at_qq(event)
     if not steal_qq:
         msg += '偷灵石+@对方qq'
-        await xiuxian_send_message(give_stone, message=msg)
+        return await xiuxian_send_message(give_stone, message=msg)
 
     if steal_qq == user_id:
         msg = '“偷自己有意思么？刷成就?”, 道友被盗门长老打飞！'
-        await xiuxian_send_message(give_stone, message=msg)
+        return await xiuxian_send_message(give_stone, message=msg)
 
-    else:
-        steal_user = sql_message.get_user_message(steal_qq)
-        steal_user_stone = steal_user.stone
+    steal_user = sql_message.get_user_message(steal_qq)
+    steal_user_stone = steal_user.stone
 
     if steal_user:
         steal_success = random.randint(0, 100)
@@ -287,7 +284,7 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
 
 
 @rob_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def rob_stone_(_: Bot, event: GroupMessageEvent):
+async def rob_stone_(bot: Bot, event: GroupMessageEvent):
     """
     抢灵石
     """
@@ -358,7 +355,7 @@ async def rob_stone_(_: Bot, event: GroupMessageEvent):
             def_buff = 0
         player2['防御'] = def_buff
 
-        result, victor = player_fight(player1, player2)
+        result, victor = player_fight(player1, player2, 2, bot.self_id)
         await xiuxian_send_group_img_message(event.group_id, result)
 
         if victor == player1['道号']:

@@ -87,8 +87,8 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     if str(event.message) == "灵石出关":
         user_stone = user_info.stone  # 用户灵石数
         if exp <= user_stone:
-            exp = exp * 2
             cost_stone = exp
+            exp = exp * 2
         else:
             exp = exp + user_stone
             cost_stone = user_stone

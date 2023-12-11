@@ -5,7 +5,8 @@ from .draw_user_info import draw_user_info_img
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
-from ..common.player_manager import get_cultivation_rate, get_total_hp, get_total_mp
+from ..common.player_manager import get_cultivation_rate, get_total_hp, get_total_mp, get_total_attack, \
+    get_total_critical, get_total_defense
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
@@ -140,16 +141,19 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
 
     total_hp = get_total_hp(user_id)
     total_mp = get_total_mp(user_id)
+    total_attack = get_total_attack(user_id)
+    total_critical = get_total_critical(user_id)
+    total_defense = get_total_defense(user_id)
 
     msg = f"""道号: {user_info.user_name}
 气血: {number_to(user_info.hp)}/{number_to(total_hp)}
-真元: {int(user_info.mp / total_mp * 100)}%
-攻击: {number_to(user_info.atk)}
+真元: {number_to(user_info.mp)}/{number_to(total_mp)}
+攻击: {number_to(total_attack)}
 攻击修炼: {user_info.atkpractice}级(提升攻击力{user_info.atkpractice * 4}%)
-修炼效率: {int(cultivation_rate_info["total"] * 100)}%
-会心: {crit_buff}%
-减伤率: {def_buff}%
+会心: {total_critical}%
+减伤率: {total_defense}%
 会心伤害增益: {int(1.5 * 100)}%
+修炼效率: {int(cultivation_rate_info["total"] * 100)}%
 突破概率：{level_up_rate + user_level_uprate}%
 """
     await xiuxian_send_message(mind_state, message=msg)
