@@ -79,9 +79,9 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
         return await xiuxian_send_message(out_closing, message=msg)
 
     in_closing_time = datetime.strptime(user_cd_info.create_time, "%Y-%m-%d %H:%M:%S.%f")  # 进入闭关的时间
-    exp_time = (date_diff(now_time, in_closing_time) // 60)  # 闭关时长计算(分钟) = second // 60
+    exp_time = round(date_diff(now_time, in_closing_time) / 60, 2)  # 闭关时长计算(分钟) = second // 60
     cultivation_rate_info = get_cultivation_rate(event.user_id)
-    exp = int((exp_time * game_config.closing_exp) * (cultivation_rate_info["total"]))
+    exp = int(exp_time * game_config.closing_exp * (cultivation_rate_info["total"]))
 
     msg = f"闭关结束，共闭关{exp_time}分钟"
     if str(event.message) == "灵石出关":
@@ -130,7 +130,6 @@ def send_hp_mp(user_info, hp, mp):
             msg += f"\n真元已回满!\n目前真元：{number_to(max_mp)}"
     else:
         new_mp = user_info.mp
-
 
     mew_attack = user_info.exp // 10
     sql_manager.update_user_attribute(user_info.user_id, new_hp, new_mp, mew_attack)

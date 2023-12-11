@@ -23,7 +23,7 @@ def number_to(num):
     return '{}{}'.format(round(num, 1), units[level])
 
 
-def date_diff(new_time , old_time):
+def date_diff(new_time, old_time):
     """
     计算日期差
     """
@@ -37,7 +37,4 @@ def date_diff(new_time , old_time):
     else:
         old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
 
-    day = (new_time - old_time).days
-    sec = (new_time - old_time).seconds
-
-    return (day * 24 * 60 * 60) + sec
+    return (new_time - old_time).total_seconds()

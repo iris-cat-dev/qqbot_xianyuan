@@ -43,7 +43,7 @@ async def xiuxian_message_(_: Bot, event: GroupMessageEvent):
     if user_name:
         pass
     else:
-        user_name = "无名氏(发送改名+道号更新)"
+        user_name = "无名氏(发送【改名+道号】更新)"
 
     root_speed = root.get_root_speed(user_info.root_type)  # 灵根倍率
     realm_rate = Rank().get_rank_speed(user_info.level)  # 境界倍率
@@ -120,20 +120,6 @@ async def mind_state_(bot: Bot, event: GroupMessageEvent):
 
     if user_info.hp is None or user_info.hp == 0 or user_info.hp == 0:
         sql_message.update_user_hp(user_id)
-
-    user_info = sql_message.get_user_real_info(user_id)
-    user_buff_data = UserBuffDate(user_id)
-    user_weapon_data = user_buff_data.get_user_weapon_data()
-    if user_weapon_data is not None:
-        crit_buff = int(user_weapon_data['crit_buff'] * 100)
-    else:
-        crit_buff = 1
-
-    user_armor_data = user_buff_data.get_user_armor_buff_data()
-    if user_armor_data is not None:
-        def_buff = int(user_armor_data['def_buff'] * 100)
-    else:
-        def_buff = 0
 
     level_up_rate = rank.get_rank_rate(user_info.level)  # 对应境界突破的概率
     user_level_uprate = int(user_info.level_up_rate)  # 用户失败次数加成

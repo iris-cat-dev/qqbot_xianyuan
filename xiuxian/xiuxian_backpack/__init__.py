@@ -219,10 +219,13 @@ async def item_look_up_(bot: Bot, event: GroupMessageEvent):
         msg = f"没有查询到该物品【{name}】"
     else:
         msg = (f'【{item_data["name"]}】\n'
-               f'类型：{item_data["type"]}\n'
-               f'效果：{item_data["desc"]}')
+               f'类型：{item_data["type"]}\n')
+
+        if "desc" in item_data:
+            msg += f'效果：{item_data["desc"]}\n'
+
         if "message" in item_data:
-            msg += f'\n：{item_data["message"][0]}'
+            msg += f'口诀：{item_data["message"][0]}\n'
 
     await xiuxian_send_message(use, message=msg)
 

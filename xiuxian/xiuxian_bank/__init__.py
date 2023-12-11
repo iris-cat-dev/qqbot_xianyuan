@@ -21,9 +21,9 @@ sql_manager = XiuxianSqlManager()
 
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 
-bank_put = on_startswith("灵庄存灵石", priority=5, block=True)
-bank_get = on_startswith("灵庄取灵石", priority=5, block=True)
-bank_update = on_fullmatch("灵庄升级会员", priority=5, block=True)
+bank_put = on_startswith("灵庄存入", priority=5, block=True)
+bank_get = on_startswith("灵庄取出", priority=5, block=True)
+bank_update = on_fullmatch("灵庄会员升级", priority=5, block=True)
 bank_info = on_fullmatch("灵庄信息", priority=5, block=True)
 bank_settlement = on_fullmatch("灵庄结算", priority=5, block=True)
 bank_help = on_fullmatch("灵庄帮助", priority=5, block=True)
@@ -31,9 +31,9 @@ bank_help = on_fullmatch("灵庄帮助", priority=5, block=True)
 __bank_help__ = f"""
 灵庄帮助信息:
 指令：
-1、灵庄存灵石+数量:指令后加存入的金额,获取利息
-2、灵庄取灵石+数量:指令后加取出的金额,会先结算利息,再取出灵石
-3、灵庄升级会员:灵庄利息倍率与灵庄会员等级有关,升级会员会提升利息倍率
+1、灵庄存入+数量:指令后加存入的金额,获取利息
+2、灵庄取出+数量:指令后加取出的金额,会先结算利息,再取出灵石
+3、灵庄会员升级:灵庄利息倍率与灵庄会员等级有关,升级会员会提升利息倍率
 4、灵庄信息:查询自己当前的灵庄信息
 5、灵庄结算:结算利息
 """.strip()
