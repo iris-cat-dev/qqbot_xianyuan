@@ -27,7 +27,7 @@ class Root(GameConfig):
         if self._data_source[lgen]["type_flag"]:
             flag = random.choice(self._data_source[lgen]["type_flag"])
             root_name = random.sample(self._data_source[lgen]["type_list"], flag)
-            return root_name.join("、") + '属性灵根', lgen
+            return "、".join(root_name) + '属性灵根', lgen
         else:
             root_name = random.choice(self._data_source[lgen]["type_list"])
             return root_name, lgen

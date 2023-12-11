@@ -77,7 +77,7 @@ async def notify_bot_message(group_id: str):
     boss_data.save()
     boss_id = len(boss_data.boss_list)
 
-    msg = f"已生成{boss_id}.{boss_info['jj']}Boss:{boss_info['name']}，诸位道友请击败Boss得奖励吧!"
+    msg = f"已生成{boss_id}.{boss_info['rank']}Boss:{boss_info['name']}，诸位道友请击败Boss得奖励吧!"
     await xiuxian_send_group_message(group_id, msg)
     logger.info(f"群{group_id}_已生成世界boss")
 
@@ -151,7 +151,7 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
     player_info1 = user_info_to_player_info(user_info)
     player_info2 = boss_info_to_player_info(boss_info)
-    result, victor, boss_info_new, get_stone = await boss_fight(player_info1, player_info2, bot_id=bot.self_id)
+    battle_list, victor, boss_info_new, get_stone = await boss_fight(player_info1, player_info2, bot_id=bot.self_id)
     boss_info_new = player_info_to_boss_info(boss_info_new)
 
     boss_integral_rate = 30 + boss_rank * 2
@@ -207,8 +207,12 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
 
     battle_flag[group_id] = False
     msg_list = []
-    for item in result:
+    for item in battle_list:
         msg_list.append(item["data"]["content"])
+
+    if len(msg_list) > 20:
+        msg_list = msg_list[:20]
+        msg_list.append(f"以下省略 {len(battle_list) - 20} 行\n...")
 
     await xiuxian_send_group_img_message(event.group_id, msg_list)
     await xiuxian_send_message(boss_battle, message=msg)
@@ -228,7 +232,7 @@ async def boss_info_(_: Bot, event: GroupMessageEvent):
     msg = ""
     for boss in boss_data.boss_list:
         msg += (f"{i}.【{boss['rank']}{boss['name']}】 "
-                f"血量：{number_to(boss['max_hp'])} "
+                f"血量：{number_to(boss['hp'])} "
                 f"攻击：{number_to(boss['atk'])} "
                 f"携带灵石：{number_to(boss['stone'])}\n")
         i += 1

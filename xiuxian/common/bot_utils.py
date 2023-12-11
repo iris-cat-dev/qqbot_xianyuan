@@ -12,26 +12,6 @@ from nonebot.exception import ActionFailed
 from .game_resource import GameResource
 from ..xiuxian_config import XiuConfig
 
-
-# @help_in.handle(parameterless=[Cooldown(at_sender=True)])
-# async def help_in_(bot: Bot, event: GroupMessageEvent, session_id: int = CommandObjectID()):
-#     """修仙帮助"""
-#     bot, send_group_id = await assign_bot(bot=bot, event=event)
-#     if session_id in cache_help:
-#         await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(cache_help[session_id]))
-#         await help_in.finish()
-#     else:
-#         msg = __xiuxian_notes__
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(msg, scale=False)
-#             cache_help[session_id] = pic
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await help_in.finish(message=msg, reply_message=True)
-
-
-
-
 class Txt2Img:
     """文字转图片"""
 
@@ -147,14 +127,9 @@ class Txt2Img:
             spacing=padding,
         )
 
-        return self.img2b64(out_img)
-
-    def img2b64(self, out_img) -> str:
-        """ image to base64 """
         buf = BytesIO()
-        out_img.save(buf, format="PNG")
-        base64_str = "base64://" + base64.b64encode(buf.getvalue()).decode()
-        return base64_str
+        out_img.save(buf, format="JPEG", quality=5)
+        return buf.getvalue()
 
 
 async def get_msg_pic(msg, boss_name="", scale=True):
@@ -162,8 +137,9 @@ async def get_msg_pic(msg, boss_name="", scale=True):
     pic = img.draw_to(msg, boss_name, scale)
     return pic
 
+
 def save_tmp_img(img: bytes):
-    path = "/Users/bytedance/Library/Containers/com.tencent.qq/Data/Documents/LiteLoaderQQNT/plugins_data/LLOneBot/tmp.png"
+    path = "/Users/bytedance/Library/Containers/com.tencent.qq/Data/Documents/LiteLoaderQQNT/plugins_data/LLOneBot/tmp.jpg"
     with open(path, 'wb') as f:
         f.write(img)
     return path
@@ -176,8 +152,7 @@ async def xiuxian_send_message(matcher, message):
     try:
         if XiuConfig().img:
             pic = await get_msg_pic(message)
-            base64_data = base64.b64decode(pic.encode())
-            path = save_tmp_img(base64_data[6:])
+            path = save_tmp_img(pic)
             await matcher.finish(message=MessageSegment.image(path), reply_message=True)
         else:
             await matcher.finish(message=message, reply_message=True)
@@ -223,8 +198,7 @@ async def xiuxian_send_group_img_message(group_id, msg_list: list):
         text += msg + "\n"
 
     pic = await get_msg_pic(text)
-    base64_data = base64.b64decode(pic.encode())
-    path = save_tmp_img(base64_data[6:])
+    path = save_tmp_img(pic)
     msg_seg = MessageSegment.image(path)
     data['message'].append(msg_seg)
     await get_bot().call_api(api, **data)

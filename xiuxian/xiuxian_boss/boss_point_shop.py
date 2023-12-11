@@ -28,7 +28,7 @@ async def boss_integral_lookup_info_(_: Bot, event: GroupMessageEvent):
 
 
 @boss_point_shop_list.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def boss_integral_info_(bot: Bot, event: GroupMessageEvent):
+async def boss_integral_info_(_: Bot, event: GroupMessageEvent):
     result, msg = check_group_open_boss(event.group_id)
     if not result:
         return await xiuxian_send_message(boss_point_shop_lookup, msg)
@@ -59,13 +59,13 @@ async def boss_integral_use_(_: Bot, event: GroupMessageEvent):
     user_id = event.user_id
     shop_num, msg = get_input_number(event)
     if not shop_num:
-        msg += f'请输入【世界积分兑换+编号】！'
-        await xiuxian_send_message(boss_point_shop_use, message=msg)
+        msg += f'请输入【世界积分购买+编号】！'
+        return await xiuxian_send_message(boss_point_shop_use, message=msg)
 
     boss_integral_shop = shop_config.goods_list
-    if shop_num < 0 or len(boss_integral_shop) >= shop_num:
+    if shop_num < 0 or shop_num >= len(boss_integral_shop):
         msg = f"该编号不在商品列表内哦，请检查后再兑换"
-        await xiuxian_send_message(boss_point_shop_use, message=msg)
+        return await xiuxian_send_message(boss_point_shop_use, message=msg)
 
     goods = boss_integral_shop[shop_num - 1]
     cost = goods["cost"]
