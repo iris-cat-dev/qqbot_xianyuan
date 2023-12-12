@@ -7,7 +7,6 @@ from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
-from ..common.player_manager import get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.utils import date_diff
 from ..common.xiuxian2_handle import XiuxianDateManage
@@ -17,7 +16,7 @@ from ..xiuxian_config import XiuConfig
 level_up = on_fullmatch("突破", priority=6, permission=GROUP, block=True)
 level_up_dr = on_fullmatch("渡厄突破", priority=7, permission=GROUP, block=True)
 level_up_zj = on_fullmatch("直接突破", priority=7, permission=GROUP, block=True)
-user_level_up_rate = on_fullmatch('我的突破概率', priority=5, permission=GROUP, block=True)
+level_up_rate = on_fullmatch('我的突破概率', priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
@@ -188,7 +187,7 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(level_up_zj, message=msg)
 
 
-@user_level_up_rate.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+@level_up_rate.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def user_level_up_rate_(_: Bot, event: GroupMessageEvent):
     """
     我的突破概率
@@ -198,4 +197,4 @@ async def user_level_up_rate_(_: Bot, event: GroupMessageEvent):
     level_up_rate = int(user_info.level_up_rate)  # 用户失败次数加成
     level_rate = rank.get_rank_info(user_info.level)["rate"]  # 对应境界突破的概率
     msg = f"道友下一次突破成功概率为{level_rate + level_up_rate}%"
-    await xiuxian_send_message(user_level_up_rate, message=msg)
+    await xiuxian_send_message(level_up_rate, message=msg)

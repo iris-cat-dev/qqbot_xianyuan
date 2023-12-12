@@ -77,7 +77,7 @@ async def notify_bot_message(group_id: str):
     boss_data.save()
     boss_id = len(boss_data.boss_list)
 
-    msg = f"已生成{boss_id}.{boss_info['rank']}Boss:{boss_info['name']}，诸位道友请击败Boss得奖励吧!"
+    msg = f"邪气弥漫，邪魔{boss_id}.{boss_info['rank']}:【{boss_info['name']}】出现，诸位道友请击败邪魔得奖励吧!"
     await xiuxian_send_group_message(group_id, msg)
     logger.info(f"群{group_id}_已生成世界boss")
 
@@ -261,7 +261,7 @@ async def create_(_: Bot, event: GroupMessageEvent):
     boss_data.boss_list.append(boss_info)
     boss_data.save()
 
-    msg = f"已生成{boss_info['rank']}Boss:{boss_info['name']},诸位道友请击败Boss获得奖励吧!"
+    msg = f"已生成{boss_info['rank']}邪魔:【{boss_info['name']}】，诸位道友请击败邪魔获得奖励吧!"
     await xiuxian_send_message(boss_create, message=msg)
 
 

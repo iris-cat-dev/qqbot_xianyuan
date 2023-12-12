@@ -35,7 +35,7 @@ materialsupdate = require("nonebot_plugin_apscheduler").scheduler
 resetusertask = require("nonebot_plugin_apscheduler").scheduler
 
 sect_help = on_fullmatch("宗门帮助", priority=5, permission=GROUP, block=True)
-upatkpractice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP, block=True)
+update_attack_practice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP, block=True)
 my_sect = on_fullmatch("我的宗门", priority=5, permission=GROUP, block=True)
 create_sect = on_startswith("创建宗门", priority=5, permission=GROUP, block=True)
 join_sect = on_startswith("加入宗门", priority=5, permission=GROUP, block=True)
@@ -217,7 +217,8 @@ async def sect_elixir_get_(bot: Bot, event: GroupMessageEvent):
                 give_num = sect_now_room_config['give_level']['give_num'] - 1
                 rank_up = sect_now_room_config['give_level']['rank_up']
                 give_dict = {}
-                give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level] - rank_up, item_type=['丹药'])
+                give_elixir_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level] - rank_up,
+                                                                                     item_type=['丹药'])
                 if not give_elixir_id_list:  # 没有合适的ID，全部给渡厄丹
                     msg = f"道友成功领取到丹药：渡厄丹 2 枚！"
                     sql_message.send_back(user_info.user_id, 1999, "渡厄丹", "丹药", 2, bind_flag=1)  # 送1个渡厄丹
@@ -526,49 +527,51 @@ async def sect_secbuff_learn_(bot: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(sect_secbuff_learn, msg)
 
 
-@upatkpractice.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def upatkpractice_(bot: Bot, event: GroupMessageEvent):
+@update_attack_practice.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def update_attack_practice_(bot: Bot, event: GroupMessageEvent):
     user_info = sql_manager.get_user_info(event.user_id)
 
     user_id = user_info.user_id
     sect_id = user_info.sect_id
     if sect_id:
         sect_materials = int(sql_message.get_sect_info(sect_id).sect_materials)  # 当前资材
-        useratkpractice = int(user_info.atkpractice)  # 当前等级
-        if useratkpractice == 25:
+        user_atk_practice = int(user_info.atkpractice)  # 当前等级
+        if user_atk_practice == 25:
             msg = f"道友的攻击修炼等级已达到最高等级!"
-            await xiuxian_send_message(upatkpractice, msg)
+            await xiuxian_send_message(update_attack_practice, msg)
 
         sect_level = get_sect_level(sect_id)[0] if get_sect_level(sect_id)[
                                                        0] <= 25 else 25  # 获取当前宗门修炼等级上限，500w建设度1级,上限25级
-
         sect_position = user_info.sect_position
         if sect_position == 4:
             msg = f"道友所在宗门的职位为：{jsondata.sect_config_data()[f'{sect_position}']['title']}，不满足使用资材的条件!"
-            await xiuxian_send_message(upatkpractice, msg)
+            await xiuxian_send_message(update_attack_practice, msg)
 
-        if useratkpractice >= sect_level:
+        if user_atk_practice >= sect_level:
             msg = f"道友的攻击修炼等级已达到当前宗门修炼等级的最高等级：{sect_level}，请捐献灵石提升贡献度吧！"
-            await xiuxian_send_message(upatkpractice, msg)
+            await xiuxian_send_message(update_attack_practice, msg)
 
-        cost = LEVLECOST[f'{useratkpractice}']
-        if int(user_info.stone) < cost:
-            msg = f"道友的灵石不够，还需{cost - int(user_info.stone)}灵石!"
-            await xiuxian_send_message(upatkpractice, msg)
-
+        cost = LEVLECOST[f'{user_atk_practice}']
         if sect_materials < cost * 10:
             msg = f"道友的所处的宗门资材不足，还需{cost * 10 - sect_materials}资材!"
-            await xiuxian_send_message(upatkpractice, msg)
+            return await xiuxian_send_message(update_attack_practice, msg)
 
-        sql_message.update_ls(user_id, cost, 2)
+        if user_info.sect_contribution < cost:
+            msg = f"道友的宗门贡献不足，还需{cost - user_info.sect_contribution}贡献，发送【宗门捐献+数量】!"
+            return await xiuxian_send_message(update_attack_practice, msg)
+
+        sql_message.sub_user_sect_contribution(user_id, cost)
         sql_message.update_sect_materials(sect_id, cost * 10, 2)
-        sql_message.update_user_atkpractice(user_id, useratkpractice + 1)
-        msg = f"升级成功，道友当前攻击修炼等级：{useratkpractice + 1}，消耗灵石：{cost}枚，消耗宗门资材{cost * 10}!"
-        await xiuxian_send_message(upatkpractice, msg)
+        sql_message.update_user_atkpractice(user_id, user_atk_practice + 1)
+
+        msg = (f"升级成功，道友当前攻击修炼等级：{user_atk_practice + 1}"
+               f"\n消耗宗门贡献：{cost}点"
+               f"\n消耗宗门资材：{cost * 10}点")
+        await xiuxian_send_message(update_attack_practice, msg)
 
     else:
         msg = f"修炼逆天而行消耗巨大，请加入宗门再进行修炼！"
-        await xiuxian_send_message(upatkpractice, msg)
+        await xiuxian_send_message(update_attack_practice, msg)
 
 
 @sect_task_refresh.handle(parameterless=[Cooldown(cd_time=config['宗门任务刷新cd'], at_sender=True), check_player()])
@@ -598,16 +601,16 @@ async def sect_list_(_: Bot, event: GroupMessageEvent):
     宗门列表：当前为返回转发内容
     """
     sect_list = sql_message.get_all_scale()
-    msg_list = []
-    msg_list.append("☆------宗门列表------☆")
+    msg = "☆------宗门列表------☆"
     for sect in sect_list:
         user_name = ""
         try:
             user_name = sql_message.get_user_message(int(sect.sect_owner)).user_name
         except AttributeError:
             pass
-        msg_list.append(f'编号{sect.sect_id}:{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}')
-    await xiuxian_send_group_img_message(event.group_id, msg_list)
+        msg += f'编号{sect.sect_id}:{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}'
+
+    await xiuxian_send_group_img_message(event.group_id, msg)
 
 
 @sect_users.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -830,7 +833,7 @@ async def create_sect_(_: Bot, event: GroupMessageEvent):
             # 设置用户信息表的宗门字段
             sql_message.update_usr_sect(user_id, new_sect.sect_id, owner_position)
             # 扣灵石
-            sql_message.update_ls(user_id, XiuConfig().sect_min_level, 2)
+            sql_message.update_ls(user_id, XiuConfig().sect_create_cost, 2)
             msg = f"恭喜{user_info.user_name}道友创建宗门——{sect_name}，宗门编号为{new_sect.sect_id}。为道友贺！为仙道贺！"
         else:
             msg = f"道友确定要创建无名之宗门？还请三思。请发送【创建宗门+名字】"
@@ -1184,7 +1187,8 @@ def get_sectbufftxt(sect_scale, config_):
     参数:sect_scale=宗门建设度
     config=宗门主功法参数
     """
-    bufftxt = {1: '人阶下品', 2: '人阶上品', 3: '黄阶下品', 4: '黄阶上品', 5: '玄阶下品', 6: '玄阶上品', 7: '地阶下品',
+    bufftxt = {1: '人阶下品', 2: '人阶上品', 3: '黄阶下品',
+               4: '黄阶上品', 5: '玄阶下品', 6: '玄阶上品', 7: '地阶下品',
                8: '地阶上品', 9: '天阶下品',
                10: '天阶上品'}
     buffgear = divmod(sect_scale, config_['建设度'])[0]

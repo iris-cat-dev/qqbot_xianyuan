@@ -73,9 +73,8 @@ class Txt2Img:
         else:
             img_width = 1080
             line_num = line_num
-        img_hight = int(upper_size + below_size + font_size * (line_num + 1) + padding * line_num)
-        out_img = Image.new(mode="RGB", size=(img_width, img_hight),
-                            color=black_clor)
+        img_height = int(upper_size + below_size + font_size * (line_num + 1) + padding * line_num)
+        out_img = Image.new(mode="RGB", size=(img_width, img_height), color=black_clor)
         draw = ImageDraw.Draw(out_img, "RGBA")
 
         # # # #
@@ -88,7 +87,7 @@ class Txt2Img:
         )
 
         # add background
-        for x in range(int(math.ceil(img_hight / 100))):
+        for x in range(int(math.ceil(img_height / 100))):
             out_img.paste(mi_img, (0, x * 100))
 
         # add border
@@ -100,14 +99,14 @@ class Txt2Img:
                 )
 
         draw_rectangle(
-            draw, (out_padding, out_padding, img_width - out_padding, img_hight - out_padding), 2
+            draw, (out_padding, out_padding, img_width - out_padding, img_height - out_padding), 2
         )
 
         # add banner
         out_img.paste(mi_banner, (out_padding, out_padding))
         out_img.paste(
             mi_banner.transpose(Image.FLIP_TOP_BOTTOM),
-            (out_padding, img_hight - out_padding - banner_size + 1),
+            (out_padding, img_height - out_padding - banner_size + 1),
         )
         out_img.paste(
             mi_banner.transpose(Image.FLIP_LEFT_RIGHT),
@@ -115,7 +114,7 @@ class Txt2Img:
         )
         out_img.paste(
             mi_banner.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.FLIP_TOP_BOTTOM),
-            (img_width - out_padding - banner_size + 1, img_hight - out_padding - banner_size + 1),
+            (img_width - out_padding - banner_size + 1, img_height - out_padding - banner_size + 1),
         )
 
         # # # #

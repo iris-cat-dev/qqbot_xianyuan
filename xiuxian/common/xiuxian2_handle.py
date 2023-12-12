@@ -684,6 +684,15 @@ class XiuxianDateManage:
         cur.execute(sql, (sect_contribution, user_id))
         self.conn.commit()
 
+    def sub_user_sect_contribution(self, user_id, value):
+        """
+        减用户宗门贡献度
+        """
+        sql = f"UPDATE user_xiuxian SET sect_contribution=-? where user_id=?"
+        cur = self.conn.cursor()
+        cur.execute(sql, (value, user_id))
+        self.conn.commit()
+
     def update_user_hp(self, user_id):
         """重置用户状态信息"""
         sql = f"UPDATE user_xiuxian SET mp=exp/2,hp=exp,atk=exp/10 where user_id=?"

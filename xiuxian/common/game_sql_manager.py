@@ -171,7 +171,7 @@ class XiuxianSqlManager:
         cur.execute(sql, (value, user_id))
         self.connect.commit()
 
-    def sub_money(self, user_id, price):
+    def sub_money(self, user_id, price) -> bool:
         """
         减少灵石
         """
@@ -179,6 +179,7 @@ class XiuxianSqlManager:
         sql = f"UPDATE user_xiuxian SET stone=stone-? WHERE user_id=?"
         cur.execute(sql, (price, user_id))
         self.connect.commit()
+        return True
 
     def add_exp(self, user_id, exp: int):
         """

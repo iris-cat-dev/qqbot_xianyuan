@@ -41,7 +41,7 @@ __work_help__ = f"""
 
 
 # 重置悬赏令刷新次数
-@reset_refresh_scheduler.scheduled_job("cron", hour=9, minute=35)
+@reset_refresh_scheduler.scheduled_job("cron", hour=0, minute=0)
 async def reset_refresh_scheduler_():
     user_list = sql_manager.get_user_list()
     for user_id in user_list:

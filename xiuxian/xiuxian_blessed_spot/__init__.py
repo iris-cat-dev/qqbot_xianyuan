@@ -46,7 +46,6 @@ async def blessed_spot_creat_(bot: Bot, event: GroupMessageEvent):
     user_info = sql_manager.get_user_info(user_id)
     price = BlessedSpotConfig().price
 
-
     if user_info.stone < price:
         msg = f"道友的灵石不足{price}枚，无法购买洞天福地"
         await xiuxian_send_message(blessed_spot_creat, message=msg)

@@ -32,11 +32,11 @@ def create_boss(boss_rank: str = None):
     if boss_rank is None:
         # 保底机制获取一个最低境界的用户，生成一个同境boss
         last_user = sql_manager.get_last_user()
-        last_user_info = rank.get_rank_info(last_user.level)
+        last_user_rank_info = rank.get_rank_info(last_user.level)
         # 判断是否存在最低境界 boss
         has_last_level_boss = False
         for boss in boss_data.boss_list:
-            if boss["rank"] == rank.to_big_rank(last_user_info["name"]):
+            if boss["rank"] == last_user_rank_info["name"]:
                 has_last_level_boss = True
                 break
         if has_last_level_boss:
@@ -46,7 +46,7 @@ def create_boss(boss_rank: str = None):
             user_info = sql_manager.get_user_info(user_id)
             boss_rank_info = rank.get_rank_info(user_info.level)
         else:
-            boss_rank_info = last_user_info
+            boss_rank_info = last_user_rank_info
     else:
         boss_rank_info = rank.get_big_rank_info(boss_rank)
 
@@ -59,7 +59,7 @@ def create_boss(boss_rank: str = None):
         'mp': int(exp * boss_magnification["mp"]),
         'atk': int(exp * boss_magnification["atk"]),
         'name': random.choice(boss_config.boss_name_list),
-        'rank': rank.to_big_rank(boss_rank_info["name"]),
+        'rank': boss_rank_info["name"],
         "stone": int(exp * boss_magnification["stone"]),
     }
     return boss_info
