@@ -8,9 +8,9 @@ from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown
 
-boss_point_shop_list = on_fullmatch("世界积分查询", priority=10, permission=GROUP, block=True)
-boss_point_shop_use = on_startswith("世界积分兑换", priority=6, permission=GROUP, block=True)
-boss_point_shop_lookup = on_fullmatch("我的世界积分", priority=10, permission=GROUP, block=True)
+boss_point_shop_list = on_fullmatch("积分查询", priority=10, permission=GROUP, block=True)
+boss_point_shop_use = on_startswith("积分兑换", priority=6, permission=GROUP, block=True)
+boss_point_shop_lookup = on_fullmatch("我的积分", priority=10, permission=GROUP, block=True)
 
 sql_manager = XiuxianSqlManager()
 shop_config = BossPointShopConfig()
@@ -23,7 +23,7 @@ async def boss_integral_lookup_info_(_: Bot, event: GroupMessageEvent):
         return await xiuxian_send_message(boss_point_shop_lookup, msg)
 
     point = BossPlayerData(event.user_id).point
-    msg = f"道友目前拥有的世界积分：{point}点"
+    msg = f"道友目前拥有的讨伐邪魔积分：{point}点"
     await xiuxian_send_message(boss_point_shop_lookup, message=msg)
 
 
@@ -35,12 +35,12 @@ async def boss_integral_info_(_: Bot, event: GroupMessageEvent):
 
     user_point = BossPlayerData(event.user_id).point
     boss_integral_shop = shop_config.goods_list
-    l_msg = [f"道友目前拥有的世界积分：{user_point}点"]
+    l_msg = [f"道友目前拥有的讨伐邪魔积分：{user_point}点"]
     i = 1
     for v in boss_integral_shop:
         msg = f"编号:{i}\n"
         msg += f"描述：{v['desc']}\n"
-        msg += f"所需世界积分：{v['cost']}点"
+        msg += f"所需积分：{v['cost']}点"
         l_msg.append(msg)
         i += 1
 
@@ -59,7 +59,7 @@ async def boss_integral_use_(_: Bot, event: GroupMessageEvent):
     user_id = event.user_id
     shop_num, msg = get_input_number(event)
     if not shop_num:
-        msg += f'请输入【世界积分购买+编号】！'
+        msg += f'请输入【积分购买+编号】！'
         return await xiuxian_send_message(boss_point_shop_use, message=msg)
 
     boss_integral_shop = shop_config.goods_list

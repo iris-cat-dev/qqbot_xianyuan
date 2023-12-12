@@ -106,6 +106,7 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
         time_diff = round((datetime.strptime(now_time, '%Y-%m-%d %H:%M:%S') -
                           datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600,
                          2)
+
         if time_diff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2):
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level], ['药材'])
 

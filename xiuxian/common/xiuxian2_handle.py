@@ -688,7 +688,7 @@ class XiuxianDateManage:
         """
         减用户宗门贡献度
         """
-        sql = f"UPDATE user_xiuxian SET sect_contribution=-? where user_id=?"
+        sql = f"UPDATE user_xiuxian SET sect_contribution=sect_contribution-? where user_id=?"
         cur = self.conn.cursor()
         cur.execute(sql, (value, user_id))
         self.conn.commit()

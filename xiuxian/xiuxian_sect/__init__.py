@@ -610,7 +610,7 @@ async def sect_list_(_: Bot, event: GroupMessageEvent):
             pass
         msg += f'编号{sect.sect_id}:{sect.sect_name}，宗主：{user_name}，宗门建设度：{sect.sect_scale}'
 
-    await xiuxian_send_group_img_message(event.group_id, msg)
+    await xiuxian_send_message(event.group_id, msg)
 
 
 @sect_users.handle(parameterless=[Cooldown(at_sender=True), check_player()])
