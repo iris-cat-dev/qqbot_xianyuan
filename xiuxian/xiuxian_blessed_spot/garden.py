@@ -4,12 +4,13 @@ from datetime import datetime
 from nonebot import on_fullmatch, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
+from . import check_has_blessed_spot
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player,Cooldown
+from ..common.param_checker import check_player, Cooldown
 from ..common.rank import RANK
 from ..common.item_json import Items
-from ..common.read_buff import get_player_info, save_player_info
+from ..common.read_buff import get_player_info, save_player_info, UserBuffDate
 from ..common.xiuxian2_handle import XiuxianDateManage
 
 garden_get = on_fullmatch("灵田收取", priority=8, permission=GROUP, block=True)
@@ -42,7 +43,6 @@ sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 items = Items()
 
-
 __garden_help__ = f"""
 灵田帮助信息:
 指令：
@@ -51,10 +51,10 @@ __garden_help__ = f"""
 灵田 4 个小时可收取一次
 """.strip()
 
+
 @garden_help.handle(parameterless=[Cooldown(at_sender=True)])
 async def boss_help_(_: Bot, __: GroupMessageEvent):
     await xiuxian_send_message(garden_help, message=__garden_help__)
-
 
 
 @garden_up.handle(parameterless=[Cooldown(at_sender=True), check_player()])
@@ -62,13 +62,12 @@ async def garden_up_(bot: Bot, event: GroupMessageEvent):
     """
     灵田升级
     """
-    user_info = sql_manager.get_user_info(event.user_id)
+    user_id = event.user_id
+    result, msg = check_has_blessed_spot(user_id)
+    if not result:
+        return await xiuxian_send_message(garden_up, msg)
 
-    user_id = user_info.user_id
-    if int(user_info.blessed_spot_flag) == 0:
-        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        await xiuxian_send_message(garden_up, message=msg)
-
+    user_info = sql_manager.get_user_info()
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     now_num = mix_elixir_info['灵田数量']
     if now_num == len(LING_TIAN_CONFIG) + 1:
@@ -91,25 +90,27 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
     """
     灵田收取
     """
+    user_id = event.user_id
+    result, msg = check_has_blessed_spot(user_id)
+    if not result:
+        return await xiuxian_send_message(garden_up, msg)
+
     user_info = sql_manager.get_user_info(event.user_id)
-
-    user_id = user_info.user_id
-    if int(user_info.blessed_spot_flag) == 0:
-        msg = f"道友还没有洞天福地呢，请发送洞天福地购买吧~"
-        await xiuxian_send_message(garden_get, message=msg)
-
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
-
     last_time = mix_elixir_info['收取时间']
+
+    user_buff_data = UserBuffDate(user_id)
+    blessed_spot_rate = user_buff_data.BuffInfo.blessed_spot
+    ready_time = round(
+        GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'] * blessed_spot_rate)), 2)
     if last_time != 0:
         now_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # str
         time_diff = round((datetime.strptime(now_time, '%Y-%m-%d %H:%M:%S') -
-                          datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600,
-                         2)
+                           datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S')).total_seconds() / 3600,
+                          2)
 
-        if time_diff >= round(GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])), 2):
+        if time_diff >= ready_time:
             yaocai_id_list = items.get_random_id_list_by_rank_and_item_type(RANK[user_info.level], ['药材'])
-
             num = mix_elixir_info['灵田数量'] + mix_elixir_info['收取等级']
             msg = ''
             if not yaocai_id_list:
@@ -136,6 +137,6 @@ async def garden_get_(_: Bot, event: GroupMessageEvent):
             await xiuxian_send_message(garden_get, message=msg)
 
         else:
-            hour = round((GETCONFIG['time_cost'] * (1 - (GETCONFIG['加速基数'] * mix_elixir_info['药材速度'])) - time_diff) * 60)
+            hour = round((ready_time - time_diff) * 60)
             msg = f"道友的灵田还不能收取，下次收取时间为：{hour}分钟之后"
             await xiuxian_send_message(garden_get, message=msg)

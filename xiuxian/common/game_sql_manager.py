@@ -124,12 +124,16 @@ class XiuxianSqlManager:
         else:
             return UserInfo(*result)
 
-    def get_last_user(self):
+    def get_last_user(self, only_active=False):
         """
         获取修为最后的用户
         """
         cur = self.connect.cursor()
-        sql = f"select * from user_xiuxian ORDER BY exp LIMIT 1"
+        if only_active:
+            sql = f"select * from user_xiuxian WHERE is_sign=1 ORDER BY exp LIMIT 1"
+        else:
+            sql = f"select * from user_xiuxian ORDER BY exp LIMIT 1"
+
         cur.execute(sql)
         result = cur.fetchone()
         if not result:

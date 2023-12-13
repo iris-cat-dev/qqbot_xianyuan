@@ -30,8 +30,8 @@ def check_input_boss(boss_id) -> (True, str):
 
 def create_boss(boss_rank: str = None):
     if boss_rank is None:
-        # 保底机制获取一个最低境界的用户，生成一个同境boss
-        last_user = sql_manager.get_last_user()
+        # 保底机制获取一个最低境界活跃的用户，生成一个同境boss
+        last_user = sql_manager.get_last_user(True)
         last_user_rank_info = rank.get_rank_info(last_user.level)
         # 判断是否存在最低境界 boss
         has_last_level_boss = False

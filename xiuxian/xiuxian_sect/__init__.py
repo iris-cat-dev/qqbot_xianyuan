@@ -105,9 +105,7 @@ async def resetusertask_():
     for s in all_sects:
         sect_info = sql_message.get_sect_info(s[0])
         if int(sect_info.elixir_room_level) != 0:
-            elixir_room_cost = \
-                config['宗门丹房参数']['elixir_room_level'][str(sect_info.elixir_room_level)]['level_up_cost'][
-                    '建设度']
+            elixir_room_cost = config['宗门丹房参数']['elixir_room_level'][str(sect_info.elixir_room_level)]['level_up_cost']['建设度']
             if sect_info.sect_materials < elixir_room_cost:
                 logger.info("该宗门的资材无法维持丹房")
                 continue
@@ -667,7 +665,7 @@ async def sect_task_(bot: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(sect_task, msg)
 
 
-@sect_task_complete.handle(parameterless=[Cooldown(config['宗门任务完成cd'], at_sender=True)])
+@sect_task_complete.handle(parameterless=[Cooldown(at_sender=True)])
 async def sect_task_complete_(_: Bot, event: GroupMessageEvent):
     user_info = sql_manager.get_user_info(event.user_id)
 
