@@ -2,7 +2,7 @@
    "江湖好手": {
       "易": {
          "level": "易",
-         "award": 20,
+         "award": 100,
          "needexp": 100,
          "time": 60
       }
@@ -10,13 +10,13 @@
    "练气境": {
       "易": {
          "level": "易",
-         "award": 100,
+         "award": 200,
          "needexp": 1000,
          "time": 60
       },
       "中": {
          "level": "中",
-         "award": 200,
+         "award": 400,
          "needexp": 2000,
          "time": 120
       }
@@ -24,13 +24,13 @@
    "筑基境": {
       "易": {
          "level": "易",
-         "award": 300,
+         "award": 600,
          "needexp": 6000,
          "time": 60
       },
       "中": {
          "level": "中",
-         "award": 400,
+         "award": 800,
          "needexp": 8000,
          "time": 120
       }
@@ -38,19 +38,19 @@
    "结丹境": {
       "易": {
          "level": "易",
-         "award": 450,
+         "award": 900,
          "needexp": 25000,
          "time": 60
       },
       "中": {
          "level": "中",
-         "award": 600,
+         "award": 1300,
          "needexp": 50000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 900,
+         "award": 1600,
          "needexp": 90000,
          "time": 180
       }
@@ -58,19 +58,19 @@
    "元婴境": {
       "易": {
          "level": "易",
-         "award": 900,
+         "award": 2200,
          "needexp": 160000,
          "time": 60
       },
       "中": {
          "level": "中",
-         "award": 1100,
+         "award": 4100,
          "needexp": 200000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 1300,
+         "award": 6300,
          "needexp": 288000,
          "time": 180
       }
@@ -78,19 +78,19 @@
    "化神境": {
       "中": {
          "level": "中",
-         "award": 1600,
+         "award": 8600,
          "needexp": 440000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 1900,
+         "award": 10900,
          "needexp": 550000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 2400,
+         "award": 14400,
          "needexp": 700000,
          "time": 240
       }
@@ -98,19 +98,19 @@
    "炼虚境": {
       "中": {
          "level": "中",
-         "award": 8460,
+         "award": 18460,
          "needexp": 1040000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 13160,
+         "award": 26160,
          "needexp": 1280000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 18800,
+         "award": 38800,
          "needexp": 1664000,
          "time": 240
       }
@@ -118,19 +118,19 @@
    "合体境": {
       "中": {
          "level": "中",
-         "award": 24000,
+         "award": 44000,
          "needexp": 2400000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 29500,
+         "award": 60500,
          "needexp": 2950000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 38400,
+         "award": 80400,
          "needexp": 3840000,
          "time": 240
       }
@@ -138,19 +138,19 @@
    "大乘境": {
       "中": {
          "level": "中",
-         "award": 54400,
+         "award": 104400,
          "needexp": 5440000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 67000,
+         "award": 127000,
          "needexp": 6700000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 87000,
+         "award": 167000,
          "needexp": 8700000,
          "time": 240
       }
@@ -158,19 +158,19 @@
    "渡劫境": {
       "中": {
          "level": "中",
-         "award": 121600,
+         "award": 241600,
          "needexp": 12160000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 150000,
+         "award": 300000,
          "needexp": 15000000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 219360,
+         "award": 429360,
          "needexp": 21936000,
          "time": 240
       }
@@ -178,19 +178,19 @@
    "真仙境": {
       "中": {
          "level": "中",
-         "award": 359680,
+         "award": 809680,
          "needexp": 35968000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award": 409680,
+         "award": 1009680,
          "needexp": 40968000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 609680,
+         "award": 1209680,
          "needexp": 60968000,
          "time": 240
       }
@@ -198,19 +198,19 @@
    "玄仙境": {
       "中": {
          "level": "中",
-         "award":  709680,
+         "award":  1409680,
          "needexp": 70968000,
          "time": 120
       },
       "难": {
          "level": "难",
-         "award":  809680,
+         "award":  1609680,
          "needexp": 80968000,
          "time": 180
       },
       "高难": {
          "level": "高难",
-         "award": 1209680,
+         "award": 2409680,
          "needexp": 120968000,
          "time": 240
       }

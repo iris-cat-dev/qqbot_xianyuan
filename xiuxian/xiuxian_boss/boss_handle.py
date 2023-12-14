@@ -126,7 +126,7 @@ async def handle_boss_fight(user_id, boss_num):
     boss_player_data.save()
 
     get_stone = boss_info_old["stone"] - boss_info_new['stone']
-    get_exp = get_stone // 3
+    get_exp = get_stone // 4
     sql_manager.add_money(user_id, get_stone)
     sql_manager.add_exp(user_id, get_exp)
 

@@ -74,12 +74,6 @@ async def mind_back_(_: Bot, event: GroupMessageEvent):
     user_id = event.user_id
     msg_list = get_user_back_msg(user_id)
     if len(msg_list) > 0:
-        # try:
-        #     for item in msg_list:
-        #         msg += f"{item}\n"
-        # except ActionFailed:
-        #     msg = "查看背包失败"
-        #     await xiuxian_send_message(my_back, msg)
         await xiuxian_send_group_img_message(event.group_id, msg_list)
     else:
         msg = '道友的背包空空如也！'
