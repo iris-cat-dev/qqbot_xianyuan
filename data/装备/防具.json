@@ -4,69 +4,89 @@
     "def_buff": 0.08,
     "rank": 55,
     "level": "下品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "下品符器, 提升8%减伤率。",
+    "equipment_type": "护具"
   },
   "6011": {
     "name": "化尘道袍",
     "def_buff": 0.1,
     "rank": 52,
     "level": "上品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "上品符器, 提升10%减伤率。",
+    "equipment_type": "护具"
   },
   "6021": {
     "name": "阴磷甲",
     "def_buff": 0.12,
     "rank": 49,
     "level": "下品玄器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "下品玄器, 提升12%减伤率。",
+    "equipment_type": "护具"
   },
   "6031": {
     "name": "御灵盾",
     "def_buff": 0.14,
     "rank": 46,
     "level": "上品玄器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "上品玄器, 提升14%减伤率。",
+    "equipment_type": "护具"
   },
   "6041": {
     "name": "凤血魔袍",
     "def_buff": 0.16,
     "rank": 43,
     "level": "下品纯阳",
-    "type": "装备"
+    "type": "装备",
+    "desc": "下品纯阳, 提升16%减伤率。",
+    "equipment_type": "护具"
   },
   "6051": {
     "name": "避水法袍",
     "def_buff": 0.18,
     "rank": 40,
     "level": "上品纯阳",
-    "type": "装备"
+    "type": "装备",
+    "desc": "上品纯阳, 提升18%减伤率。",
+    "equipment_type": "护具"
   },
   "6061": {
     "name": "青溪法袍",
     "def_buff": 0.20,
     "rank": 37,
     "level": "下品通天",
-    "type": "装备"
+    "type": "装备",
+    "desc": "下品通天, 提升20%减伤率。",
+    "equipment_type": "护具"
   },
   "6071": {
     "name": "驱厄灵袍",
     "def_buff": 0.22,
     "rank": 34,
     "level": "上品通天",
-    "type": "装备"
+    "type": "装备",
+    "desc": "上品通天, 提升22%减伤率。",
+    "equipment_type": "护具"
   },
   "6081": {
     "name": "三阳道袍",
     "def_buff": 0.24,
     "rank": 31,
     "level": "下品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "下品仙器, 提升24%减伤率。",
+    "equipment_type": "护具"
   },
   "6091": {
     "name": "皇鳞甲",
     "def_buff": 0.26,
     "rank": 28,
     "level": "上品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "上品仙器, 提升26%减伤率。",
+    "equipment_type": "护具"
   }
 }

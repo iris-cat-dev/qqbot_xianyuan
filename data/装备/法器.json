@@ -5,7 +5,9 @@
     "crit_buff": 0,
     "rank": 55,
     "level": "下品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升8%攻击力。",
+    "equipment_type": "法器"
   },
   "7002": {
     "name": "桃木符剑",
@@ -13,7 +15,9 @@
     "crit_buff": 0.08,
     "rank": 52,
     "level": "下品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升8%会心率。",
+    "equipment_type": "法器"
   },
   "7003": {
     "name": "精元符剑",
@@ -21,7 +25,9 @@
     "crit_buff": 0.04,
     "rank": 52,
     "level": "下品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升4%攻击力，提升4%会心率。",
+    "equipment_type": "法器"
   },
   "7011": {
     "name": "火铜符剑",
@@ -29,7 +35,9 @@
     "crit_buff": 0,
     "rank": 49,
     "level": "上品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升12%攻击力。",
+    "equipment_type": "法器"
   },
   "7012": {
     "name": "青玉符剑",
@@ -37,7 +45,9 @@
     "crit_buff": 0.12,
     "rank": 49,
     "level": "上品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升12%会心率。",
+    "equipment_type": "法器"
   },
   "7013": {
     "name": "灵气剑",
@@ -45,7 +55,9 @@
     "crit_buff": 0.06,
     "rank": 49,
     "level": "上品符器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升6%攻击力，提升6%会心率。",
+    "equipment_type": "法器"
   },
   "7021": {
     "name": "辟邪惊雷尺",
@@ -53,7 +65,9 @@
     "crit_buff": 0,
     "rank": 46,
     "level": "下品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升16%攻击力。",
+    "equipment_type": "法器"
   },
   "7022": {
     "name": "七星剑",
@@ -61,7 +75,9 @@
     "crit_buff": 0.16,
     "rank": 46,
     "level": "下品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升16%会心率。",
+    "equipment_type": "法器"
   },
   "7023": {
     "name": "流光剑",
@@ -69,15 +85,20 @@
     "crit_buff": 0.08,
     "rank": 46,
     "level": "下品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升8%攻击力，提升8%会心率。",
+    "equipment_type": "法器"
   },
+
   "7031": {
     "name": "金光镜",
     "atk_buff": 0.2,
     "crit_buff": 0,
     "rank": 43,
     "level": "上品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升20%攻击力。",
+    "equipment_type": "法器"
   },
   "7032": {
     "name": "阴阳夺魂针",
@@ -85,7 +106,9 @@
     "crit_buff": 0.2,
     "rank": 43,
     "level": "上品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升20%会心率。",
+    "equipment_type": "法器"
   },
   "7033": {
     "name": "山河鼎",
@@ -93,7 +116,9 @@
     "crit_buff": 0.1,
     "rank": 43,
     "level": "上品法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升10%攻击力，提升10%会心率。",
+    "equipment_type": "法器"
   },
   "7041": {
     "name": "离地焰光旗",
@@ -101,7 +126,9 @@
     "crit_buff": 0.1,
     "rank": 40,
     "level": "下品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升24%攻击力，提升10%会心率。",
+    "equipment_type": "法器"
   },
   "7042": {
     "name": "青萍剑",
@@ -109,7 +136,9 @@
     "crit_buff": 0.24,
     "rank": 40,
     "level": "下品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升24%会心率。",
+    "equipment_type": "法器"
   },
   "7043": {
     "name": "千重峰",
@@ -117,7 +146,9 @@
     "crit_buff": 0.12,
     "rank": 40,
     "level": "下品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升12%攻击力，提升12%会心率。",
+    "equipment_type": "法器"
   },
   "7051": {
     "name": "五火七禽扇",
@@ -125,7 +156,9 @@
     "crit_buff": 0,
     "rank": 37,
     "level": "上品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升28%攻击力。",
+    "equipment_type": "法器"
   },
   "7052": {
     "name": "青莲宝色旗",
@@ -133,7 +166,9 @@
     "crit_buff": 0.28,
     "rank": 37,
     "level": "上品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升28%会心率。",
+    "equipment_type": "法器"
   },
   "7053": {
     "name": "嗜魂幡",
@@ -141,7 +176,9 @@
     "crit_buff": 0.14,
     "rank": 37,
     "level": "上品纯阳法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升14%攻击力，提升14%会心率。",
+    "equipment_type": "法器"
   },
   "7061": {
     "name": "绝仙剑",
@@ -149,7 +186,9 @@
     "crit_buff": 0,
     "rank": 34,
     "level": "下品通天法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升32%攻击力。",
+    "equipment_type": "法器"
   },
   "7062": {
     "name": "落魂钟",
@@ -157,15 +196,20 @@
     "crit_buff": 0.32,
     "rank": 34,
     "level": "下品通天法器",
-    "type": "装备"
-  },
+    "type": "装备",
+    "desc": "提升32%会心率。",
+    "equipment_type": "法器"
+  }
+,
   "7063": {
     "name": "乾天剑",
     "atk_buff": 0.16,
     "crit_buff": 0.16,
     "rank": 34,
     "level": "下品通天法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升16%攻击力，提升16%会心率。",
+    "equipment_type": "法器"
   },
   "7071": {
     "name": "乾坤尺",
@@ -173,7 +217,9 @@
     "crit_buff": 0,
     "rank": 31,
     "level": "上品通天法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升36%攻击力。",
+    "equipment_type": "法器"
   },
   "7072": {
     "name": "天地五方旗",
@@ -181,7 +227,9 @@
     "crit_buff": 0.36,
     "rank": 31,
     "level": "上品通天法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升36%会心率。",
+    "equipment_type": "法器"
   },
   "7073": {
     "name": "红线遁光针",
@@ -189,7 +237,9 @@
     "crit_buff": 0.18,
     "rank": 31,
     "level": "上品通天法器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升18%攻击力，提升18%会心率。",
+    "equipment_type": "法器"
   },
   "7081": {
     "name": "陨仙",
@@ -197,7 +247,9 @@
     "crit_buff": 0,
     "rank": 28,
     "level": "下品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升40%攻击力。",
+    "equipment_type": "法器"
   },
   "7082": {
     "name": "惊雷",
@@ -205,7 +257,9 @@
     "crit_buff": 0.4,
     "rank": 28,
     "level": "下品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升40%会心率。",
+    "equipment_type": "法器"
   },
   "7083": {
     "name": "承影",
@@ -213,7 +267,9 @@
     "crit_buff": 0.2,
     "rank": 28,
     "level": "下品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升20%攻击力，提升20%会心率。",
+    "equipment_type": "法器"
   },
   "7091": {
     "name": "无影剑",
@@ -221,7 +277,9 @@
     "crit_buff": 0.24,
     "rank": 25,
     "level": "上品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升24%攻击力，提升24%会心率。",
+    "equipment_type": "法器"
   },
   "7092": {
     "name": "风云幡",
@@ -229,7 +287,9 @@
     "crit_buff": 0.48,
     "rank": 25,
     "level": "上品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升48%会心率。",
+    "equipment_type": "法器"
   },
   "7093": {
     "name": "青竹蜂云剑",
@@ -237,6 +297,8 @@
     "crit_buff": 0.0,
     "rank": 25,
     "level": "上品仙器",
-    "type": "装备"
+    "type": "装备",
+    "desc": "提升48%攻击力。",
+    "equipment_type": "法器"
   }
 }
