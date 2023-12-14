@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 
-from nonebot import on_fullmatch, Bot
+from nonebot import on_fullmatch, Bot, on_keyword
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
@@ -13,7 +13,7 @@ from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_backpack.back_util import backpack_check_item
 from ..xiuxian_config import XiuConfig
 
-level_up = on_fullmatch("突破", priority=6, permission=GROUP, block=True)
+level_up = on_keyword({"突破"}, priority=9, permission=GROUP, block=True)
 level_up_dr = on_fullmatch("渡厄突破", priority=7, permission=GROUP, block=True)
 level_up_zj = on_fullmatch("直接突破", priority=7, permission=GROUP, block=True)
 level_up_rate_lookup = on_fullmatch('我的突破概率', priority=5, permission=GROUP, block=True)

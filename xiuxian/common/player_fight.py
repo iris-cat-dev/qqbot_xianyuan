@@ -1,7 +1,7 @@
 import random
 
 from .player_manager import get_total_hp, get_total_attack, get_total_critical, get_total_defense, get_total_mp
-from .rank import RANK
+from .rank import RANK, Rank
 from .xiuxian2_handle import XiuxianDateManage
 from .read_buff import UserBuffDate
 
@@ -502,7 +502,6 @@ async def boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
         boss["减伤"] = 1  # boss减伤率
     user1_skill_sh = 0
 
-
     get_stone = 0
     sh = 0
     qx = boss['气血']
@@ -698,6 +697,9 @@ async def boss_fight(player1: dict, boss: dict, type_in=2, bot_id=0):
                  "data": {"name": "Bot", "uin": int(bot_id), "content": "{}胜利".format(player1['道号'])}})
             suc = "群友赢了"
             get_stone = boss_now_stone
+            boss['气血'] = 0
+            boss['stone'] = 0
+
             if isSql:
                 #
                 if player1['气血'] <= 0:
@@ -897,7 +899,7 @@ def boss_info_to_player_info(boss_info):
         "真元": boss_info["mp"],
         "攻击": boss_info["atk"],
         "stone": boss_info["stone"],
-        "减伤": 1,
+        "减伤": Rank().to_level_index(boss_info["rank"]) // 2,
         "会心": 30
     }
 

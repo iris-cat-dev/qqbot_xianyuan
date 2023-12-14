@@ -6,18 +6,18 @@ build-backend = "poetry.core.masonry.api"
 name = "nonebot-plugin-xiuxian-2"
 version = "2.9.1rc2"
 description = "基于Nonebot2修仙文字游戏"
-authors = ["青木 <1242550160@qq.com>"]
+authors = [""]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://github.com/QingMuCat/nonebot_plugin_xiuxian_2"
-repository = "https://github.com/QingMuCat/nonebot_plugin_xiuxian_2"
-documentation = "https://github.com/QingMuCat/nonebot_plugin_xiuxian_2"
+homepage = ""
+repository = ""
+documentation = ""
 packages = [
     { include = "nonebot_plugin_xiuxian_2" }
 ]
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/QingMuCat/nonebot_plugin_xiuxian_2/issues"
+"Bug Tracker" = ""
 
 [tool.poetry.dependencies]
 python = "^3.8.0"

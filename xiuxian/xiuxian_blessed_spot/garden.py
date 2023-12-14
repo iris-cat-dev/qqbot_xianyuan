@@ -67,7 +67,7 @@ async def garden_up_(bot: Bot, event: GroupMessageEvent):
     if not result:
         return await xiuxian_send_message(garden_up, msg)
 
-    user_info = sql_manager.get_user_info()
+    user_info = sql_manager.get_user_info(user_id)
     mix_elixir_info = get_player_info(user_id, "mix_elixir_info")
     now_num = mix_elixir_info['灵田数量']
     if now_num == len(LING_TIAN_CONFIG) + 1:

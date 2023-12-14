@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from nonebot import on_fullmatch, on_endswith
+from nonebot import on_fullmatch, on_endswith, on_keyword
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 
 from ..common.bot_utils import xiuxian_send_message
@@ -20,7 +20,7 @@ game_config = XiuConfig()
 
 cul_help = on_fullmatch("修炼帮助", priority=5, permission=GROUP, block=True)
 out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
-in_closing = on_fullmatch("闭关", priority=5, permission=GROUP, block=True)
+in_closing = on_keyword({"闭关"}, priority=5, permission=GROUP, block=True)
 
 __cul_help__ = f"""
 修炼帮助信息:

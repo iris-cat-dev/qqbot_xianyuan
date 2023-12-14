@@ -105,7 +105,8 @@ async def resetusertask_():
     for s in all_sects:
         sect_info = sql_message.get_sect_info(s[0])
         if int(sect_info.elixir_room_level) != 0:
-            elixir_room_cost = config['宗门丹房参数']['elixir_room_level'][str(sect_info.elixir_room_level)]['level_up_cost']['建设度']
+            elixir_room_cost = \
+                config['宗门丹房参数']['elixir_room_level'][str(sect_info.elixir_room_level)]['level_up_cost']['建设度']
             if sect_info.sect_materials < elixir_room_cost:
                 logger.info("该宗门的资材无法维持丹房")
                 continue
@@ -550,8 +551,8 @@ async def update_attack_practice_(bot: Bot, event: GroupMessageEvent):
             await xiuxian_send_message(update_attack_practice, msg)
 
         cost = LEVLECOST[f'{user_atk_practice}']
-        if sect_materials < cost * 10:
-            msg = f"道友的所处的宗门资材不足，还需{cost * 10 - sect_materials}资材!"
+        if sect_materials < cost:
+            msg = f"道友的所处的宗门资材不足，还需{cost - sect_materials}资材!"
             return await xiuxian_send_message(update_attack_practice, msg)
 
         if user_info.sect_contribution < cost:
@@ -559,12 +560,12 @@ async def update_attack_practice_(bot: Bot, event: GroupMessageEvent):
             return await xiuxian_send_message(update_attack_practice, msg)
 
         sql_message.sub_user_sect_contribution(user_id, cost)
-        sql_message.update_sect_materials(sect_id, cost * 10, 2)
+        sql_message.update_sect_materials(sect_id, cost, 2)
         sql_message.update_user_atkpractice(user_id, user_atk_practice + 1)
 
         msg = (f"升级成功，道友当前攻击修炼等级：{user_atk_practice + 1}"
                f"\n消耗宗门贡献：{cost}点"
-               f"\n消耗宗门资材：{cost * 10}点")
+               f"\n消耗宗门资材：{cost}点")
         await xiuxian_send_message(update_attack_practice, msg)
 
     else:

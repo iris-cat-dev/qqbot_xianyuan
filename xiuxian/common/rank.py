@@ -121,6 +121,17 @@ class Rank(GameConfig):
             # 等级高于
             return 1
 
+    def compare_big_rank(self, name1: str, name2: str) -> int:
+        if name1[:3] == name2[:3]:
+            return 0
+
+        elif RANK[name1] > RANK[name2]:
+            # 等级1 低于 等级2
+            return -1
+        else:
+            # 等级高于
+            return 1
+
     def is_max(self, name) -> bool:
         return RANK[name] == self.MAX_RANK
 

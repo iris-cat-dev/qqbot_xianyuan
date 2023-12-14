@@ -80,7 +80,7 @@ async def qc_(bot: Bot, event: GroupMessageEvent):
 
 
 @give_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def give_stone_(bot: Bot, event: GroupMessageEvent):
+async def give_stone_(_: Bot, event: GroupMessageEvent):
     """
     送灵石
     """
@@ -208,80 +208,6 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
     if not steal_qq:
         msg = "对方未踏入修仙界，不要对杂修出手！"
         await xiuxian_send_message(give_stone, message=msg)
-
-
-# @gm_command.handle(parameterless=[Cooldown(at_sender=True)])
-# async def gm_command_(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):
-#     """
-#     GM加灵石
-#     """
-#     bot, send_group_id = await assign_bot(bot=bot, event=event)
-#     give_qq = None  # 艾特的时候存到这里
-#     msg = args.extract_plain_text().strip()
-#     stone_num = re.findall("\d+", msg)  ## 灵石数
-#     nick_name = re.findall("\D+", msg)  ## 道号
-#     give_stone_num = stone_num[0]
-#     if 1 <= int(give_stone_num) <= 100000000:
-#         pass
-#     else:
-#         msg = "请输入正确的灵石数量！"
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#         await gm_command.finish()
-#     for arg in args:
-#         if arg.type == "at":
-#             give_qq = arg.data.get("qq", "")
-#     if give_qq:
-#         give_user = sql_message.get_user_message(give_qq)
-#         if give_user:
-#             sql_message.update_ls(give_qq, give_stone_num, 1)  # 增加用户灵石
-#             msg = "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_user.user_name)
-#             if XiuConfig().img:
-#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#             else:
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#             await gm_command.finish()
-#         else:
-#             msg = "对方未踏入修仙界，不可赠送！"
-#             if XiuConfig().img:
-#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#             else:
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#             await gm_command.finish()
-#     elif nick_name:
-#         give_message = sql_message.get_user_message2(nick_name[0])
-#         if give_message:
-#             sql_message.update_ls(give_message.user_id, give_stone_num, 1)  # 增加用户灵石
-#             msg = "共赠送{}枚灵石给{}道友！".format(give_stone_num, give_message.user_name)
-#             if XiuConfig().img:
-#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#             else:
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#             await gm_command.finish()
-#         else:
-#             msg = "对方未踏入修仙界，不可赠送！"
-#             if XiuConfig().img:
-#                 pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#             else:
-#                 await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#             await gm_command.finish()
-#     else:
-#         sql_message.update_ls_all(give_stone_num)
-#         msg = f"全服通告：赠送所有用户{give_stone_num}灵石,请注意查收！"
-#         if XiuConfig().img:
-#             pic = await get_msg_pic(f"@{event.sender.nickname}\n" + msg)
-#             await bot.send_group_msg(group_id=int(send_group_id), message=MessageSegment.image(pic))
-#         else:
-#             await bot.send_group_msg(group_id=int(send_group_id), message=msg)
-#         await gm_command.finish()
-
 
 @rob_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def rob_stone_(bot: Bot, event: GroupMessageEvent):

@@ -1,25 +1,19 @@
-import random
-
 from nonebot import on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 
+from .boss_data_source import BossConfig, BossGameData, BossPlayerData
+from .boss_handle import check_group_open_boss, create_boss, check_input_boss, handle_boss_fight
+from .boss_point_shop import boss_point_shop_list, boss_point_shop_use, boss_point_shop_lookup
 from ..common import DRIVER
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_message, get_input_cmd, get_input_number, \
     xiuxian_send_group_img_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, check_admin, Cooldown
-from ..common.player_fight import boss_fight, user_info_to_player_info, boss_info_to_player_info, \
-    player_info_to_boss_info
 from ..common.player_manager import leave_harm_time
 from ..common.rank import Rank
 from ..common.utils import number_to
-from ..common.xiuxian2_handle import items
-
-from .boss_point_shop import boss_point_shop_list, boss_point_shop_use, boss_point_shop_lookup
-from .boss_data_source import BossConfig, BossGameData, BossPlayerData
-from .boss_handle import check_group_open_boss, create_boss, check_input_boss
 
 battle_flag = {}
 sql_manager = XiuxianSqlManager()
@@ -140,70 +134,8 @@ async def battle_(bot: Bot, event: GroupMessageEvent):
         msg = f"重伤未愈，动弹不得！距离脱离危险还需要{time}分钟！"
         return await xiuxian_send_message(boss_battle, message=msg)
 
-    boss_info = boss_data.boss_list[boss_num - 1]
-    boss_rank = rank.to_level_index(boss_info['rank'])
-    user_rank = rank.to_level_index(user_info.level)
-
-    boss_old_hp = boss_info['hp']  # 打之前的血量
-    boss_all_hp = boss_info['max_hp']  # 总血量
-    battle_flag[group_id] = True
-    more_msg = ""
-
-    player_info1 = user_info_to_player_info(user_info)
-    player_info2 = boss_info_to_player_info(boss_info)
-    battle_list, victor, boss_info_new, get_stone = await boss_fight(player_info1, player_info2, bot_id=bot.self_id)
-    boss_info_new = player_info_to_boss_info(boss_info_new)
-
-    boss_integral_rate = 30 + boss_rank * 2
-    boss_player_data = BossPlayerData(user_id)
-
-    if victor == "Boss赢了":
-        boss_data.boss_list[boss_num - 1] = boss_info_new
-        sql_manager.add_money(user_id, get_stone)
-        sql_manager.add_exp(user_id, get_stone)
-
-        boss_now_hp = boss_info_new['hp']  # 打之后的血量
-        boss_integral = int(((boss_old_hp - boss_now_hp) / boss_all_hp) * boss_integral_rate)
-        if boss_integral < 2:  # 摸一下不给
-            boss_integral = 2
-
-        boss_player_data.point += boss_integral
-        boss_player_data.save()
-
-        msg = (f"道友不敌邪魔【{boss_info['name']}】，重伤逃遁，剩余血量({boss_now_hp}/{boss_all_hp})\n"
-               f"临逃前收获奖励：\n"
-               f"灵石:{get_stone}枚\n"
-               f"修为:{get_stone // 2}点\n"
-               f"世界积分:{boss_integral}点")
-
-    elif victor == "群友赢了":
-        # boss 战斗积分点数
-        boss_integral = int((boss_old_hp / boss_all_hp) * boss_integral_rate)
-        if user_rank - boss_rank >= 6:  # 超过太多不给
-            boss_integral = 1
-            more_msg = "道友的境界超过邪魔太多了，无法获取更多积分！"
-
-        sql_manager.add_money(user_id, get_stone)
-        sql_manager.add_exp(user_id, get_stone)
-
-        boss_data.boss_list.remove(boss_data.boss_list[boss_num - 1])
-        boss_data.save()
-
-        boss_player_data.point += boss_integral
-        boss_player_data.save()
-
-        goods_id_list = [1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108, 1109]
-        item_id = random.choice(goods_id_list)
-        item_info = items.get_data_by_item_id(item_id)
-        item_msg = f"【{item_info['level']}:{item_info['name']}】"
-        sql_manager.insert_backpack(user_id, item_id, item_info['name'], item_info['type'], 1)
-
-        msg = (f"恭喜道友击败邪魔【{boss_info['name']}】，{more_msg}"
-               f"获得奖励：\n"
-               f"灵石:{get_stone}枚\n"
-               f"修为:{get_stone // 2}点\n"
-               f"世界积分:{boss_integral}点\n"
-               f"获得物品:{item_msg}")
+    user_id = event.user_id
+    msg, battle_list = await handle_boss_fight(user_id, boss_num)
 
     battle_flag[group_id] = False
     msg_list = []
