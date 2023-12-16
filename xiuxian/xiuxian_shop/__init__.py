@@ -18,7 +18,7 @@ shop_added = on_startswith("坊市上架", priority=10, permission=GROUP, block=
 shop_off = on_startswith("坊市下架", priority=5, permission=GROUP, block=True)
 shop_off_all = on_fullmatch("清空坊市", priority=3, rule=check_admin(), block=True)
 shop_buy = on_startswith("坊市购买", priority=5, block=True)
-goods_re_root = on_startswith("1坊市回收", priority=6, permission=GROUP, block=True)
+goods_re_root = on_startswith("1坊市回收1", priority=6, permission=GROUP, block=True)
 chakan_wupin = on_startswith("查看物品大全", priority=25, permission=GROUP, block=True)
 shop_added_by_admin = on_startswith("系统上架坊市", priority=5, rule=check_admin(), block=True)
 shop_help = on_fullmatch("坊市帮助", priority=8, permission=GROUP, block=True)

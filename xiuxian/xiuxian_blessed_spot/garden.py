@@ -28,10 +28,10 @@ LING_TIAN_CONFIG = {
         "level_up_cost": 4000000
     },
     "4": {
-        "level_up_cost": 80000000
+        "level_up_cost": 8000000
     },
     "5": {
-        "level_up_cost": 160000000
+        "level_up_cost": 16000000
     }
 }
 GETCONFIG = {

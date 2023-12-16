@@ -15,6 +15,7 @@ from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, check_admin, Cooldown
 from ..common.player_manager import check_user_state
 from ..common.xiuxian2_handle import XiuxianDateManage
+from .gpt_mystical_realm import gpt_mystical_realm_start, gpt_mystical_realm_next
 
 config = get_config()
 sql_message = XiuxianDateManage()  # sql类

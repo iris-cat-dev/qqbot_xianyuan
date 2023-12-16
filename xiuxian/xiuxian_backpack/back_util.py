@@ -158,7 +158,7 @@ def get_user_back_msg(user_id):
             l_ldl_msg = get_ldl_msg(l_ldl_msg, user_id, user_back.goods_id, user_back.goods_num)
 
         elif user_back.goods_type == "药材":
-            l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_id, user_back.goods_id, user_back.goods_num)
+            l_yaocai_msg = get_yaocai_msg(l_yaocai_msg, user_back.goods_id, user_back.goods_num)
 
     if l_equipment_msg:
         l_msg.append("☆------我的装备------☆")
@@ -195,16 +195,12 @@ def get_user_back_msg(user_id):
     return l_msg
 
 
-def get_yaocai_msg(l_msg, user_id, goods_id, goods_num):
+def get_yaocai_msg(l_msg, goods_id, goods_num):
     """
     获取背包内的药材信息
     """
     item_info = items.get_data_by_item_id(goods_id)
-    msg = f"{item_info['level']} {item_info['name']} 数量:{goods_num}\n"
-    # msg = f"名字：{item_info['name']}\n"
-    # msg += f"品级：{item_info['level']}\n"
-    # msg += get_yaocai_info(item_info)
-    # msg += f"\n拥有数量:{goods_num}"
+    msg = f"{item_info['level']} {item_info['name']} x {goods_num}\n"
     l_msg.append(msg)
     return l_msg
 
@@ -322,23 +318,17 @@ def check_use_elixir(user_id, goods_id, num):
                 msg = f"道友的状态是满的，用不了哦！"
             else:
                 buff = goods_info['buff']
+                (goods_rank - user_rank) / 10
                 buff = round((0.016 * user_rank + 0.104) * buff, 2)
                 recover_hp = int(buff * user_max_hp * num)
-                recover_mp = int(buff * user_max_mp * num)
-
                 if user_info.hp + recover_hp > user_max_hp:
                     new_hp = user_max_hp  # 超过最大
                 else:
                     new_hp = user_info.hp + recover_hp
 
-                if user_info.mp + recover_mp > user_max_mp:
-                    new_mp = user_max_mp
-                else:
-                    new_mp = user_info.mp + recover_mp
-
                 msg = f"道友成功使用丹药：{goods_name}{num}颗，经过境界转化状态恢复了{int(buff * 100 * num)}%!"
                 sql_message.update_back_j(user_id, goods_id, num=num, use_key=1)
-                sql_message.update_user_hp_mp(user_id, new_hp, new_mp)
+                sql_message.update_user_hp_mp(user_id, new_hp, user_info.mp)
 
     elif goods_info['buff_type'] == "all":  # 回满状态的丹药
         if goods_rank < user_rank:  # 使用限制

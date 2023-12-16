@@ -61,9 +61,9 @@ def get_total_attack(user_id: int) -> int:
     main_buff_data = user_buff.get_user_main_buff_data()
     main_buff_attack = main_buff_data['atkbuff'] if main_buff_data is not None else 0
 
-    buff_info = user_buff.BuffInfo
-    atk_practice = user_info.atkpractice * 4 / 100
-    return int(user_info.atk * (1 + main_buff_attack + atk_practice + weapon_attack) + buff_info.atk_buff)
+    buff_info = user_buff.BuffInfo  # 丹药 buff
+    atk_practice = user_info.atkpractice * 4 / 100  # 攻击修炼
+    return int((user_info.atk + buff_info.atk_buff) * (1 + main_buff_attack + atk_practice + weapon_attack))
 
 
 def get_total_defense(user_id: int):

@@ -45,7 +45,7 @@ def create_boss(boss_rank: str = None):
                 break
         if has_last_level_boss:
             # 如果存在随机抽取一个玩家相同境界
-            user_list = sql_manager.get_user_list()
+            user_list = sql_manager.get_user_list(only_active=True)
             user_id = random.choice(user_list)
             user_info = sql_manager.get_user_info(user_id)
             boss_rank_info = rank.get_big_rank_info(user_info.level)
@@ -128,7 +128,7 @@ async def handle_boss_fight(user_id, boss_num):
     get_stone = boss_info_old["stone"] - boss_info_new['stone']
     get_exp = get_stone // 4
     sql_manager.add_money(user_id, get_stone)
-    sql_manager.add_exp(user_id, get_exp)
+    get_exp = sql_manager.add_exp(user_id, get_exp)
 
     goods_msg = "无"
     if victor == "Boss赢了":

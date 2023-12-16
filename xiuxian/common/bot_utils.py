@@ -12,6 +12,7 @@ from nonebot.exception import ActionFailed
 from .game_resource import GameResource
 from ..xiuxian_config import XiuConfig
 
+
 class Txt2Img:
     """文字转图片"""
 
@@ -203,6 +204,14 @@ async def xiuxian_send_group_img_message(group_id, msg_list: list):
     await get_bot().call_api(api, **data)
 
 
+def remove_at_qq(msg):
+    start_pos = msg.find("[")
+    end_pos = msg.find("]")
+    if start_pos > 0:
+        msg = msg.replace(msg[start_pos:end_pos + 1], "")
+    return msg
+
+
 def get_input_at_qq(event: MessageEvent) -> (int, str):
     try:
         give_qq = event.original_message[1].data.get("qq", "")
@@ -214,9 +223,7 @@ def get_input_at_qq(event: MessageEvent) -> (int, str):
 def get_input_number(event: MessageEvent) -> (int, str):
     try:
         msg = str(event.message)
-        pos = msg.find("]")
-        if pos > 0:
-            msg = msg[pos:]
+        msg = remove_at_qq(msg)
         num = re.findall("\d+", msg)
         return int(num[0]), ""
     except:
@@ -225,8 +232,9 @@ def get_input_number(event: MessageEvent) -> (int, str):
 
 def get_input_cmd(event: MessageEvent, position: int) -> (str, str):
     try:
-        message = str(event.message)
-        cmd = message[position:]
+        msg = str(event.message)
+        msg = remove_at_qq(msg)
+        cmd = msg[position:]
         return cmd, ""
     except:
         return None, "指令输入错误，"

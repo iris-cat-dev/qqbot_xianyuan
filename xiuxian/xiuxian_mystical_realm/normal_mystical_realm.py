@@ -72,10 +72,6 @@ async def normal_mystical_realm_lookup_progress_(_: Bot, event: GroupMessageEven
         await xiuxian_send_message(normal_mystical_realm_lookup_progress, msg)
 
 
-
-
-
-
 @normal_mystical_realm_break.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def normal_mystical_break_(_: Bot, event: GroupMessageEvent):
     """

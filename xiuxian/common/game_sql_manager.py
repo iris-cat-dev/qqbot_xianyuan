@@ -9,9 +9,11 @@ from . import singleton
 from .rank import Rank
 from .root import Root
 from .xiuxian2_handle import XiuxianDateManage
+from ..xiuxian_config import XiuConfig
 
 rank = Rank()
 root = Root()
+game_config = XiuConfig()
 DATABASE = Path() / "data" / "xiuxian"
 
 UserInfo = namedtuple("UserData", [
@@ -98,12 +100,15 @@ class XiuxianSqlManager:
         else:
             return UserInfo(*result)
 
-    def get_user_list(self) -> list[int]:
+    def get_user_list(self, only_active=False) -> list[int]:
         """
         获取用户列表
         """
         cur = self.connect.cursor()
-        sql = f"select user_id from user_xiuxian"
+        if only_active:
+            sql = f"select user_id from user_xiuxian WHERE is_sign=1"
+        else:
+            sql = f"select user_id from user_xiuxian"
         cur.execute(sql)
         result = cur.fetchall()
         if not result:
@@ -111,12 +116,15 @@ class XiuxianSqlManager:
         else:
             return [item[0] for item in result]
 
-    def get_top1_user(self):
+    def get_top1_user(self, only_active=False):
         """
         获取修为第一的用户
         """
         cur = self.connect.cursor()
-        sql = f"select * from user_xiuxian ORDER BY exp DESC LIMIT 1"
+        if only_active:
+            sql = f"select * from user_xiuxian WHERE is_sign=1 ORDER BY exp DESC LIMIT 1"
+        else:
+            sql = f"select * from user_xiuxian ORDER BY exp DESC LIMIT 1"
         cur.execute(sql)
         result = cur.fetchone()
         if not result:
@@ -179,6 +187,8 @@ class XiuxianSqlManager:
         """
         减少灵石
         """
+        user_info = self.get_user_info(user_id)
+
         cur = self.connect.cursor()
         sql = f"UPDATE user_xiuxian SET stone=stone-? WHERE user_id=?"
         cur.execute(sql, (price, user_id))
@@ -189,11 +199,19 @@ class XiuxianSqlManager:
         """
         增加修为
         """
-        sql = f"UPDATE user_xiuxian SET exp=exp+? where user_id=?"
+        user_info = self.get_user_info(user_id)
+        next_exp = rank.get_next_rank_exp(user_info.level)
+        max_exp = next_exp * game_config.closing_exp_upper_limit
+        if user_info.exp + exp > max_exp:
+            sql = f"UPDATE user_xiuxian SET exp={max_exp} where user_id={user_id}"
+            exp = 0
+        else:
+            sql = f"UPDATE user_xiuxian SET exp={user_info.exp + exp} where user_id={user_id}"
         cur = self.connect.cursor()
-        cur.execute(sql, (int(exp), user_id))
+        cur.execute(sql)
         self.connect.commit()
         self.update_power(user_id)
+        return exp
 
     def update_power(self, user_id) -> None:
         """
@@ -281,3 +299,31 @@ class XiuxianSqlManager:
             return None
         else:
             return GoodsInfo(*result)
+
+    def get_backpack_list(self, user_id):
+        """
+        获取用户背包信息
+        """
+        sql = f"SELECT * FROM back where user_id=? and goods_num >= 1"
+        cur = self.connect.cursor()
+        cur.execute(sql, (user_id,))
+        result = cur.fetchall()
+        results = []
+        if not result:
+            results = None
+        for r in result:
+            results.append(GoodsInfo(*r))
+        return results
+
+    def delete_backpack(self, user_id, goods_id, num=1):
+        """
+        使用物品
+        :num 减少数量  默认1
+        :use_key 是否使用，丹药使用才传 默认0
+        """
+        # TODO:to check num
+        now_time = datetime.datetime.now()
+        sql_str = f"UPDATE back set update_time='{now_time}',action_time='{now_time}',goods_num=goods_num-{num} WHERE user_id={user_id} and goods_id={goods_id}"
+        cur = self.connect.cursor()
+        cur.execute(sql_str)
+        self.connect.commit()

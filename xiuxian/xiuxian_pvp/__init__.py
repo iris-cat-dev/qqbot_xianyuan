@@ -3,8 +3,10 @@ import random
 from nonebot import on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent
 
-from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number
+from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_at_qq, get_input_number, \
+    get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
+from ..common.item_json import Items
 from ..common.param_checker import check_player, Cooldown, check_admin
 from ..common.player_fight import player_fight
 from ..common.player_manager import leave_harm_time
@@ -17,9 +19,12 @@ steal_stone = on_startswith("偷灵石", priority=4, permission=GROUP, block=Tru
 gm_command = on_startswith("神秘力量", permission=GROUP, priority=10, rule=check_admin(), block=True)
 rob_stone = on_startswith("打劫", priority=5, permission=GROUP, block=True)
 qc = on_startswith("切磋", priority=6, permission=GROUP, block=True)
+give_goods = on_startswith("赠送", priority=5, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
+
+items = Items()
 
 
 @qc.handle(parameterless=[Cooldown(cd_time=60, at_sender=True), check_player()])
@@ -113,19 +118,107 @@ async def give_stone_(_: Bot, event: GroupMessageEvent):
             give_stone_num2 = int(give_stone_num) * 0.05
             num = int(give_stone_num) - int(give_stone_num2)
             sql_message.update_ls(give_qq, num, 1)  # 增加用户灵石
-            msg = "道友通过驿站，寄送{}枚灵石给{}道友！收取手续费{}枚".format(
-                give_stone_num, give_user.user_name, int(give_stone_num2)
-            )
+            msg = f"道友通过驿站，寄送{give_stone_num}枚灵石给{give_user.user_name}道友！收取手续费{give_stone_num2}枚"
             await xiuxian_send_message(give_stone, message=msg)
         else:
             msg = "对方未踏入修仙界，不可赠送！"
             await xiuxian_send_message(give_stone, message=msg)
 
 
+@give_goods.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def give_goods_(bot: Bot, event: GroupMessageEvent):
+    """
+    赠送
+    """
+    user_info = sql_manager.get_user_info(event.user_id)
+    give_qq, msg = get_input_at_qq(event)
+    if not give_qq:
+        msg += "输入：【赠送@对方+物品名称 数量】 "
+        return await xiuxian_send_message(give_goods, message=msg)
+
+    give_cmd, msg = get_input_cmd(event, 2)
+    if not give_cmd:
+        msg += "输入：【赠送@对方+物品名称 数量】 "
+        return await xiuxian_send_message(give_goods, message=msg)
+
+    cmds = give_cmd.strip().split(" ")
+    if len(cmds) != 2:
+        msg += "输入：【赠送@对方+物品名称 数量】 "
+        return await xiuxian_send_message(give_goods, message=msg)
+
+    give_user = sql_message.get_user_message(give_qq)
+    if not give_user:
+        msg = "对方未踏入修仙界，不可赠送！"
+        return await xiuxian_send_message(give_goods, message=msg)
+
+    goods_name = cmds[0]
+    give_num = int(cmds[1])
+
+    need_stone = 500 * give_num
+    if user_info.stone < need_stone:
+        msg = f"道友的灵石不够快递费{need_stone}，请重新输入！"
+        return await xiuxian_send_message(give_goods, message=msg)
+
+    goods_id = -1
+    for k, v in items.items.items():
+        if goods_name == v['name']:
+            goods_id = k
+            break
+        else:
+            continue
+
+    if goods_id == -1:
+        msg = f"不存在物品：【{goods_name}】的信息，请检查名字是否输入正确！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    user_id = event.user_id
+    backpack_list = sql_manager.get_backpack_list(user_id)
+    if backpack_list is None:
+        msg = "道友的背包空空如也！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    in_flag = False  # 判断指令是否正确，道具是否在背包内
+    goods_type = None
+    goods_state = None
+    goods_num = None
+    for back in backpack_list:
+        if goods_name == back.goods_name:
+            in_flag = True
+            goods_id = back.goods_id
+            goods_type = back.goods_type
+            goods_state = back.state
+            goods_num = back.goods_num
+            break
+
+    if not in_flag:
+        msg = f"请检查该道具 {goods_name} 是否在背包内！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    if goods_type == "装备" and int(goods_state) == 1 and int(goods_num) == 1:
+        msg = f"装备：【{goods_name}】 已经被道友装备在身！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    if goods_type == "丹药" or goods_type == "聚灵旗" or goods_type == "炼丹炉":
+        msg = f"【{goods_name}】该物品无法赠送！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    if goods_num < give_num:
+        msg = f"【{goods_name}】数量不足，剩余 {goods_name}！"
+        return await xiuxian_send_message(give_goods, msg)
+
+    sql_manager.insert_backpack(give_user.user_id, goods_id, goods_name, goods_type, give_num)
+    sql_manager.delete_backpack(user_id, goods_id, give_num)
+    sql_manager.sub_money(user_id, need_stone)
+
+    msg = (f"道友通过驿站，寄送给【{give_user.user_name}】道友，【{goods_name}】x{give_num}！"
+           f"收取手续费{need_stone}")
+    await xiuxian_send_message(give_goods, message=msg)
+
+
 @gm_command.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def give_stone_(bot: Bot, event: GroupMessageEvent):
     """
-    送灵石
+    系统送灵石
     """
     user_info = sql_manager.get_user_info(event.user_id)
     user_stone_num = user_info.stone
@@ -208,6 +301,7 @@ async def steal_stone_(bot: Bot, event: GroupMessageEvent):
     if not steal_qq:
         msg = "对方未踏入修仙界，不要对杂修出手！"
         await xiuxian_send_message(give_stone, message=msg)
+
 
 @rob_stone.handle(parameterless=[Cooldown(at_sender=True), check_player()])
 async def rob_stone_(bot: Bot, event: GroupMessageEvent):

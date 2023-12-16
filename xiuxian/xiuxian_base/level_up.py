@@ -131,7 +131,11 @@ async def level_up_zj_(_: Bot, event: GroupMessageEvent):
         update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
             level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
         sql_message.update_levelrate(user_id, user_level_uprate + update_rate)
-        msg = f"道友突破失败,境界受损,修为减少{now_exp}，下次突破成功率增加{update_rate}%，道友不要放弃！"
+        msg = (f"道友突破失败，境界受损\n"
+               f"修为减少:{now_exp}\n"
+               f"下次突破成功率增加:{update_rate}%\n"
+               f"当前突破概率:{total_rate + update_rate}%\n"
+               f"道友不要放弃！")
         await xiuxian_send_message(level_up_zj, message=msg)
 
 
@@ -175,7 +179,6 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
         sql_message.update_levelrate(user_id, 0)
         sql_message.update_user_hp(user_id)  # 重置用户HP，mp，atk状态
         msg = f"道友使用了丹药【{elixir_name}】，恭喜道友突破【{next_rank_name}】成功！"
-        await xiuxian_send_message(level_up_zj, message=msg)
 
     else:
         # 突破失败
@@ -183,8 +186,13 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
         update_rate = 1 if int(level_rate * XiuConfig().level_up_probability) <= 1 else int(
             level_rate * XiuConfig().level_up_probability)  # 失败增加突破几率
         sql_message.update_levelrate(user_id, user_level_uprate + update_rate)
-        msg = f"道友突破失败，但是使用了丹药【{elixir_name}】，本次突破失败不扣除修为下次突破成功率增加{update_rate}%，道友不要放弃！"
-        await xiuxian_send_message(level_up_zj, message=msg)
+        msg = (f"道友突破失败，但是使用了丹药【{elixir_name}】\n"
+               f"本次突破失败不扣除修为\n"
+               f"下次突破成功率增加 {update_rate}%\n"
+               f"当前突破概率{total_rate + update_rate}%\n"
+               f"道友不要放弃！")
+
+    await xiuxian_send_message(level_up_zj, message=msg)
 
 
 @level_up_rate_lookup.handle(parameterless=[Cooldown(at_sender=True), check_player()])
