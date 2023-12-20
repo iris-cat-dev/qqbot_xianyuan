@@ -8,6 +8,7 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent
 )
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
 from .sectconfig import get_config, SectConfig
 from ..common.bot_utils import xiuxian_send_message, get_input_number, get_input_at_qq, xiuxian_send_group_img_message, \
@@ -31,8 +32,8 @@ sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 
 # 定时任务
-materialsupdate = require("nonebot_plugin_apscheduler").scheduler
-resetusertask = require("nonebot_plugin_apscheduler").scheduler
+materialsupdate = scheduler
+resetusertask = scheduler
 
 sect_help = on_fullmatch("宗门帮助", priority=5, permission=GROUP, block=True)
 update_attack_practice = on_fullmatch("升级攻击修炼", priority=5, permission=GROUP, block=True)

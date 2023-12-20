@@ -21,6 +21,9 @@ game_config = XiuConfig()
 cul_help = on_fullmatch("修炼帮助", priority=5, permission=GROUP, block=True)
 out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
 in_closing = on_keyword({"闭关"}, priority=5, permission=GROUP, block=True)
+in_closing = on_keyword({"闭关"}, priority=5, permission=GROUP, block=True)
+
+
 
 __cul_help__ = f"""
 修炼帮助信息:
@@ -104,6 +107,9 @@ async def out_closing_(bot: Bot, event: GroupMessageEvent):
     sql_manager.add_exp(user_id, exp)
     msg += f"\n增加修为：{exp} {result_msg}"
     await xiuxian_send_message(out_closing, message=msg)
+
+
+
 
 
 def send_hp_mp(user_info, hp, mp):

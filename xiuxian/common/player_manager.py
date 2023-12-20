@@ -49,7 +49,7 @@ def get_total_mp(user_id: int) -> int:
     return int(user_info.exp // 2 * (1 + main_buff_rate))
 
 
-def get_total_attack(user_id: int) -> int:
+def get_attack_info(user_id: int) -> dict:
     user_info = sql_manager.get_user_info(user_id)
     user_buff = UserBuffDate(user_info.user_id)
     user_weapon_data = user_buff.get_user_weapon_data()
@@ -63,7 +63,19 @@ def get_total_attack(user_id: int) -> int:
 
     buff_info = user_buff.BuffInfo  # 丹药 buff
     atk_practice = user_info.atkpractice * 4 / 100  # 攻击修炼
-    return int((user_info.atk + buff_info.atk_buff) * (1 + main_buff_attack + atk_practice + weapon_attack))
+    return {
+        "total": int((user_info.atk + buff_info.atk_buff) * (1 + main_buff_attack + atk_practice + weapon_attack)),
+        "base_atk": user_info.atk,
+        "atk_buff": buff_info.atk_buff,
+        "atk_practice": atk_practice,
+        "main_buff_attack": main_buff_attack,
+        "weapon_attack": weapon_attack,
+    }
+
+
+def get_total_attack(user_id: int) -> int:
+    attack_info = get_attack_info(user_id)
+    return attack_info["total"]
 
 
 def get_total_defense(user_id: int):
@@ -116,6 +128,7 @@ def check_user_state(user_id, need_type):
 
         elif user_type == 0:
             msg = "道友正在发呆！呆呆呆呆呆呆～"
+
 
     return is_type, msg
 

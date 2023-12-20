@@ -2,19 +2,18 @@ import random
 from datetime import datetime
 
 from nonebot import on_fullmatch, on_startswith
-from nonebot import require
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
+from .level_up import level_up, level_up_zj, level_up_dr
+from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
 from ..common.bot_utils import xiuxian_send_message, get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.xiuxian2_handle import XiuxianDateManage
-
-from .level_up import level_up, level_up_zj, level_up_dr
-from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
 from ..xiuxian_config import GlobalGameData, XiuConfig
 
 open_xiuxian = on_startswith("群修仙", priority=5, block=True)
@@ -24,7 +23,7 @@ replay = on_fullmatch("重入仙途", permission=GROUP, priority=7, block=True)
 reset = on_startswith("重置状态", priority=12, block=True)
 rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
 
-scheduler = require("nonebot_plugin_apscheduler").scheduler
+
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 root = Root()
@@ -107,31 +106,6 @@ async def rename_(_: Bot, event: GroupMessageEvent):
 
     msg = sql_message.update_user_name(user_id, user_name)
     await xiuxian_send_message(rename, message=msg)
-
-
-@reset.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def reset_(_: Bot, __: GroupMessageEvent):
-    """
-    重置用户状态。
-    单用户：重置状态 @xxx
-    多用户：重置状态
-    """
-    give_qq = None  # 艾特的时候存到这里
-
-    # TODO:
-    args = []
-    for arg in args:
-        if arg.type == "at":
-            give_qq = arg.data.get("qq", "")
-
-    if give_qq:
-        sql_message.restate(give_qq)
-        msg = '{}用户信息重置成功！'.format(give_qq)
-        await xiuxian_send_message(reset, message=msg)
-    else:
-        sql_message.restate()
-        msg = '所有用户信息重置成功！'
-        await xiuxian_send_message(reset, message=msg)
 
 
 @open_xiuxian.handle()

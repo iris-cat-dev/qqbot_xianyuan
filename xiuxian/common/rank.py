@@ -1,5 +1,3 @@
-import math
-
 from . import singleton
 from .game_data_manager import GameConfig
 

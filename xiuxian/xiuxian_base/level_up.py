@@ -196,7 +196,7 @@ async def level_up_dr_(bot: Bot, event: GroupMessageEvent):
 
 
 @level_up_rate_lookup.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def user_level_up_rate_(_: Bot, event: GroupMessageEvent):
+async def level_up_rate_lookup_(_: Bot, event: GroupMessageEvent):
     """
     我的突破概率
     """

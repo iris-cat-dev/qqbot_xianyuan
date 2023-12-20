@@ -6,7 +6,7 @@ from nonebot import on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import GROUP, GroupMessageEvent, Bot
 
 from ..common.bot_utils import xiuxian_send_message, get_input_cmd
-from ..common.zhipuai_agent import request_gpt
+from ..common.gpt.zhipuai_agent import request_gpt
 
 gpt_mystical_realm_start = on_fullmatch("探索龙陵墓穴", priority=5, permission=GROUP, block=True)
 gpt_mystical_realm_next = on_startswith("继续", priority=5, permission=GROUP, block=True)
@@ -34,8 +34,9 @@ action = {
 def get_main_prompt(tip, json_obj):
     return (
         f"1. 假如你是一个中国古代背景修仙游戏的开发者，拥有丰富的游戏策划经验和文本编写能力。\n"
-        f"2. 探索秘境桥段，龙陵墓穴，需要一个情景，使用“你”作为主语,可以包含：进入墓穴盗墓时环境的位置、宫殿或者诡异的发现，{tip}\n"
-        f"3. 注意不需要输出其他额外描述只需要输出 json。严格按照json 模版输出，不要输出额外字段，额外描述，能够帮我填充 json， json模版: {json.dumps(json_obj)}。"
+        f"2. 现在需要编写探索秘境桥段，秘境名称：龙陵墓穴，需要一个情景，使用“你”作为主语，可以包含：进入墓穴盗墓时环境的位置、环境或者诡异的发现，{tip}\n"
+        f"3. 注意不需要输出其他额外描述只需要输出 json。严格按照json 模版输出，不要输出额外字段，额外描述。"
+        f"4. 现在你需要帮我填充 json， json模版: {json.dumps(json_obj)}。"
     )
 
 

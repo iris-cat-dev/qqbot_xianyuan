@@ -3,13 +3,15 @@ import re
 from nonebot import require, on_fullmatch, on_startswith, Bot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
 from .back_util import (
     get_user_back_msg, check_equipment_can_use,
-    get_use_equipment_sql, check_use_elixir,
+    get_use_equipment_sql,
     get_use_jlq_msg, get_no_use_equipment_sql
 )
 from .backconfig import get_config, savef
+from .elixir_handle import check_use_elixir
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.item_json import Items
@@ -36,8 +38,8 @@ sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 
 # 定时任务
-set_auction_by_scheduler = require("nonebot_plugin_apscheduler").scheduler
-reset_day_num_scheduler = require("nonebot_plugin_apscheduler").scheduler
+set_auction_by_scheduler =scheduler
+reset_day_num_scheduler = scheduler
 
 my_back = on_fullmatch('我的背包', priority=10, permission=GROUP, block=True)
 use = on_startswith("使用", priority=15, permission=GROUP, block=True)

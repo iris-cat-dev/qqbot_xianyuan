@@ -1,13 +1,13 @@
 from datetime import datetime
 
-from nonebot import logger, on_startswith, Bot
+from nonebot import logger, on_startswith, Bot, on_fullmatch
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.param_checker import Cooldown
 from ..common.utils import date_diff
 
-set_auction = on_startswith("群排名会", priority=4, permission=GROUP, block=True)
+set_auction = on_startswith("群拍卖会", priority=4, permission=GROUP, block=True)
 creat_auction = on_fullmatch("举行交友会", priority=5, permission=GROUP, block=True)
 offer_auction = on_startswith("出价", priority=5, permission=GROUP, block=True)
 

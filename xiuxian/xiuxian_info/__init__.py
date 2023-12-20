@@ -6,7 +6,7 @@ from ..common.bot_utils import xiuxian_send_message, xiuxian_send_img_message
 from ..common.game_sql_manager import XiuxianSqlManager
 from ..common.param_checker import check_player, Cooldown
 from ..common.player_manager import get_cultivation_rate, get_total_hp, get_total_mp, get_total_attack, \
-    get_total_critical, get_total_defense
+    get_total_critical, get_total_defense, get_attack_info
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.read_buff import UserBuffDate
@@ -19,6 +19,7 @@ xiuxian_message = on_fullmatch("我的修仙信息", priority=23, permission=GRO
 mind_state = on_fullmatch("我的状态", priority=7, permission=GROUP, block=True)
 xiuxian_stone = on_fullmatch("我的灵石", priority=4, permission=GROUP, block=True)
 cultivation_rate = on_fullmatch("我的修炼效率", priority=4, permission=GROUP, block=True)
+my_attack = on_fullmatch("我的攻击力", priority=4, permission=GROUP, block=True)
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
@@ -94,7 +95,6 @@ async def xiuxian_message_(_: Bot, event: GroupMessageEvent):
         '战力': f'{number_to(int(user_info.exp * root_speed * realm_rate))}',
         '灵根': f'{user_info.root}({user_info.root_type}+{int(root_speed * 100)}%)',
         '突破': f'{exp_meg}概率：{level_rate + int(user_info.level_up_rate)}%',
-        '攻击': f'{number_to(user_info.atk)}(攻修等级{user_info.atkpractice}级)',
         '宗门': sectmsg,
         '宗门职位': sectzw,
         '功法': main_buff_name,
@@ -156,14 +156,30 @@ async def xiuxian_stone_(_: Bot, event: GroupMessageEvent):
 
 
 @cultivation_rate.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def xiuxian_stone_(_: Bot, event: GroupMessageEvent):
+async def cultivation_rate_(_: Bot, event: GroupMessageEvent):
     """
     我的修炼速度
     """
     info = get_cultivation_rate(event.user_id)
-    msg = (f"道友当前修炼速度：{int(info['total'] * 100)}%\n"
+    msg = (f"道友当前修炼速度: {int(info['total'] * 100)}%\n"
            f"灵根: +{int(info['root_rate'] * 100)}%\n"
            f"境界: +{int(info['level_rate'] * 100)}%\n"
            f"功法: +{int(info['main_buff_rate'] * 100)}%\n"
            f"洞天福地: +{int(info['blessed_spot_rate'] * 100)}%")
+    await xiuxian_send_message(xiuxian_stone, msg)
+
+
+@my_attack.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+async def my_attack_(_: Bot, event: GroupMessageEvent):
+    """
+    我的攻击力
+    """
+    info = get_attack_info(event.user_id)
+    msg = (f"道友攻击力: {info['total']}\n"
+           f"基础攻击: +{info['base_atk']}\n"
+           f"丹药加成: +{info['atk_buff']}\n"
+           f"攻击修炼: +{int(info['atk_practice'] * 100)}%\n"
+           f"功法加成: +{int(info['main_buff_attack'] * 100)}%\n"
+           f"武器加成: +{int(info['weapon_attack'] * 100)}%"
+           )
     await xiuxian_send_message(xiuxian_stone, msg)

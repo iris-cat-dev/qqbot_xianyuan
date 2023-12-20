@@ -3,6 +3,7 @@ from datetime import datetime
 from nonebot import require, on_command, on_startswith, on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
 from .work_data_source import WorkConfig, WorkPlayerData
 from .work_handle import work_make_list, check_refresh, format_work_msg, work_check_success, format_work_list
@@ -15,7 +16,7 @@ from ..common.rank import Rank
 from ..xiuxian_config import XiuConfig, GlobalGameData
 
 # 定时任务
-reset_refresh_scheduler = require("nonebot_plugin_apscheduler").scheduler
+reset_refresh_scheduler = scheduler
 sql_manager = XiuxianSqlManager()
 work_config = WorkConfig()
 items = Items()

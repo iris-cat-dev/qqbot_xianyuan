@@ -4,6 +4,7 @@ from datetime import datetime
 from nonebot import require, on_fullmatch, on_startswith, get_driver
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 from nonebot.log import logger
+from nonebot_plugin_apscheduler import scheduler
 
 from .jsondata import save_rift_data, read_rift_data
 from .old_rift_info import old_rift_info
@@ -25,7 +26,7 @@ group_rift = {}  # dict
 groups = config['open']  # list
 
 # 定时任务
-set_rift = require("nonebot_plugin_apscheduler").scheduler
+set_rift = scheduler
 
 set_group_rift = on_startswith("群秘境", priority=4, rule=check_admin(), block=True)
 explore_rift = on_fullmatch("秘境探索", priority=5, permission=GROUP, block=True)
@@ -40,7 +41,7 @@ __rift_help__ = f"""
 指令：
 1、秘境+开启/关闭:开启本群的秘境生成，管理员权限
 2、秘境生成:生成一个随机秘境，管理员权限
-3、 秘境查询: 查询当前秘境信息
+3、秘境查询: 查询当前秘境信息
 4、秘境探索:探索秘境获取随机奖励
 5、秘境结算:结算秘境奖励
 6、秘境探索终止:终止秘境事件

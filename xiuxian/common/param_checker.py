@@ -4,17 +4,18 @@ from collections import defaultdict
 from enum import IntEnum, auto
 from typing import Dict, Any, DefaultDict
 
-from nonebot import Bot, require, logger
+from nonebot import Bot, logger
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Depends
 from nonebot.rule import Rule
+from nonebot_plugin_apscheduler import scheduler
 
 from .bot_utils import xiuxian_send_message
 from .game_sql_manager import XiuxianSqlManager
 from ..xiuxian_config import GlobalGameData
 
-limit_all = require("nonebot_plugin_apscheduler").scheduler
+limit_all = scheduler
 limit_all_data: Dict[str, Any] = {}
 limit_num = 5
 

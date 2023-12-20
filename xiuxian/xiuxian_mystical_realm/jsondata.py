@@ -2,7 +2,7 @@ import json
 import os
 from pathlib import Path
 
-SKILLPATH = Path() / "data" / "xiuxian" / "功法" / "功法概率设置.json"
+SKILLPATH = Path() / "nonebot_plugin_xiuxian3" / "data" / "功法" / "功法概率设置.json"
 PLAYERSDATA = Path() / "data" / "xiuxian" / "players"
 
 
