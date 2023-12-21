@@ -243,7 +243,7 @@ async def give_stone_(bot: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(give_stone, message=msg)
 
 
-@steal_stone.handle(parameterless=[Cooldown(XiuConfig().tou_cd, at_sender=True)])
+@steal_stone.handle(parameterless=[Cooldown(XiuConfig().tou_cd, at_sender=True), check_player()])
 async def steal_stone_(bot: Bot, event: GroupMessageEvent):
     """
     偷灵石

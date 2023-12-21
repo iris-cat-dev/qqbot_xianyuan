@@ -1,8 +1,6 @@
 import asyncio
-import json
 
 from PIL import Image, ImageDraw, ImageFont
-from aiohttp import ClientSession
 
 from ..common.download import get_avatar_by_user_id_and_save
 from ..common.game_resource import GameResource
@@ -163,7 +161,6 @@ async def img_author(img, bg):
     draw = ImageDraw.Draw(alpha_layer)
     draw.ellipse((0, 0, w, w), fill=255)
     bg.paste(img, (88, 80), alpha_layer)
-
     return bg
 
 
@@ -174,14 +171,4 @@ async def linewh(line, word):
     return (lw - w) / 2, lh / 2
 
 
-async def async_request(url, *args, is_text=False, **kwargs):
-    async with ClientSession() as c:
-        async with c.get(url, *args, **kwargs) as r:
-            return (await r.text()) if is_text else (await r.read())
 
-
-async def get_anime_pic():
-    r: str = await async_request(
-        "https://api.gmit.vip/Api/DmImg?format=json", is_text=True
-    )
-    return await async_request(json.loads(r)["data"]["url"])

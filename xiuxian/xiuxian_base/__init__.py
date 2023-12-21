@@ -76,7 +76,7 @@ async def sign_in_(_: Bot, event: GroupMessageEvent):
     await xiuxian_send_message(check_in, msg)
 
 
-@replay.handle(parameterless=[Cooldown(30, at_sender=True), check_player()])
+@replay.handle(parameterless=[Cooldown(10, at_sender=True), check_player()])
 async def restart_(_: Bot, event: GroupMessageEvent):
     """
     重入仙途
@@ -88,7 +88,7 @@ async def restart_(_: Bot, event: GroupMessageEvent):
     await xiuxian_send_message(replay, msg)
 
 
-@rename.handle(parameterless=[Cooldown(at_sender=True), check_player()])
+@rename.handle(parameterless=[Cooldown(), check_player()])
 async def rename_(_: Bot, event: GroupMessageEvent):
     """
     改名
