@@ -23,7 +23,7 @@ def format_xian_yuan_mission(mission):
         value_list = mission["value"]
         condition = f"需要丹药：{'、'.join(value_list)}"
     elif mission_type == "stone":
-        condition = f"需要灵石：{mission["value"]}"
+        condition = f"需要灵石：{mission['value']}"
 
     msg = f'任务名称：{mission["name"]}\n'
     msg += f'任务描述：{mission["desc"]}\n'

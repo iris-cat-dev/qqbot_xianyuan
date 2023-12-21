@@ -37,6 +37,9 @@ async def get_avatar_by_user_id_and_save(user_id):
     INIT_PATH = Path() / "data" / "xiuxian" / "info_img" / "init.png"
 
     try:
+        if os.path.exists(USER_AVATAR_PATH) :
+            return Image.open(USER_AVATAR_PATH).resize((280, 280)).convert("RGBA")
+
         logger.info("开始下载用户头像！")
         image_bytes = await download_avatar(user_id)
         im = Image.open(io.BytesIO(image_bytes)).resize((280, 280)).convert("RGBA")

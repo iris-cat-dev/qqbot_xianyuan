@@ -7,7 +7,7 @@ from .xiuxian2_handle import XiuxianDateManage
 
 sql_message = XiuxianDateManage()  # sql类
 
-READPATH = Path() / "data" / "xiuxian"
+READPATH = Path() / "nonebot_plugin_xiuxian3" / "data"
 SKILLPATHH = READPATH / "功法"
 WEAPONPATH = READPATH / "装备"
 

@@ -10,19 +10,18 @@ from .level_up import level_up, level_up_zj, level_up_dr
 from .ranking_list import ranking_list, ranking_list_zl, ranking_list_zm, ranking_list_ls
 from ..common.bot_utils import xiuxian_send_message, get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player, Cooldown
+from ..common.param_checker import check_player, Cooldown, check_admin
 from ..common.rank import Rank
 from ..common.root import Root
 from ..common.xiuxian2_handle import XiuxianDateManage
 from ..xiuxian_config import GlobalGameData, XiuConfig
 
-open_xiuxian = on_startswith("群修仙", priority=5, block=True)
+open_xiuxian = on_startswith("群修仙", priority=5, block=True, rule=check_admin())
 run_xiuxian = on_fullmatch("我要修仙", priority=8, block=True)
 check_in = on_fullmatch("修仙签到", priority=13, permission=GROUP, block=True)
 replay = on_fullmatch("重入仙途", permission=GROUP, priority=7, block=True)
 reset = on_startswith("重置状态", priority=12, block=True)
 rename = on_startswith("改名", priority=5, permission=GROUP, block=True)
-
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
@@ -38,7 +37,7 @@ async def xiuxian_check_in_reset():
     logger.info("每日修仙签到重置成功！")
 
 
-@run_xiuxian.handle(parameterless=[Cooldown(at_sender=True)])
+@run_xiuxian.handle()
 async def run_xiuxian_(_: Bot, event: GroupMessageEvent):
     """
     加入修仙

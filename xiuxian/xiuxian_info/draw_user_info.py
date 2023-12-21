@@ -47,7 +47,7 @@ async def draw_user_info_img(user_id, DETAIL_MAP):
         "突破": DETAIL_MAP["突破"],
         '功法': DETAIL_MAP['功法'],
         '神通': DETAIL_MAP['神通'],
-        "攻击": DETAIL_MAP["攻击"],
+        #"攻击": DETAIL_MAP["攻击"],
         "法器": DETAIL_MAP["法器"],
         "防具": DETAIL_MAP["防具"]
     }
@@ -167,7 +167,7 @@ async def img_author(img, bg):
 async def linewh(line, word):
     lw, lh = line.size
     gs_font_36 = font_origin(36)
-    w, h = gs_font_36.getsize(word)
+    w = gs_font_36.getlength(word)
     return (lw - w) / 2, lh / 2
 
 
