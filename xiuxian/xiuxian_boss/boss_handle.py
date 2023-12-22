@@ -32,21 +32,34 @@ def check_input_boss(boss_id) -> (True, str):
     return True, ""
 
 
+def has_same_rank_boss(rank_name: str):
+    for boss in boss_data.boss_list:
+        if boss["rank"] == rank.get_big_rank_info(rank_name):
+            return True
+    return False
+
+
 def create_boss(boss_rank: str = None):
     if boss_rank is None:
         # 保底机制获取一个最低境界活跃的用户，生成一个同境boss
         last_user = sql_manager.get_last_user(only_active=True)
         last_user_rank_info = rank.get_rank_info(last_user.level)
+
         # 判断是否存在最低境界 boss
         has_last_level_boss = False
-        for boss in boss_data.boss_list:
-            if boss["rank"] == last_user_rank_info["name"]:
-                has_last_level_boss = True
-                break
+        if has_same_rank_boss(last_user_rank_info["name"]):
+            has_last_level_boss = True
+
         if has_last_level_boss:
             # 如果存在随机抽取一个玩家相同境界
             user_list = sql_manager.get_user_list(only_active=True)
+
             user_id = random.choice(user_list)
+            for user_info in user_list:
+                if not has_same_rank_boss(user_info.level):
+                    user_id = user_info.user_id
+                    break
+
             user_info = sql_manager.get_user_info(user_id)
             boss_rank_info = rank.get_big_rank_info(user_info.level)
         else:
