@@ -671,7 +671,7 @@ def get_yaocai_info(yaocai_info):
     msg += f" {YAOCAIINFOMSG[str(yaocai_info['主药']['type'])]}"
     msg += f"{yaocai_info['主药']['power']}\n"
     msg += f"药引 {YAOCAIINFOMSG[str(yaocai_info['药引']['h_a_c']['type'])]}"
-    msg += f"{yaocai_info['药引']['h_a_c']['power']}"
+    msg += f"{yaocai_info['药引']['h_a_c']['power']}\n"
     msg += f"辅药 {YAOCAIINFOMSG[str(yaocai_info['辅药']['type'])]}"
     msg += f"{yaocai_info['辅药']['power']}"
 

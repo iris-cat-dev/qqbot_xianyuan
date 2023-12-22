@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from ..common.player_manager import get_total_hp, get_total_mp
-from ..common.rank import RANK
 from ..common.item_json import Items
 from ..common.read_buff import (
     UserBuffDate, get_weapon_info_msg,

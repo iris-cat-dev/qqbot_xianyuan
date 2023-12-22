@@ -4,6 +4,7 @@ from nonebot import on_fullmatch, on_startswith
 from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
 
 from .mix_elixir_config import MIXELIXIRCONFIG
+from .mix_elixir_data_source import MixElixirExamPlayerData
 from .mixelixirutil import get_mix_elixir_msg, tiaohe, check_mix, make_dict
 from ..common.bot_utils import xiuxian_send_message, xiuxian_send_group_img_message, get_input_cmd
 from ..common.game_sql_manager import XiuxianSqlManager
@@ -11,6 +12,7 @@ from ..common.item_json import Items
 from ..common.param_checker import Cooldown, check_player
 from ..common.read_buff import get_player_info, save_player_info
 from ..common.xiuxian2_handle import XiuxianDateManage
+from .mix_elixir_exam import mix_elixir_exam_accept, mix_elixir_exam_answer
 
 sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
@@ -108,21 +110,24 @@ async def mix_elixir_dykh_up_(bot: Bot, event: GroupMessageEvent):
 async def my_mix_elixir_info_(_: Bot, event: GroupMessageEvent):
     user_id = event.user_id
     mix_elixir_info = get_player_info(user_id, 'mix_elixir_info')
-    l_msg = [f"☆------道友的炼丹信息------☆"]
-    msg = f"药材收取等级：{mix_elixir_info['收取等级']}\n"
+
+    play_data = MixElixirExamPlayerData(user_id)
+
+    msg = f"☆------道友的炼丹信息------☆\n"
+    msg += f"药材收取等级：{mix_elixir_info['收取等级']}\n"
     msg += f"丹药控火等级：{mix_elixir_info['丹药控火']}\n"
     msg += f"丹药耐药性等级：{mix_elixir_info['丹药耐药性']}\n"
     msg += f"炼丹经验：{mix_elixir_info['炼丹经验']}\n"
-    l_msg.append(msg)
+    msg += f"炼丹考核积分：{play_data.point}\n"
+
     if mix_elixir_info['炼丹记录'] != {}:
-        l_msg.append(f"☆------道友的炼丹记录------☆")
+        msg += f"☆------道友的炼丹记录------☆\n"
         i = 1
         for k, v in mix_elixir_info['炼丹记录'].items():
-            msg = f"编号：{i},{v['name']}，炼成次数：{v['num']}次"
-            l_msg.append(msg)
+            msg += f"编号：{i},{v['name']}，炼成次数：{v['num']}次\n"
             i += 1
 
-    await xiuxian_send_group_img_message(event.group_id, l_msg)
+    await xiuxian_send_message(my_mix_elixir_info, msg)
 
 
 @elixir_help.handle(parameterless=[Cooldown(at_sender=True)])

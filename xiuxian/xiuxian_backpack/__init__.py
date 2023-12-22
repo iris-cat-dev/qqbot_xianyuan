@@ -21,6 +21,7 @@ from ..common.read_buff import (
     get_sec_msg, get_main_info_msg
 )
 from ..common.xiuxian2_handle import XiuxianDateManage
+from ..xiuxian_shop import get_yaocai_info
 
 items = Items()
 config = get_config()
@@ -38,7 +39,7 @@ sql_message = XiuxianDateManage()
 sql_manager = XiuxianSqlManager()
 
 # 定时任务
-set_auction_by_scheduler =scheduler
+set_auction_by_scheduler = scheduler
 reset_day_num_scheduler = scheduler
 
 my_back = on_fullmatch('我的背包', priority=10, permission=GROUP, block=True)
@@ -225,6 +226,10 @@ async def item_look_up_(bot: Bot, event: GroupMessageEvent):
 
         if "equipment_type" in item_data:
             msg += f'子类：{item_data["equipment_type"]}\n'
+
+        if item_data["type"] == "药材":
+            msg += f"品级：{item_data['level']}\n"
+            msg += get_yaocai_info(item_data)
 
     await xiuxian_send_message(use, message=msg)
 
