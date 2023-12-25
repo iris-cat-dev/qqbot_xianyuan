@@ -2,21 +2,11 @@ from .common import singleton
 from .common.game_data_manager import GameData
 
 
-@singleton
-class GlobalGameData(GameData):
-
-    def __init__(self):
-        self.groups = []
-        super().__init__("global")
-
 
 @singleton
 class XiuConfig:
 
     def __init__(self):
-        self.version = "xiuxian_3"
-        self.img = False
-        self.user_info_image = True
 
         self.user_info_cd = 120  # 我的修仙信息冷却时间
         self.level_up_cd = 60  # 突破CD(分钟)

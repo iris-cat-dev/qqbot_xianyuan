@@ -62,12 +62,13 @@ async def boss_integral_use_(_: Bot, event: GroupMessageEvent):
         msg += f'请输入【积分购买+编号】！'
         return await xiuxian_send_message(boss_point_shop_use, message=msg)
 
+    shop_num = shop_num - 1
     boss_integral_shop = shop_config.goods_list
-    if shop_num < 0 or shop_num >= len(boss_integral_shop):
+    if shop_num < 1 or shop_num >= len(boss_integral_shop):
         msg = f"该编号不在商品列表内哦，请检查后再兑换"
         return await xiuxian_send_message(boss_point_shop_use, message=msg)
 
-    goods = boss_integral_shop[shop_num - 1]
+    goods = boss_integral_shop[shop_num]
     cost = goods["cost"]
     shop_id = goods["id"]
 

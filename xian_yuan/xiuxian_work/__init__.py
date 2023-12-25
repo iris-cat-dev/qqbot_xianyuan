@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from nonebot import require, on_command, on_startswith, on_fullmatch
+from nonebot import on_command, on_startswith, on_fullmatch
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler

@@ -1,8 +1,6 @@
-from nonebot import Bot, on_fullmatch
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, GROUP
+from nonebot import on_command
 
 from .common.bot_utils import xiuxian_send_message
-from .common.param_checker import Cooldown
 from .xiuxian_config import XiuConfig
 
 __xiuxian_notes__ = f"""
@@ -27,13 +25,9 @@ __xiuxian_notes__ = f"""
 19、炼丹帮助:炼丹功能
 """.strip()
 
+xiuxian_help = on_command("修仙帮助", priority=12, block=True)
 
-xiuxian_help = on_fullmatch("修仙帮助", priority=12, permission=GROUP, block=True)
 
-@xiuxian_help.handle(parameterless=[Cooldown(cd_time=5, at_sender=True)])
-async def help_in_(_: Bot, __: GroupMessageEvent):
-    """
-    修仙帮助
-    """
+@xiuxian_help.handle()
+async def help_in_():
     await xiuxian_send_message(xiuxian_help, __xiuxian_notes__)
-

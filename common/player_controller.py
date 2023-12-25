@@ -1,12 +1,18 @@
+from .model.player_info import PlayerInfo
+from .root import Root
 
-class Character:
-    def __init__(self, name, level=1):
-        self.name = name
-        self.level = level
-        self.experience = 0
+
+class PlayerController:
+    def __init__(self, uid):
+        self._uid = uid
         self.inventory = []
         self.equipment = {}
         self.skills = []
+        self._player_info = PlayerInfo()
+
+    @property
+    def root(self):
+        return Root(self._player_info.root)
 
     def set_property(self, name, value):
         self.properties[name] = value

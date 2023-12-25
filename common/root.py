@@ -7,14 +7,15 @@ from .rate_calculater import calculated
 
 @singleton
 class Root(GameConfig):
-    def __init__(self):
+    def __init__(self, user_root: str):
         super().__init__("灵根")
+        self._user_root = user_root
 
-    def get_root(self, type_name):
-        return self._data_source[type_name]
+    def get_root_info(self):
+        return self._data_source[self._user_root]
 
-    def get_root_speed(self, type_name):
-        return self._data_source[type_name]["type_speeds"]
+    def get_root_speed(self):
+        return self._data_source[self._user_root]["type_speeds"]
 
     def get_random_root(self):
         """

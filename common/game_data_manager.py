@@ -23,7 +23,7 @@ def _save_json(filepath, data):
         f.close()
 
 
-class GameData:
+class IGameData:
 
     def __init__(self, name):
         self.name = name
@@ -41,7 +41,7 @@ class GameData:
         return _save_json(DATA_ROOT / f"{name}.json", data)
 
 
-class PlayerData:
+class IPlayerData:
 
     def __init__(self, user_id: int, name: str):
         self.name = name
@@ -60,7 +60,7 @@ class PlayerData:
         return _save_json(PLAYER_ROOT / self.user_id / f"{name}.json", data)
 
 
-class GameConfig:
+class IGameConfig:
 
     def __init__(self, name: str = None):
         self._data_source = {}

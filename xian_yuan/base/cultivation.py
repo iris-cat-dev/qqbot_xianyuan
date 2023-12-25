@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from nonebot import on_fullmatch, on_endswith, on_keyword
-from nonebot.adapters.onebot.v11 import Bot, GROUP, GroupMessageEvent
+from nonebot.adapters.qq import Bot, MessageCreateEvent
 
 from ..common.bot_utils import xiuxian_send_message
 from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.param_checker import check_player, Cooldown
 from ..common.player_manager import get_cultivation_rate, check_user_state, get_total_hp, get_total_mp
 from ..common.rank import Rank
 from ..common.root import Root
@@ -18,10 +17,9 @@ rank = Rank()
 root = Root()
 game_config = XiuConfig()
 
-cul_help = on_fullmatch("修炼帮助", priority=5, permission=GROUP, block=True)
-out_closing = on_endswith("出关", priority=5, permission=GROUP, block=True)
-in_closing = on_keyword({"闭关"}, priority=5, permission=GROUP, block=True)
-in_closing = on_keyword({"闭关"}, priority=5, permission=GROUP, block=True)
+cul_help = on_fullmatch("修炼帮助", priority=5, block=True)
+out_closing = on_endswith("出关", priority=5, block=True)
+in_closing = on_keyword({"闭关"}, priority=5, block=True)
 
 
 
@@ -34,13 +32,13 @@ __cul_help__ = f"""
 """.strip()
 
 
-@cul_help.handle(parameterless=[Cooldown(at_sender=True)])
-async def work_help_(_: Bot, __: GroupMessageEvent):
+@cul_help.handle()
+async def work_help_(_: Bot, __: MessageCreateEvent):
     await xiuxian_send_message(cul_help, message=__cul_help__)
 
 
-@in_closing.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def in_closing_(_: Bot, event: GroupMessageEvent):
+@in_closing.handle()
+async def in_closing_(_: Bot, event: MessageCreateEvent):
     """
     闭关
     """
@@ -56,8 +54,8 @@ async def in_closing_(_: Bot, event: GroupMessageEvent):
         await xiuxian_send_message(in_closing, message=msg)
 
 
-@out_closing.handle(parameterless=[Cooldown(at_sender=True), check_player()])
-async def out_closing_(bot: Bot, event: GroupMessageEvent):
+@out_closing.handle()
+async def out_closing_(bot: Bot, event: MessageCreateEvent):
     """
     出关
     """

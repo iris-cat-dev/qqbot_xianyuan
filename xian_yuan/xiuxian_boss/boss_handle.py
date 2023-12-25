@@ -34,7 +34,7 @@ def check_input_boss(boss_id) -> (True, str):
 
 def has_same_rank_boss(rank_name: str):
     for boss in boss_data.boss_list:
-        if boss["rank"] == rank.get_big_rank_info(rank_name):
+        if boss["rank"] == rank.get_big_rank_info(rank_name)["name"]:
             return True
     return False
 
@@ -55,7 +55,8 @@ def create_boss(boss_rank: str = None):
             user_list = sql_manager.get_user_list(only_active=True)
 
             user_id = random.choice(user_list)
-            for user_info in user_list:
+            for id in user_list:
+                user_info = sql_manager.get_user_info(id)
                 if not has_same_rank_boss(user_info.level):
                     user_id = user_info.user_id
                     break
