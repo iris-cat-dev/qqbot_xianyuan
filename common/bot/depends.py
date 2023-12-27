@@ -2,25 +2,35 @@ from typing import Annotated
 
 from nonebot.consts import STARTSWITH_KEY
 from nonebot.internal.adapter import Event
+from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Depends
 from nonebot.typing import T_State
 
 from ..game_data import GlobalGameData
-from ..player_controller import PlayerController
+from ..player_controller import PlayerController, PlayerNoFoundException
 
 
 def _starts_with_args() -> str:
-    def _startswith(event: Event, state: T_State) -> str:
+    async def _startswith(event: Event, state: T_State, matcher: Matcher) -> str:
         start_key = state[STARTSWITH_KEY]
         msg = event.get_plaintext()
+        matcher_state = matcher.state
+        if len(msg) <= len(start_key):
+            await matcher.finish(f"参数不正确，{matcher_state['tips']}", at_sender=True)
+
         return msg[len(start_key):]
 
     return Depends(_startswith)
 
 
 def _get_player() -> PlayerController:
-    def _get_player_impl(event: Event) -> PlayerController:
-        return PlayerController(event.get_user_id())
+    async def _get_player_impl(event: Event, matcher: Matcher) -> PlayerController:
+
+        try:
+            return PlayerController(event.get_user_id())
+        except PlayerNoFoundException:
+            msg = "您还没有加入修仙，请输入 <我要修仙> 加入修仙游戏!"
+            await matcher.finish(msg, at_sender=True)
 
     return Depends(_get_player_impl)
 
@@ -32,6 +42,8 @@ def _get_game_data() -> GlobalGameData:
     return Depends(_get_game_data_impl)
 
 
+
+
 Player = Annotated[PlayerController, _get_player()]
 GameData = Annotated[GlobalGameData, _get_game_data()]
-StartsWithArgs: Annotated[str, _starts_with_args()]
+StartsWithArgs = Annotated[str, _starts_with_args()]

@@ -7,3 +7,6 @@ class GlobalGameData(IGameData):
 
     def __init__(self):
         super().__init__("global")
+
+    def get_game_data(self) -> dict:
+        pass

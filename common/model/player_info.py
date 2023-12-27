@@ -2,18 +2,16 @@ from peewee import *
 
 from . import db
 
-
-# 定义游戏玩家信息表模型
 class PlayerInfo(Model):
-    uid = CharField()
-    name = CharField()
-    root = CharField()
-    level = CharField()
+    uid = CharField(50)
+    name = CharField(20)
+    root = CharField(10)
+    level = CharField(10)
     exp = IntegerField()
-    hp = IntegerField()
-    mp = IntegerField()
-    attack = IntegerField()
-    defense = IntegerField()
+    hp = IntegerField(default=1)
+    mp = IntegerField(default=1)
+    attack = IntegerField(default=1)
+    defense = IntegerField(default=1)
     money = IntegerField()
     created_at = TimestampField()
 
@@ -21,5 +19,4 @@ class PlayerInfo(Model):
         database = db
 
 
-# 创建游戏玩家信息表
 db.create_tables([PlayerInfo])

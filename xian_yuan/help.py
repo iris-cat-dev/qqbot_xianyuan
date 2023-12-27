@@ -1,7 +1,5 @@
 from nonebot import on_command
 
-from .common.bot_utils import xiuxian_send_message
-from .xiuxian_config import XiuConfig
 
 __xiuxian_notes__ = f"""
 指令：
@@ -9,7 +7,7 @@ __xiuxian_notes__ = f"""
 1、我要修仙:进入修仙模式
 2、我的修仙信息:获取修仙数据
 3、修仙签到:获取灵石及修为
-4、重入仙途:重置灵根数据,每次{XiuConfig().remake}灵石
+4、重入仙途:重置灵根数据
 6、改名xx:修改你的道号
 7、突破:修为足够后,可突破境界（一定几率失败）
 8、闭关、出关、灵石出关:修炼增加修为，挂机功能
@@ -30,4 +28,5 @@ xiuxian_help = on_command("修仙帮助", priority=12, block=True)
 
 @xiuxian_help.handle()
 async def help_in_():
-    await xiuxian_send_message(xiuxian_help, __xiuxian_notes__)
+    pass
+    #await xiuxian_send_message(xiuxian_help, __xiuxian_notes__)

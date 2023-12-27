@@ -38,3 +38,17 @@ def date_diff(new_time, old_time):
         old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
 
     return (new_time - old_time).total_seconds()
+
+
+def is_today(timestamp):
+    # 将时间戳转换为Python的datetime对象
+    dt_object = datetime.datetime.fromtimestamp(timestamp)
+
+    # 获取今天的日期
+    today = datetime.datetime.today().date()
+
+    # 获取时间戳对应的日期
+    dt_date = dt_object.date()
+
+    # 判断两个日期是否相同
+    return today == dt_date
