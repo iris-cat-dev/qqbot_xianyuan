@@ -69,6 +69,7 @@ class PlayerController:
     @name.setter
     def name(self, value):
         self._player_info.name = value
+        self._player_info.save()
 
     @property
     def root(self):
@@ -82,6 +83,7 @@ class PlayerController:
 
     def add_money(self, money) -> str:
         self._player_info.money += money
+        self._player_info.save()
         return f"灵石：{money}枚"
 
     def equip_item(self, item):
@@ -96,3 +98,4 @@ class PlayerController:
 
     def save(self):
         self._player_info.save()
+

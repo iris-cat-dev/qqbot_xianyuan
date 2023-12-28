@@ -36,10 +36,14 @@ async def rename_(player: Player, name: StartsWithArgs):
     """
     if len(name) > 10:
         msg = "道号太长会遭天谴的，请修改后重试！"
-        return await rename.reject(msg)
+        return await rename.finish(msg)
+
+    if name == "伊小咪":
+        msg = "取名这个道号会遭天谴的，请修改后重试！"
+        return await rename.finish(msg)
+
+    # TODO: check name already used
 
     player.name = name
-    player.save()
-
     msg = f"您的道号已修改为：{player.name}"
     await rename.finish(msg)

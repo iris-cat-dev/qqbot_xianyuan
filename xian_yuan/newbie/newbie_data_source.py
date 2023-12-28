@@ -19,6 +19,7 @@ class NewbieGiftPlayerData:
     @times.setter
     def times(self, times: int):
         self._db.times = times
+        self.save()
 
     @property
     def update_at(self):

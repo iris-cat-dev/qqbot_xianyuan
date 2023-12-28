@@ -23,21 +23,11 @@ def number_to(num):
     return '{}{}'.format(round(num, 1), units[level])
 
 
-def date_diff(new_time, old_time):
+def time_diff_min(old_time: datetime.datetime, new_time: datetime.datetime, diff: int) -> int:
     """
     计算日期差
     """
-    if isinstance(new_time, datetime.datetime):
-        pass
-    else:
-        new_time = datetime.datetime.strptime(new_time, '%Y-%m-%d %H:%M:%S.%f')
-
-    if isinstance(old_time, datetime.datetime):
-        pass
-    else:
-        old_time = datetime.datetime.strptime(old_time, '%Y-%m-%d %H:%M:%S.%f')
-
-    return (new_time - old_time).total_seconds()
+    return int(((old_time + datetime.timedelta(minutes=diff)) - new_time).total_seconds() / 60)
 
 
 def is_today(timestamp):

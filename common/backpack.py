@@ -1,27 +1,5 @@
-from .game_data_manager import IGameConfig
+from .item_data_source import ItemDataSource
 from .model.backpack import Backpack
-
-
-class Item:
-
-    def __init__(self):
-        self.id = None
-        self.name = None
-        self.level = None
-        self.desc = None
-        self.price = None
-
-
-class ItemDataSource(IGameConfig):
-
-    def __init__(self):
-        super().__init__()
-        self.items = []
-        self.items += self.load_data("修炼物品/悬赏令")
-        self.items += self.load_data("修炼物品/秘境藏宝图")
-
-    def _cache(self):
-        pass
 
 
 class BackpackSystem:
@@ -29,6 +7,14 @@ class BackpackSystem:
         self._uid = uid
 
     def add_item(self, item_id: int, count: int = 1, is_bind: bool = False) -> str:
+
+        if count <= 0:
+            return "数量必须大于0"
+
+        items = ItemDataSource()
+        item = items.find_by_id(item_id)
+        if item is None:
+            return "物品不存在"
 
         user_item = Backpack.get_or_none(
             uid=self._uid,
@@ -38,13 +24,20 @@ class BackpackSystem:
         if user_item:
             user_item.count += count
         else:
-            Backpack(
+            user_item = Backpack(
                 uid=self._uid,
                 item_id=item_id,
                 count=count,
                 is_bind=is_bind
             )
-        msg = ""
+
+        user_item.save()
+
+        if "sub_level" in item:
+            msg = f"【{item['sub_level'] + item['name']}】x {count}"
+        else:
+            msg = f"【{item['name']}】x {count}"
+        return msg
 
     def del_item(self, item_id: int, count: int = 1) -> str:
         Backpack.delete()
