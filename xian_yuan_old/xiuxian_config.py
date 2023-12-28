@@ -1,9 +1,4 @@
-from .common import singleton
-from .common.game_data_manager import GameData
 
-
-
-@singleton
 class XiuConfig:
 
     def __init__(self):

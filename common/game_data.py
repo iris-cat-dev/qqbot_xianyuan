@@ -1,8 +1,6 @@
-from ..common import singleton
 from ..common.game_data_manager import IGameData
 
 
-@singleton
 class GlobalGameData(IGameData):
 
     def __init__(self):
@@ -10,3 +8,4 @@ class GlobalGameData(IGameData):
 
     def get_game_data(self) -> dict:
         pass
+

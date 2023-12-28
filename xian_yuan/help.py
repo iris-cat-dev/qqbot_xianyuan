@@ -23,7 +23,7 @@ __xiuxian_notes__ = f"""
 19、炼丹帮助:炼丹功能
 """.strip()
 
-xiuxian_help = on_command("修仙帮助", priority=12, block=True)
+xiuxian_help = on_command("修仙帮助", priority=5, block=True)
 
 
 @xiuxian_help.handle()

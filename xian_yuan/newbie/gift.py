@@ -1,22 +1,34 @@
-import random
+from datetime import datetime
 
-from ...common.bot.depends import Player, GameData
+from .newbie_data_source import NewbieGiftPlayerData, NewbieGiftConfig
+from ...common.bot.depends import Player
 from ...common.bot.matcher import full_match
 
 newbie_gift = full_match("新手礼包领取", "领取新手礼包！")
 
 
 @newbie_gift.handle()
-async def newbie_gift_(player: Player, game_data: GameData):
-    if player.is_sign_in:
-        msg = '贪心的人是不会有好运的！'
-    else:
-        stone = random.randint(game_data.sign_in_stone_lower_limit, game_data.sign_in_stone_upper_limit)
-        stone = player.l * game_data.sign_in_stone_lower_limit + stone
+async def newbie_gift_(player: Player):
+    player_data = player.get_data(NewbieGiftPlayerData)
+    config = NewbieGiftConfig()
 
-        player.is_sign_in = True
-        player.money += stone
-        player.save()
-        msg = f'签到成功，获取{stone}枚灵石!'
+    if player_data.times > len(config.gift_list):
+        msg = '您已经领完全部新手礼包！'
+        return await newbie_gift.finish(msg)
 
-    await newbie_gift.finish(newbie_gift, msg)
+    if player_data.update_at > datetime.now():
+        msg = f"道友莫急，礼包还有{0}分钟可领取！"
+        return await newbie_gift.finish(msg)
+
+    msg = ["领取成功！获得物品："]
+    gift = config.gift_list[player_data.times]
+    msg += player.add_money(gift["money"])
+
+    items = gift["items"]
+    for item in items:
+        msg += player.backpack.add_item(item["id"], item["count"])
+
+    player_data.times += 1
+    player.save()
+
+    await newbie_gift.finish("\n".join(msg))
