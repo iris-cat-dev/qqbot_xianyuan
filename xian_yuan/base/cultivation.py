@@ -1,61 +1,53 @@
 from datetime import datetime
 
-from nonebot import on_fullmatch, on_endswith, on_keyword
-from nonebot.adapters.qq import Bot, MessageCreateEvent
+from ...common.bot.depends import Player, StartsWithArgs
+from ...common.bot.matcher import full_match, starts_with
 
-from ..common.bot_utils import xiuxian_send_message
-from ..common.game_sql_manager import XiuxianSqlManager
-from ..common.player_manager import get_cultivation_rate, check_user_state, get_total_hp, get_total_mp
-from ..common.rank import Rank
-from ..common.root import Root
-from ..common.utils import date_diff, number_to
-from ..xiuxian_config import XiuConfig
-
-sql_manager = XiuxianSqlManager()
-
-rank = Rank()
-root = Root()
-game_config = XiuConfig()
-
-cul_help = on_fullmatch("修炼帮助", priority=5, block=True)
-out_closing = on_endswith("出关", priority=5, block=True)
-in_closing = on_keyword({"闭关"}, priority=5, block=True)
-
-
-
-__cul_help__ = f"""
-修炼帮助信息:
-指令：
-1、闭关:开始闭关修炼提升修为
-2、出关:结束闭关
-3、灵石出关:使用灵石进行闭关，自动计算消耗灵石 
-""".strip()
-
-
-@cul_help.handle()
-async def work_help_(_: Bot, __: MessageCreateEvent):
-    await xiuxian_send_message(cul_help, message=__cul_help__)
+in_closing = full_match("闭关", "")
+out_closing = full_match("出关", "")
+enter_cul = full_match("修炼", "")
+enter_heal = full_match("疗伤", "")
+exit_state = starts_with("结束", "")
 
 
 @in_closing.handle()
-async def in_closing_(_: Bot, event: MessageCreateEvent):
+async def in_closing_(player: Player):
     """
     闭关
     """
-    user_info = sql_manager.get_user_info(event.user_id)
-
-    user_id = user_info.user_id
-    is_type, msg = check_user_state(user_id, 0)  # 状态0为无事件
-    if is_type:  # 符合
-        sql_manager.set_user_state(user_id, 1)
-        msg = "进入闭关状态，如需出关，发送【出关】！"
-        await xiuxian_send_message(in_closing, message=msg)
-    else:
-        await xiuxian_send_message(in_closing, message=msg)
+    result, msg = player.state.update("闭关")
+    await in_closing.finish(msg)
 
 
 @out_closing.handle()
-async def out_closing_(bot: Bot, event: MessageCreateEvent):
+async def out_closing_(player: Player):
+    """
+    出关
+    """
+    result, msg = player.state.update("出关")
+    await out_closing.finish(msg)
+
+
+@enter_cul.handle()
+async def enter_cul_(player: Player):
+    result, msg = player.state.update("修炼")
+    await enter_cul.finish(msg)
+
+
+@enter_heal.handle()
+async def enter_heal_(player: Player):
+    result, msg = player.state.update("疗伤")
+    await enter_heal.finish(msg)
+
+
+@exit_state.handle()
+async def exit_state_(player: Player, state: StartsWithArgs):
+    result, msg = player.state.update("结束" + state)
+    await exit_state.finish(msg)
+
+
+@out_closing.handle()
+async def out_closing_(player: Player):
     """
     出关
     """
@@ -105,9 +97,6 @@ async def out_closing_(bot: Bot, event: MessageCreateEvent):
     sql_manager.add_exp(user_id, exp)
     msg += f"\n增加修为：{exp} {result_msg}"
     await xiuxian_send_message(out_closing, message=msg)
-
-
-
 
 
 def send_hp_mp(user_info, hp, mp):

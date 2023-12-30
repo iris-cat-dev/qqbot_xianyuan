@@ -1,10 +1,11 @@
 import datetime
 from typing import TypeVar, Callable
 
-from . import player_singleton
+from . import PlayerSingleton
 from .backpack import BackpackSystem
-from .model.newbie_gift import NewbieGift
+from .level import Level
 from .model.player_info import PlayerInfo
+from .player_state import PlayerState
 from .root import Root
 
 
@@ -41,15 +42,13 @@ def get_player(uid: str):
 T = TypeVar('T')
 
 
-# @player_singleton
-class PlayerController:
+class PlayerController(PlayerSingleton):
     def __init__(self, user_id):
         self._uid = user_id
-        self._backpack: BackpackSystem = None
         self.equipment = {}
         self.skills = []
+        self._backpack: BackpackSystem = None
         self._player_info: PlayerInfo = None
-        self._sign_in_info: NewbieGift = None
         self.init_user_db()
 
     def init_user_db(self):
@@ -75,8 +74,13 @@ class PlayerController:
     def root(self):
         return Root(self._player_info.root)
 
+    @property
+    def level(self):
+        return Level(self._player_info.level)
+
     def add_exp(self, experience):
-        pass
+        self._player_info.exp += experience
+        self._player_info.save()
 
     def level_up(self):
         pass
@@ -86,6 +90,14 @@ class PlayerController:
         self._player_info.save()
         return f"灵石：{money}枚"
 
+    def sub_money(self, money) -> (bool, str):
+        if self._player_info.money < money:
+            return False, "灵石不足"
+
+        self._player_info.money -= money
+        self._player_info.save()
+        return True, f"灵石：{money}枚"
+
     def equip_item(self, item):
         self.equipment[item.name] = item
 
@@ -93,9 +105,12 @@ class PlayerController:
     def backpack(self):
         return self.get_data(BackpackSystem)
 
+    @property
+    def state(self):
+        return self.get_data(PlayerState)
+
     def get_data(self, cls: Callable[..., T]) -> T:
         return cls(self._uid)
 
     def save(self):
         self._player_info.save()
-

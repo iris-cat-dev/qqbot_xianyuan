@@ -2,6 +2,8 @@ import json
 import os
 from pathlib import Path
 
+from . import Singleton
+
 DATA_ROOT = Path() / "data" / "xiuxian"
 PLAYER_ROOT = Path() / "data" / "xiuxian" / "players"
 CONFIG_ROOT = Path() / "nonebot_plugin_xiuxian3" / "data"
@@ -60,7 +62,7 @@ class IPlayerData:
         return _save_json(PLAYER_ROOT / self.user_id / f"{name}.json", data)
 
 
-class IGameConfig:
+class IGameConfig(Singleton):
 
     def __init__(self, name: str = None):
         self._data_source = {}

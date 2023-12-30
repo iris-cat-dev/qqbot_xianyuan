@@ -1,16 +1,21 @@
-from . import singleton
+
 from .game_data_manager import IGameConfig
 
 
+class Level:
+
+    def __init__(self, level: str) :
+        pass
 
 
-@singleton
+
 class Rank(IGameConfig):
-    RANK_LIST = list(RANK.keys())
-    MAX_RANK = 1
-    MIN_RANK = 56
+
 
     def __init__(self):
+        RANK_LIST = list(RANK.keys())
+        MAX_RANK = 1
+        MIN_RANK = 56
         super().__init__("境界")
 
     def to_level(self, name: str) -> int:

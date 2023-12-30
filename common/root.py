@@ -1,11 +1,9 @@
 import random
 
-from . import singleton
 from .game_data_manager import IGameConfig
 from .rate_calculater import calculated
 
 
-@singleton
 class Root(IGameConfig):
     def __init__(self, user_root: str):
         super().__init__("灵根")

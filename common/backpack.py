@@ -1,10 +1,11 @@
+from . import PlayerSingleton
 from .item_data_source import ItemDataSource
 from .model.backpack import Backpack
 
 
-class BackpackSystem:
-    def __init__(self, uid: str):
-        self._uid = uid
+class BackpackSystem(PlayerSingleton):
+    def __init__(self, user_id: str):
+        self._uid = user_id
 
     def add_item(self, item_id: int, count: int = 1, is_bind: bool = False) -> str:
 

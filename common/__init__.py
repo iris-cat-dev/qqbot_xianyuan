@@ -1,36 +1,31 @@
-import functools
 import threading
-from typing import TypeVar, Callable
-
-from nonebot import get_driver
-
-DRIVER = get_driver()
-
-T = TypeVar('T')
-
-def singleton(cls: Callable[..., T]) -> Callable[..., T]:
-    instances = {}
-    lock = threading.RLock()
-
-    def getinstance(*args, **kwargs) -> T:
-        with lock:
-            if cls not in instances:
-                instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-
-    return getinstance
 
 
-def player_singleton(cls: Callable[..., T]) -> Callable[..., T]:
-    instances = {}
-    lock = threading.RLock()
+class SingletonMeta(type):
+    _instances = {}
+    _lock = threading.Lock()
 
-    @functools.wraps(cls)
-    def getinstance(user_id, *args, **kwargs) -> T:
-        with lock:
-            if user_id not in instances:
-                instances[user_id] = cls(user_id, *args, **kwargs)
-        return instances[user_id]
+    def __call__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls not in cls._instances:
+                instance = super().__call__(*args, **kwargs)
+                cls._instances[cls] = instance
+            return cls._instances[cls]
 
-    return getinstance
 
+class PlayerSingletonMeta(type):
+    _instances = {}
+    _lock = threading.Lock()
+
+    def __call__(cls, user_id, *args, **kwargs):
+        with (cls._lock):
+            if (cls, user_id) not in cls._instances:
+                instance = super().__call__(user_id, *args, **kwargs)
+                cls._instances[(cls, user_id)] = instance
+            return cls._instances[(cls, user_id)]
+
+
+class Singleton(metaclass=SingletonMeta): ...
+
+
+class PlayerSingleton(metaclass=PlayerSingletonMeta): ...
