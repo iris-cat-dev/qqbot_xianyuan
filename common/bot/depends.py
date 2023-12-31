@@ -6,7 +6,6 @@ from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import Depends
 from nonebot.typing import T_State
 
-from ..game_data import GlobalGameData
 from ..player_controller import PlayerController, PlayerNoFoundException
 
 
@@ -35,15 +34,5 @@ def _get_player() -> PlayerController:
     return Depends(_get_player_impl)
 
 
-def _get_game_data() -> GlobalGameData:
-    def _get_game_data_impl() -> GlobalGameData:
-        return GlobalGameData()
-
-    return Depends(_get_game_data_impl)
-
-
-
-
 Player = Annotated[PlayerController, _get_player()]
-GameData = Annotated[GlobalGameData, _get_game_data()]
 StartsWithArgs = Annotated[str, _starts_with_args()]
