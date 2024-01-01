@@ -7,6 +7,7 @@ from nonebot.internal.params import Depends
 from nonebot.typing import T_State
 
 from ..player_controller import PlayerController, PlayerNoFoundException
+from ..player_position import PlayerPositionController
 
 
 def _starts_with_args() -> str:
@@ -34,5 +35,18 @@ def _get_player() -> PlayerController:
     return Depends(_get_player_impl)
 
 
+def _get_player_position() -> PlayerPositionController:
+    async def _get_player_impl(event: Event, matcher: Matcher) -> PlayerPositionController:
+
+        try:
+            return PlayerPositionController(event.get_user_id(), event.channel_id)
+        except PlayerNoFoundException:
+            msg = "您还没有加入修仙，请输入 <我要修仙> 加入修仙游戏!"
+            await matcher.finish(msg, at_sender=True)
+
+    return Depends(_get_player_impl)
+
+
 Player = Annotated[PlayerController, _get_player()]
+PlayerPosition = Annotated[PlayerPositionController, _get_player_position()]
 StartsWithArgs = Annotated[str, _starts_with_args()]

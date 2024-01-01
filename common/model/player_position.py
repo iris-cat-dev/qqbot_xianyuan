@@ -7,6 +7,7 @@ from . import db
 
 class TBPlayerPosition(Model):
     uid = CharField(50)
+    channel_id = CharField(50)
     position = CharField(20, default="新手村广场")
     update_at = TimestampField()
 
