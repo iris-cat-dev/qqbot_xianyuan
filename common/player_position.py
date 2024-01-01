@@ -12,9 +12,11 @@ class PlayerPositionController:
         self._db: TBPlayerPosition = None
         self._db, _ = TBPlayerPosition.get_or_create(uid=user_id, channel_id=channel_id)
         self._channel_id = channel_id
+        self._curr_position_info = None
 
-    def show_env(self):
-        pass
+    def show_env(self) -> str:
+        if self._curr_position_info:
+            return self._curr_position_info["desc"]
 
     def show_player(self):
         pass
@@ -47,16 +49,18 @@ class PlayerPositionController:
     def move(self, direction: str) -> str:
         channel_map = world.load_map(self._channel_id)
         surrounding = channel_map.get_surroundings(self._db.position)
-        pos_info = surrounding[direction]
-        if pos_info is None:
+        position_info = surrounding[direction]
+        self._curr_position_info = position_info
+        if position_info is None:
             return ("道友这个方向没有路\n"
                     + f"当前位置：{self._db.position}\n"
                     + self.format_surrounding(surrounding))
 
-        self._db.position = pos_info["name"]
+        self._db.position = position_info["name"]
         self.save()
         surrounding = channel_map.get_surroundings(self._db.position)
         return (f"道友来到：{self._db.position}\n"
+                + f"{self.show_env()}\n"
                 + self.format_surrounding(surrounding))
 
     def save(self):

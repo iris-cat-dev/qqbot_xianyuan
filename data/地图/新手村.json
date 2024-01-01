@@ -51,69 +51,79 @@
     "coordinate": [
       2,
       1
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "裁缝铺",
     "coordinate": [
       1,
       2
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "村口",
     "coordinate": [
       2,
       2
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "小树林",
     "coordinate": [
       2,
       3
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "树林深处",
     "coordinate": [
       2,
       4
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "山林外围",
     "coordinate": [
       2,
       5
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "山中湖泊",
     "coordinate": [
       2,
       6
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "湖中小岛",
     "coordinate": [
       2,
       7
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "山脉东出口",
     "coordinate": [
       2,
       8
-    ]
+    ],
+    "desc": ""
   },
   {
     "name": "东郊平原",
     "coordinate": [
       2,
       9
-    ]
+    ],
+    "desc": ""
   }
 ]
