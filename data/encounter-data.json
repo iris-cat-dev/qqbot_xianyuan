@@ -1,0 +1,48 @@
+{
+  "sources": {
+    "rifts": "nonebot_plugin_xiuxian3/data/秘境/限时秘境.json",
+    "riftEvents": "nonebot_plugin_xiuxian3/xian_yuan/mystical_realm/riftmake.py",
+    "bosses": "nonebot_plugin_xiuxian3/data/邪魔/领主参数.json",
+    "pointShop": "nonebot_plugin_xiuxian3/data/邪魔/积分商品.json"
+  },
+  "rifts": {
+    "东玄域": { "type_rate": 200, "rank": 1, "count": 30, "time": 60 },
+    "西玄域": { "type_rate": 200, "rank": 1, "count": 30, "time": 60 },
+    "妖域": { "type_rate": 100, "rank": 2, "count": 50, "time": 90 },
+    "乱魔海": { "type_rate": 100, "rank": 2, "count": 50, "time": 90 },
+    "幻雾林": { "type_rate": 50, "rank": 3, "count": 50, "time": 120 },
+    "狐鸣山": { "type_rate": 50, "rank": 3, "count": 50, "time": 120 },
+    "云梦泽": { "type_rate": 25, "rank": 4, "count": 50, "time": 150 },
+    "乱星原": { "type_rate": 12, "rank": 4, "count": 50, "time": 150 },
+    "黑水湖": { "type_rate": 6, "rank": 5, "count": 50, "time": 180 }
+  },
+  "rift": {
+    "eventWeights": { "treasure": 300, "battle": 70, "nothing": 50 },
+    "treasureWeights": { "technique": 25, "skill": 25, "weapon": 50, "armor": 50, "money": 150 },
+    "battleWeights": { "boss": 200, "loss": 100 },
+    "lossWeights": { "exp": 50, "hp": 100, "money": 50 },
+    "lossValues": { "exp": [0.03, 0.04, 0.05], "hp": [0.3, 0.5, 0.7], "money": [500000, 1000000, 1500000] },
+    "moneyBase": 100000,
+    "boss": {
+      "names": ["墨蛟", "婴鲤兽", "千目妖", "鸡冠蛟", "妖冠蛇", "铁火蚁", "天晶蚁", "银光鼠", "紫云鹰", "狗青"],
+      "hp": [1.01, 1.02, 1.03, 1.04, 1.05, 1.06],
+      "mp": 10,
+      "attack": [0.1, 0.12, 0.13, 0.14, 0.15, 0.16],
+      "expRewards": [0.01, 0.02, 0.03, 0.04, 0.05],
+      "moneyRewardBase": 200000
+    }
+  },
+  "boss": {
+    "names": ["金凰", "九寒", "莫女", "术方", "卫起", "血枫", "衣以", "以向", "陆吾", "连城", "翼风", "吞天"],
+    "limit": 10,
+    "intervalMinutes": 30,
+    "multipliers": { "hp": 50, "mp": 20, "attack": 0.2, "money": 0.25 },
+    "recoveryPills": ["1101", "1102", "1103", "1104", "1105", "1106", "1107", "1108", "1109"]
+  },
+  "pointShop": [
+    { "id": "1999", "cost": 100 },
+    { "id": "4003", "cost": 100 },
+    { "id": "4002", "cost": 1000 },
+    { "id": "4001", "cost": 10000 }
+  ]
+}

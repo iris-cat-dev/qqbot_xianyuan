@@ -1,0 +1,165 @@
+[
+  {
+    "id": "su-shanshan",
+    "name": "苏姗姗",
+    "level": "筑基境圆满",
+    "root": "真灵根",
+    "personality": "温婉大方，聪明机敏，善于倾听，也愿意在他人困顿时伸出援手。",
+    "background": "出身修仙世家，卡在筑基境圆满多年，离家历练红尘以寻找结丹机缘。",
+    "specialMission": {
+      "id": "su-breakthrough",
+      "name": "帮助苏姗姗突破金丹境",
+      "desc": "为苏姗姗备齐聚顶丹与朝元丹，助她冲击结丹境。",
+      "kind": "items",
+      "items": [
+        { "id": "1401", "count": 1 },
+        { "id": "1402", "count": 1 }
+      ],
+      "favor": 30
+    }
+  },
+  {
+    "id": "jiang-wanyue",
+    "name": "江晚月",
+    "level": "结丹境中期",
+    "root": "水属性天灵根",
+    "personality": "沉静克制，言语不多，对承诺却看得极重。",
+    "background": "曾守护北海商路，因追查失落的月魄玉来到中州。",
+    "specialMission": {
+      "id": "jiang-moon-jade",
+      "name": "赎回月魄玉",
+      "desc": "月魄玉落入行商之手，筹集灵石将这件故物赎回。",
+      "kind": "money",
+      "cost": 500000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "lin-qingzhu",
+    "name": "林青竹",
+    "level": "筑基境中期",
+    "root": "木属性天灵根",
+    "personality": "爽朗直率，喜爱游历山野，最厌仗势欺人。",
+    "background": "药谷弟子，护送灵药途中遭邪修盯上，正在寻找可信的同行者。",
+    "specialMission": {
+      "id": "lin-escort",
+      "name": "护送青竹归谷",
+      "desc": "击退尾随的劫修，护送林青竹与灵药平安返回药谷。",
+      "kind": "combat",
+      "enemyName": "拦路劫修",
+      "favor": 30
+    }
+  },
+  {
+    "id": "bai-lingxi",
+    "name": "白灵汐",
+    "level": "元婴境初期",
+    "root": "冰属性天灵根",
+    "personality": "外冷内热，行事严谨，对敷衍与虚言毫无耐心。",
+    "background": "雪原剑修，法衣在跨越风暴时受损，需要合适的护具继续远行。",
+    "specialMission": {
+      "id": "bai-armor",
+      "name": "重铸雪行法衣",
+      "desc": "穿戴武器与护具，并支付铸造灵石，协助重铸雪行法衣。",
+      "kind": "equipment",
+      "cost": 200000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "ye-zhaoyao",
+    "name": "叶昭瑶",
+    "level": "结丹境圆满",
+    "root": "火属性天灵根",
+    "personality": "热烈果断，好胜却不记仇，愿与真正用心修行的人论道。",
+    "background": "赤霞门真传，为修补师门心法中的缺页，四处寻访通晓功法的修士。",
+    "specialMission": {
+      "id": "ye-manual",
+      "name": "补全赤霞心法",
+      "desc": "先修习一门功法，再支付拓印所需灵石，帮助补全心法缺页。",
+      "kind": "technique",
+      "cost": 150000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "mu-xinghe",
+    "name": "沐星河",
+    "level": "元婴境中期",
+    "root": "风属性天灵根",
+    "personality": "洒脱好奇，喜欢新鲜见闻，不愿被门派规矩束缚。",
+    "background": "游历诸域的散修，准备修复横渡虚空的星槎，正为核心材料奔波。",
+    "specialMission": {
+      "id": "mu-starship",
+      "name": "修复星槎核心",
+      "desc": "筹集修复星槎核心所需的灵石，让沐星河能够继续远行。",
+      "kind": "money",
+      "cost": 800000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "gu-nanqiao",
+    "name": "顾南乔",
+    "level": "元婴境圆满",
+    "root": "土属性天灵根",
+    "personality": "从容细致，凡事喜欢先推演再行动，对阵法与古迹有近乎执着的热情。",
+    "background": "出身南境阵道世家，为修复镇守海眼的潮生大阵，独自寻找失传的阵纹注解。",
+    "specialMission": {
+      "id": "gu-tide-array",
+      "name": "补全潮生阵纹",
+      "desc": "修习一门功法并支付推演耗费，与顾南乔一同补全潮生大阵的缺失阵纹。",
+      "kind": "technique",
+      "cost": 280000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "shen-zhiwei",
+    "name": "沈知微",
+    "level": "筑基境圆满",
+    "root": "金属性天灵根",
+    "personality": "敏锐务实，说话一针见血，面对真正精巧的法器时又会显露孩子般的欣喜。",
+    "background": "年轻炼器师，携带新铸剑胚游历各地，希望找到能承受试剑锋芒的可靠修士。",
+    "specialMission": {
+      "id": "shen-sword-test",
+      "name": "试炼无名剑胚",
+      "desc": "穿戴完整武器与护具，并备齐淬炼灵石，协助沈知微完成最后一次试剑。",
+      "kind": "equipment",
+      "cost": 180000,
+      "favor": 30
+    }
+  },
+  {
+    "id": "lu-qingci",
+    "name": "陆清辞",
+    "level": "结丹境初期",
+    "root": "雷属性天灵根",
+    "personality": "果敢明快，遇事喜欢直取要害，对并肩作战的同伴格外坦诚。",
+    "background": "巡守雷泽的执剑人，一头吞噬雷灵的妖兽越过封锁，她循着残留气息追至此地。",
+    "specialMission": {
+      "id": "lu-thunder-beast",
+      "name": "围猎噬雷妖兽",
+      "desc": "与陆清辞并肩迎战越界的噬雷妖兽，阻止它继续侵扰附近村镇。",
+      "kind": "combat",
+      "enemyName": "噬雷妖兽",
+      "favor": 30
+    }
+  },
+  {
+    "id": "wen-cixue",
+    "name": "温辞雪",
+    "level": "元婴境圆满",
+    "root": "冰、木双属性灵根",
+    "personality": "温和坚定，擅长照料伤者，却从不纵容逃避责任的人。",
+    "background": "云游医修，准备在边城重建一座被毁的药庐，让无力求医的凡人也能得到救治。",
+    "specialMission": {
+      "id": "wen-clinic",
+      "name": "重建边城药庐",
+      "desc": "筹集木料、药柜与护阵所需灵石，帮助温辞雪重新开设药庐。",
+      "kind": "money",
+      "cost": 650000,
+      "favor": 30
+    }
+  }
+]
